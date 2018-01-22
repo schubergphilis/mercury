@@ -24,7 +24,8 @@ default: build
 
 clean:
 	@echo Cleaning up...
-	@rm -f bin/*/*
+	@rm -f build/linux/*
+	@rm -f build/osx/*
 	@echo Done.
 
 get:
@@ -79,22 +80,22 @@ makeconfig:
 	cat ./test/${NAME}.toml | sed -e 's/port = 9/port = 10/g' -e 's/localhost1/localhost3/' -e 's/localhost2/localhost1/' -e 's/localhost3/localhost2/' -e 's/127.0.0.1:9000/127.0.0.1:8000/' -e 's/127.0.0.1:10000/127.0.0.1:9000/' -e 's/127.0.0.1:8000/127.0.0.1:10000/' > ./test/${NAME}-secondary.toml
 
 run: osx makeconfig
-	./bin/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
 run-race: osx-race makeconfig
-	./bin/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
 run-secondary: makeconfig
-	./bin/osx/$(NAME) --config-file ./test/${NAME}-secondary.toml --pid-file /tmp/mercury-secondary.pid
+	./build/osx/$(NAME) --config-file ./test/${NAME}-secondary.toml --pid-file /tmp/mercury-secondary.pid
 
 run-noconfig: osx
-	./bin/osx/$(NAME) --config-file ./test//${NAME}.toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test//${NAME}.toml --pid-file /tmp/mercury.pid
 
 run-secondary-noconfig:
-	./bin/osx/$(NAME) --config-file ./test/${NAME}-secondary.toml --pid-file /tmp/mercury-secondary.pid
+	./build/osx/$(NAME) --config-file ./test/${NAME}-secondary.toml --pid-file /tmp/mercury-secondary.pid
 
 sudo-run: osx
-	sudo ./bin/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
+	sudo ./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
 test:
 	@go test -v ./src/config/*.go --config-file ../../test/${NAME}.toml
@@ -118,7 +119,7 @@ endif
 linux-package: builddir linux committed
 	mkdir -p ./build/packages/$(NAME)/usr/sbin/
 	mkdir -p ./build/packages/$(NAME)/var/$(NAME)/
-	cp ./bin/linux/$(NAME) ./build/packages/$(NAME)/usr/sbin/
+	cp ./build/linux/$(NAME) ./build/packages/$(NAME)/usr/sbin/
 	cp ./tools/html/* ./build/packages/$(NAME)/var/$(NAME)/
 	fpm -s dir -t rpm -C ./build/packages/$(NAME) --name $(NAME) --rpm-os linux --version ${VERSION} --iteration ${BUILD} --exclude "*/.keepme"
 	mv $(NAME)-${VERSION}*.rpm build/packages/

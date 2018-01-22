@@ -1,5 +1,4 @@
 vendor/**
-bin/**
 build/**
 tools/linux/mercury/usr/sbin/mercury
 tools/linux/mercury/var/mercury
