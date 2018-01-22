@@ -1,0 +1,223 @@
+logging:
+  level: debug
+  output: stdout
+cluster:
+  binding: localhost
+  nodes:
+  - localhost
+  - otherhost
+  name: GLB_CLUSTER
+  settings:
+    connectiontimeout: 10ns
+    connectionretrycount: 3
+    connectionretryinterval: 10ns
+    pinginterval: 10ns
+    pingtimeout: 30ns
+    port: 9000
+  secretkey: test
+dns:
+  domains:
+    domain.nl:
+      soa:
+        name: ""
+        ns: ""
+        email: hostmaster.domain.nl
+        serial: 0
+        refresh: 30
+        retry: 30
+        expire: 3600
+        minimum: 10
+      records: []
+      ttl: 11
+    glb.ghostbox.org:
+      soa:
+        name: ""
+        ns: ""
+        email: hostmaster.glb.ghostbox.org
+        serial: 0
+        refresh: 30
+        retry: 30
+        expire: 3600
+        minimum: 10
+      records: []
+      ttl: 12
+  binding: localhost
+  port: 15353
+settings:
+  managenetworkinterfaces: "no"
+  enableproxies: true
+loadbalancer:
+  settings:
+    defaultloadbalancemethod: roundrobin
+  pools:
+    INTERNAL_VIP:
+      name: ""
+      listener:
+        ip: 127.0.0.1
+        port: 9001
+        hostname: ""
+        interface: ""
+        online: false
+        error: ""
+        mode: tcp
+      acls:
+      - name: acl_my_domain_nl
+        type: header
+        header: hostname
+        match: my.domain.nl
+      - name: acl_myapp2_domain_nl
+        type: header
+        header: hostname
+        match: mypp2.domain.nl
+      backends:
+        ghostbox:
+          nodes:
+          - ip: 178.237.34.31
+            port: 80
+            hostname: el-diablo2
+          - ip: 178.237.34.30
+            port: 80
+            hostname: el-diablo1
+          healthcheck:
+            type: httpget
+            request: http://www.ghostbox.org
+            postdata: ""
+            httpstatus: 200
+            reply: login
+            interval: 10ns
+            timeout: 10ns
+          dnsentry:
+            hostname: www
+            domain: glb.ghostbox.org
+            ip: 199.200.200.200
+          online: false
+          balancemode:
+            method: topology,roundrobin
+            localtopology: sbp
+            preference: 0
+          connectmode: tcp
+        myapp:
+          nodes:
+          - ip: 89.255.200.186
+            port: 22
+            hostname: ""
+          - ip: 89.255.200.84
+            port: 23
+            hostname: ""
+          healthcheck:
+            type: tcpconnect
+            request: ""
+            postdata: ""
+            httpstatus: 0
+            reply: ""
+            interval: 10ns
+            timeout: 10ns
+          dnsentry:
+            hostname: my
+            domain: domain.nl
+            ip: ""
+          online: false
+          balancemode:
+            method: roundrobin
+            localtopology: ""
+            preference: 0
+          connectmode: tcp
+        post:
+          nodes:
+          - ip: 178.237.34.32
+            port: 80
+            hostname: el-diablo2
+          - ip: 178.237.34.31
+            port: 80
+            hostname: el-diablo1
+          healthcheck:
+            type: httppost
+            request: http://test.ghostbox.org/
+            postdata: <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
+              xmlns:a="http://www.w3.org/2005/08/addressing" xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"><s:Header><a:Actions:mustUnderstand="1">http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue</a:Action><a:MessageID>urn:uuid:99e5ee39-b8e2-449f-ac9d-2d973ffe8481</a:MessageID><a:ReplyTo><a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address></a:ReplyTo><a:To
+              s:mustUnderstand="1">https://sts-frontend.glb.argt.local:50443/users/issue.svc/mixed/username</a:To><o:Securitys:mustUnderstand="1"
+              xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><u:Timestamp
+              u:Id="_0"><u:Created>###DATE-1m2006-01-02T15:04:05Z07:00###</u:Created><u:Expires>###DATE+5m2006-01-02T15:04:05Z07:00###</u:Expires></u:Timestamp><o:UsernameToken
+              u:Id="uuid-5a851b50-6df1-4c2d-a92f-4cdfeae5dc72-1"><o:Username>${USERNAME}</o:Username><o:Password
+              Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">${PASSWORD}</o:Password></o:UsernameToken></o:Security></s:Header><s:Body><trust:RequestSecurityToken
+              xmlns:trust="http://docs.oasis-open.org/ws-sx/ws-trust/200512"><wsp:AppliesTo
+              xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"><wsa:EndpointReference
+              xmlns:wsa="http://www.w3.org/2005/08/addressing"><wsa:Address>https://security.fivedegrees.nl/</wsa:Address></wsa:EndpointReference></wsp:AppliesTo><trust:Lifetime><wsu:Created
+              xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">###DATE-2m2006-01-02T15:04:05Z07:00###</wsu:Created><wsu:Expires
+              xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">###DATE+10m2006-01-02T15:04:05Z07:00###</wsu:Expires></trust:Lifetime><trust:RequestType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue</trust:RequestType></trust:RequestSecurityToken></s:Body></s:Envelope>
+            httpstatus: 200
+            reply: ""
+            interval: 10ns
+            timeout: 10ns
+          dnsentry:
+            hostname: www
+            domain: glb.post.org
+            ip: 199.200.200.200
+          online: false
+          balancemode:
+            method: topology,roundrobin
+            localtopology: sbp
+            preference: 0
+          connectmode: tcp
+      online: false
+    INTERNAL_VIP2:
+      name: ""
+      listener:
+        ip: 127.0.0.1
+        port: 9002
+        hostname: ""
+        interface: lo0
+        online: false
+        error: ""
+        mode: tcp
+      acls:
+      - name: acl_myother_domain_nl
+        type: header
+        header: hostname
+        match: myother.domain.nl
+      backends:
+        myotherapp:
+          nodes:
+          - ip: 128.0.0.1
+            port: 9002
+            hostname: ""
+          - ip: 128.0.0.2
+            port: 9002
+            hostname: ""
+          healthcheck:
+            type: tcpconnect
+            request: ""
+            postdata: ""
+            httpstatus: 0
+            reply: ""
+            interval: 10ns
+            timeout: 10ns
+          dnsentry:
+            hostname: myother
+            domain: domain.nl
+            ip: ""
+          online: false
+          balancemode:
+            method: roundrobin
+            localtopology: ""
+            preference: 0
+          connectmode: tcp
+      online: false
+  networks:
+    eqx:
+      cidrs:
+      - 10.188.28.0/22
+      - 127.0.0.1/8
+    sbp:
+      cidrs:
+      - 10.188.24.0/22
+web:
+  binding: localhost
+  port: 8080
+stats:
+  host: localhost
+  port: 2013
+  client: carbon
+  cachesize: 10
+  interval: 10ns
+  statsprovider: null

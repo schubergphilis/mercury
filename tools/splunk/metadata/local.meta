@@ -1,0 +1,42 @@
+[app/ui]
+version = 6.1.10
+modtime = 1506939045.857424000
+
+[app/launcher]
+version = 6.1.10
+modtime = 1506939045.860053000
+
+[nav/default]
+version = 6.1.10
+modtime = 1500994840.119735000
+
+[views/http_proxy]
+owner = rdoorn
+version = 6.1.10
+modtime = 1506515092.921018000
+
+[views/dns]
+owner = rdoorn
+version = 6.1.10
+modtime = 1501232547.368871000
+
+[views/cluster]
+owner = rdoorn
+version = 6.1.10
+modtime = 1503308441.013959000
+
+[views/mercury_search]
+owner = rdoorn
+version = 6.1.10
+modtime = 1506513949.932396000
+
+[views/tcp_proxy]
+access = read : [ * ], write : [ admin, user ]
+export = none
+owner = rdoorn
+version = 6.1.10
+modtime = 1506515056.279651000
+
+[app/package/check_for_updates]
+version = 6.1.10
+modtime = 1506939045.862346000
