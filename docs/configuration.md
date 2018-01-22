@@ -18,8 +18,8 @@ options are:
 
 Key | Option | Default | Values | Description
 --- | --- | --- | --- | ---
-[logging] | level | "info" | "(debug|info|warn|error)" | log level with debug being the most informative.
-[logging] | output | "/var/log/mercury" | "(stdout|file)"| location to write the log information to Web Settings.
+[logging] | level | "info" | "(debug/info/warn/error)" | log level with debug being the most informative.
+[logging] | output | "/var/log/mercury" | "(stdout/file)"| location to write the log information to Web Settings.
 
 
 ## Web
@@ -92,24 +92,22 @@ Key | Option | Default | Values | Description
 --- | --- | --- | --- | ---
 [[parent.inboundacl]] |  |  |  | inbound ACL's are applied on requests from loadbalancer to the backend - needs to be an array of ACL's executed top to bottom
 [[parent.outboundacl]] |  |  |  | outbound ACL's are applied on requests from loadbalancer to the client - needs to be an array of ACL's executed top to bottom
-[[(in|out)boundacl]] | action | "" | see acl actions below | action to do when matching
-[[(in|out)boundacl]] | headerkey | "" | string | key of header (ex. "Content-Type")
-[[(in|out)boundacl]] | headervalue | "" | string | value of the header (ex. "UTF8")
-[[(in|out)boundacl]] | cookiekey | "" | string | key of the cookie
-[[(in|out)boundacl]] | cookievalue | "" | string | value of the cookie
-[[(in|out)boundacl]] | cookiepath | "" | string | path of the cookie
-[[(in|out)boundacl]] | cookieexpire | "" | datetime | expire date of the cookie
-[[(in|out)boundacl]] | cookiehttponly |  | bool | httponly cookie
-[[(in|out)boundacl]] | cookiesecure |  | bool | secure cookie
-[[(in|out)boundacl]] | conditiontype | "" | string | header/cookie status	type to match with regex
-[[(in|out)boundacl]] | conditionmatch | "" | string | regex string to match
-[[(in|out)boundacl]] | statuscode |  | int | status code to return to the client (e.g. 500)
-[[(in|out)boundacl]] | action | "" | string | action to do when matching
-[[(in|out)boundacl]] | action | "" | string | action to do when matching
-[[(in|out)boundacl]] | action | "" | string | action to do when matching
-[[(in|out)boundacl]] | action | "" | string | action to do when matching
-
-
+... | action | "" | see acl actions below | action to do when matching
+... | headerkey | "" | string | key of header (ex. "Content-Type")
+... | headervalue | "" | string | value of the header (ex. "UTF8")
+... | cookiekey | "" | string | key of the cookie
+... | cookievalue | "" | string | value of the cookie
+... | cookiepath | "" | string | path of the cookie
+... | cookieexpire | "" | datetime | expire date of the cookie
+... | cookiehttponly |  | bool | httponly cookie
+... | cookiesecure |  | bool | secure cookie
+... | conditiontype | "" | string | header/cookie status	type to match with regex
+... | conditionmatch | "" | string | regex string to match
+... | statuscode |  | int | status code to return to the client (e.g. 500)
+... | action | "" | string | action to do when matching
+... | action | "" | string | action to do when matching
+... | action | "" | string | action to do when matching
+... | action | "" | string | action to do when matching
 
 
 ## ACL Actions
