@@ -6,11 +6,12 @@ Mercury is a loadbalancer with Global Loadbalance capababilities across multiple
 * Linux (with iproute 3+)
 
 # Features
-* Global Loadbalacing across multiple Datacentre or Cloud infrastructures.
+* Global Loadbalacing across multiple datacenters or Cloud infrastructures using DNS based loadbalancing
 * Does HealthChecks on local backends, and propegates their availability across other GLB instances
   * HTTP health checks (POST or GET)
   * TCP Connect checks (connects only)
   * TCP Data check (sends and/or expects data)
+  * ICMP/UDP/TCP ping checks
   * None (always online)
 * Is a functional DNS host to give GLB based replies with
   * Topology based loadbalancing, with predefined networks
@@ -22,10 +23,10 @@ Mercury is a loadbalancer with Global Loadbalance capababilities across multiple
   * Random based loadbalancing for when you can't choose
   * Sticky based loadbalancing for client sticky cookies
 * Is a full loadbalancer using the supported balancing methods
-* Sends statistics to Graphite (using Carbon)
 * Includes checks for Nagios/Sensu to be used
 * Internal DNS server supports most record types
 * HTTP/2 support
+* Websocket support
 
 ## Installing
 ### Linux
@@ -43,11 +44,11 @@ OSX has no package, but you can run the following to create the binary:
 
     $ make osx
 
-## Config
+## Documentation
 
-### Pools
-### Interface
-### Backends
+Documentation is are available at [here](https://github.com/schubergphilis/mercury/tree/master/docs)
+
+Examples configuration files are available at [here](https://github.com/schubergphilis/mercury/tree/master/examples)
 
 ## TLS & HTTP/2
 
@@ -55,7 +56,7 @@ a Full list of supported TLS cyphers in the golang tls.Config package is [here](
 
 The recommended cypers are:
 
-Required for HTTP/2 is TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
+Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 ```Notice
 Note that this has to be the first cipher in the list!
 ```
@@ -73,9 +74,6 @@ Alternatively you can use curl to read the status
 for json output pass the following option:
 
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
-
-## Stats
-By default stats are not sent, but if you enter a stats hostname, it will send stats using Carbon to your collectd deamon.
 
 ## Checks
 There are 2 checks which you can execute, and implement them in your monitoring system
@@ -100,7 +98,6 @@ Checking the Backend nodes
 
 3. Install dependencies:
 
-        $ go install github.com/GeertJohan/go.rice
         $ make get
 
 4. Make your changes/patches/fixes, committing appropiately
