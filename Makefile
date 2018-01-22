@@ -5,8 +5,8 @@
 
 .PHONY: update clean build build-all run package deploy test authors dist get
 
-#export GOPATH := ${PWD}/vendor:${PWD}
-#export GOBIN := ${PWD}/vendor/bin
+export GOPATH := ${GOPATH}:${PWD}/vendor:${PWD}
+export GOBIN := ${PWD}/build/
 
 
 NAME := mercury
@@ -14,9 +14,6 @@ VERSION := $(shell cat VERSION)
 LASTCOMMIT := $(shell git rev-parse --verify HEAD)
 BUILD := $(shell cat tools/rpm/BUILDNR)
 LDFLAGS := "-X main.version=${VERSION} -X main.versionBuild=${BUILD} -X main.versionSha=${LASTCOMMIT}"
-#sGOPATH := "${PWD}/vendor:${PWD}"
-#PENDINGCOMMIT := "$(git diff-files --quiet --ignore-submodules && echo 0 || echo 1 )"
-#PENDINGCOMMIT := $(git diff-files --quiet --ignore-submodules && echo 1 || echo 0 )
 PENDINGCOMMIT := $(shell git diff-files --quiet --ignore-submodules && echo 0 || echo 1)
 LOCALIP := $(shell ifconfig | grep "inet " | grep broadcast | awk {'print $$2'} )
 
@@ -30,7 +27,7 @@ clean:
 
 get:
 	@echo Getting...
-	go get ./...
+	@dep ensure -v
 	@echo Done
 
 rice:

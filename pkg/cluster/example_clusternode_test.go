@@ -15,16 +15,16 @@ func TestExample(t *testing.T) {
 func Example() {
 	// start cluster 1
 	manager := NewManager("node1", "secret")
-	manager.AddNode("node2", "127.0.0.1:9605")
-	err := manager.ListenAndServe("127.0.0.1:9604")
+	manager.AddNode("node2", "127.0.0.1:9655")
+	err := manager.ListenAndServe("127.0.0.1:9654")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// start cluster 2
 	manager2 := NewManager("node2", "secret")
-	manager2.AddNode("node1", "127.0.0.1:9604")
-	err = manager2.ListenAndServe("127.0.0.1:9605")
+	manager2.AddNode("node1", "127.0.0.1:9654")
+	err = manager2.ListenAndServe("127.0.0.1:9655")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func Example() {
 			if err != nil {
 				log.Printf("Unable to get message from package: %s\n", err)
 			}
-			log.Printf("we received a custom message: %s\n", cm)
+			//log.Printf("we received a custom message: %s\n", cm)
 			return
 		}
 	}

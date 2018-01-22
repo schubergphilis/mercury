@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const DebugLog = 0
+
 type Message struct {
 	Message string `json:"message"`
 }
@@ -44,8 +46,11 @@ func TestOneClusterNode(t *testing.T) {
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerONE, but got nothing")
 	}
-	for _, log := range logs {
-		t.Log("== LOG: ", log)
+
+	if DebugLog == 1 {
+		for _, log := range logs {
+			t.Log("== LOG: ", log)
+		}
 	}
 
 	managerONE.Shutdown()
@@ -127,8 +132,10 @@ func TestTwoClusterNode(t *testing.T) {
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerTWO, but got nothing")
 	}
-	for _, log := range logs {
-		t.Log("== LOG: ", log)
+	if DebugLog == 1 {
+		for _, log := range logs {
+			t.Log("== LOG: ", log)
+		}
 	}
 
 	managerTWO.Shutdown()
@@ -346,58 +353,16 @@ func TestTreeNodeCluster(t *testing.T) {
 		t.Errorf("expected log output for managerFOUR, but got nothing")
 	}
 
-	for _, log := range logs {
-		t.Log("== LOG: ", log)
+	if DebugLog == 1 {
+		for _, log := range logs {
+			t.Log("== LOG: ", log)
+		}
 	}
 }
 
 func TestTWOClusterNodeTLS(t *testing.T) {
 	t.Parallel()
 
-	/*
-			cer, err := tls.LoadX509KeyPair("self-signed.crt", "self-signed.key")
-			if err != nil {
-				t.Errorf("Error reading key pair: %s", err)
-			}
-			tlsConfig := &tls.Config{Certificates: []tls.Certificate{cer}, InsecureSkipVerify: true}
-
-		managerNINE := NewManager("managerNINE", "secret")
-		//err = managerNINE.ListenAndServeTLS("127.0.0.1:9509", tlsConfig)
-		err := managerNINE.ListenAndServe("127.0.0.1:9509")
-		if err != nil {
-			log.Fatal(err)
-		}
-		managerNINE.AddNode("managerTEN", "127.0.0.1.9510")
-
-
-			conf := &tls.Config{
-				InsecureSkipVerify: true,
-			}
-
-			_, err = tls.Dial("tcp", "127.0.0.1:9509", conf)
-			if err != nil {
-				t.Errorf("tls.Dial failed to managerNINE, error: %s", err)
-			}
-
-
-		managerTEN := NewManager("managerTEN", "secret")
-		//err = managerTEN.ListenAndServeTLS("127.0.0.1:9510", tlsConfig)
-		err = managerTEN.ListenAndServe("127.0.0.1:9510")
-		if err != nil {
-			log.Fatal(err)
-		}
-		managerTEN.AddNode("managerNINE", "127.0.0.1.9509")
-
-		node, timeout := channelReadString(managerNINE.NodeJoin, 5)
-		if timeout {
-			t.Errorf("expected Join on managerNINE, but got timeout")
-		}
-		if node != "managerTEN" {
-			t.Errorf("expected Join on managerNINE to be from managerTEN, but got:%s", node)
-		}
-
-		managerNINE.Shutdown()
-	*/
 	cer, err := tls.LoadX509KeyPair("self-signed.crt", "self-signed.key")
 	if err != nil {
 		t.Errorf("Error reading key pair: %s", err)
@@ -411,7 +376,6 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 	}
 	managerNINE.AddNode("managerTEN", "127.0.0.1:9510")
 
-	// TLS check
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -449,8 +413,10 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 		t.Errorf("expected log output for managerNINE, but got nothing")
 	}
 
-	for _, log := range logs {
-		t.Log("== LOG managerNINE: ", log)
+	if DebugLog == 1 {
+		for _, log := range logs {
+			t.Log("== LOG managerNINE: ", log)
+		}
 	}
 
 }

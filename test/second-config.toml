@@ -7,8 +7,8 @@ client = "carbon"
 binding = "localhost"
 port = 8080
 [web.tls]
-certificatekey = "../../build/test/ssl/self_signed_certificate.key"
-certificatefile = "../../build/test/ssl/self_signed_certificate.crt"
+certificatekey = "../../test/ssl/self_signed_certificate.key"
+certificatefile = "../../test/ssl/self_signed_certificate.crt"
 minversion = "VersionTLS12"
 ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA","TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
@@ -21,8 +21,8 @@ name = "localhost1"
 addr = "127.0.0.1:9000"
 authkey = "test"
 [cluster.tls]
-certificatekey = "../../build/test/ssl/self_signed_certificate.key"
-certificatefile = "../../build/test/ssl/self_signed_certificate.crt"
+certificatekey = "../../test/ssl/self_signed_certificate.key"
+certificatefile = "../../test/ssl/self_signed_certificate.crt"
 minversion = "VersionTLS10"
 ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA"]
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
@@ -61,8 +61,8 @@ ip = "127.0.0.2"
 port = 9001
 mode = "https"
 [loadbalancer.pools.INTERNAL_VIP.listener.tls]
-certificatekey = "../../build/test/ssl/self_signed_certificate.key"
-certificatefile = "../../build/test/ssl/self_signed_certificate.crt"
+certificatekey = "../../test/ssl/self_signed_certificate.key"
+certificatefile = "../../test/ssl/self_signed_certificate.crt"
 minversion = "VersionTLS12"
 ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA"]
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
