@@ -30,7 +30,7 @@ Key | Option | Default | Values | Description
 --- | --- | --- | --- | ---
 [web] | binding | "0.0.0.0" | string | ip for the web interface to listen on
 [web] | port | 9001 | int | port for the web interface to listen on
-[web] | tls | none | see TLS Attributes | TLS certificate information required for SSL
+[web.tls] | tls | none | see TLS Attributes | TLS certificate information required for SSL
 
 
 ## Cluster
@@ -49,93 +49,37 @@ Key | Option | Default | Values | Description
 [cluster.settings] | port | 9000 | int | port to listen on for cluster communication
 [cluster.tls] | none | see TLS Attributes | TLS certificate information required for SSL
 [[cluster.nodes]] | | | array of loadbalancer nodes to connect to and form a cluster
-[[cluster.nodes]] | name | name of a cluster node
-[[cluster.nodes]] | addr | address of a cluster node
-[[cluster.nodes]] | authkey | key used to connect to this cluster node
+[[cluster.nodes]] | name | string | name of a cluster node
+[[cluster.nodes]] | addr | string | address of a cluster node
+[[cluster.nodes]] | authkey | string | key used to connect to this cluster node
 
+## DNS
+DNS settings are defined in the `[dns]` block.
+options are:
 
-node['sbp_mercury']['cluster']['dns']['binding']
+Key | Option | Default | Values | Description
+--- | --- | --- | --- | ---
+[dns] | binding | "0.0.0.0" | string | binding ip for dns service
+[dns] | port | 53 | int | binding port for dns service
+[dns] | allow_forwarding | [] | ["ip/mask"] | array of cidrs to allow dns forwarding requests
+[dns] | allow_requests | [ "A", "AAAA", "NS", "MX", "SOA", "TXT", "CAA", "ANY", "CNAME", "MB", "MG", "MR", "WKS", "PTR", "HINFO", "MINFO", "SPF" ] | ["types"] | array of dns requests types we respond to
 
-	string	"0.0.0.0"	binding ip for dns service
-
-node['sbp_mercury']['cluster']['dns']['port']
-
-	int	53	port for dns service
-
-node['sbp_mercury']['cluster']['dns']['allow_forwarding']
-
-	array of string	[ ]	cidr we allow forwarding dns for (ex. "127.0.0.1/32")
-
-node['sbp_mercury']['cluster']['dns']['allowed_requests']
-
-	array of string
-
-[ "A", "AAAA", "NS", "MX", "SOA", "TXT",
-
-"CAA", "ANY", "CNAME", "MB", "MG", "MR",
-
-"WKS", "PTR", "HINFO", "MINFO", "SPF" ]
-	dns requests types we respond to
-Additional Attributes
-TLS Attributes
-
+## TLS Attributes
 TLS attributes are appended to any of the TLS keys in the config.
 
 Usable in the settings for `cluster`, `webserver`, `listener` and `backend`
 
-...['tls']
+Key | Option | Default | Values | Description
+--- | --- | --- | --- | ---
+[parent.tls] | minversion | "VersionTLS12" | string | Minimum TLS version required for this listener
+[parent.tls] | maxversion | "" | string | Maximum TLS version required for this listener
+[parent.tls] | ciphersuites | all | ["cipher"] | Cipher suites used by the listener (note that TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 is required for HTTP/2 support. see https://golang.org/pkg/crypto/tls/#pkg-constants for details
+[parent.tls] | curvepreferences | all | ["curve"] | Curve preference used by the listener. see https://golang.org/pkg/crypto/tls/#pkg-constants for details.
+[parent.tls] | certificatekey | "" | "/path/to/file" | file containing your ssl key
+[parent.tls] | certificatefile | "" | "/path/to/file" | file containing your ssl certificate file
+[parent.tls] | insecureskipverify | false | true/false | to to true to ignore insecure certificates, usable for self-signed certificates
 
-	 hash	 	This hash contains the TLS settings for a listener object
-
-...['tls']['minversion']
-
-	string	"VersionTLS12"	Minimum TLS version required for this listener
-
-...['tls']['maxversion']
-
-	string	 	Maximum TLS version required for this listener
-
-...['tls']['ciphersuites']
-
-	array of string	%w(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 TLS_RSA_WITH_AES_256_GCM_SHA384)
-
-Cipher suites used by the listener (note that TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 is required for HTTP/2 support
-
-
-
-see https://golang.org/pkg/crypto/tls/#pkg-constants for details
-
-...['tls']['curvepreferences']
-
-	array of string	%w(CurveP521 CurveP384 CurveP256)
-
-the curve preference
-
-
-
-see https://golang.org/pkg/crypto/tls/#pkg-constants for details
-
-...['tls']['databagname']
-
-	string	 	name of the data bag to find the SSL certificate
-
-...['tls']['databagitem']
-
-	string	 	name of the data bag item to find the SSL certificate
-
-...['tls']['certificatefile']
-
-	string	 	name of the key in the databag to find the SSL certificate file
-
-...['tls']['certificatekey']
-
-	string	 	name of the key in the databag to find the SSL certificate key
-
-...['tls']['insecureskipverify']
-
-	bool	false	allows you to ignore insecure certificates, usable for self-signed certificates
-ACL Attributes
-
+## TLS Attributes
 ACL attributes can adjust headers, cookies or allow/deny clients based on ip/headers
 
 To adjust headers towards the client a rule should be applied on the `outboundacl`
@@ -144,110 +88,110 @@ To allow/deny clients based on headers/ip's a rule should be applied on the `inb
 
 the ACL attribute should be an `Array` of acl's, you can add multiple.
 
-...['inboundacl|outboundacl'] = [{
+Key | Option | Default | Values | Description
+--- | --- | --- | --- | ---
+[[parent.inboundacl]] |  |  |  | inbound ACL's are applied on requests from loadbalancer to the backend - needs to be an array of ACL's executed top to bottom
+[[parent.outboundacl]] |  |  |  | outbound ACL's are applied on requests from loadbalancer to the client - needs to be an array of ACL's executed top to bottom
+[[(in|out)boundacl]] | action | "" | see acl actions below | action to do when matching
+[[(in|out)boundacl]] | headerkey | "" | string | key of header (ex. "Content-Type")
+[[(in|out)boundacl]] | headervalue | "" | string | value of the header (ex. "UTF8")
+[[(in|out)boundacl]] | cookiekey | "" | string | key of the cookie
+[[(in|out)boundacl]] | cookievalue | "" | string | value of the cookie
+[[(in|out)boundacl]] | cookiepath | "" | string | path of the cookie
+[[(in|out)boundacl]] | cookieexpire | "" | datetime | expire date of the cookie
+[[(in|out)boundacl]] | cookiehttponly |  | bool | httponly cookie
+[[(in|out)boundacl]] | cookiesecure |  | bool | secure cookie
+[[(in|out)boundacl]] | conditiontype | "" | string | header/cookie status	type to match with regex
+[[(in|out)boundacl]] | conditionmatch | "" | string | regex string to match
+[[(in|out)boundacl]] | statuscode |  | int | status code to return to the client (e.g. 500)
+[[(in|out)boundacl]] | action | "" | string | action to do when matching
+[[(in|out)boundacl]] | action | "" | string | action to do when matching
+[[(in|out)boundacl]] | action | "" | string | action to do when matching
+[[(in|out)boundacl]] | action | "" | string | action to do when matching
 
-	 	 	needs to be an array of ACL's executed top to bottom
 
-   action:
 
-	string	allow, deny, add, replace, remove	action to do when matching
 
-   headerkey:
+## ACL Actions
+Action | ACL Type | Result
+--- | --- | ---
+Allow | Inbound	| will deny a client if non of the allowed rules matches the client header/ip
+Deny | Inbound	| will deny a client if any of the deny rules matches the client header/ip
+Add | Inbound/Outbound | Adds a header/cookie given match. Only if it does not exist.
+Replace | Inbound/Outbound | Replaces a header/cookie/status code given match. Only if it exists.
+Remove | Inbound/Outbound | Removes a header/cookie given match Only if it exists
 
-	string	 	key of header (ex. "Content-Type")
-
-   headervalue:
-
-	string	 	value of the header (ex. "UTF8")
-
-   cookiekey:
-
-	string	 	key of the cookie
-
-   cookievalue:
-
-	string	 	value of the cookie
-
-   cookiepath:
-
-	string	 	path of the cookie
-
-   cookieexpire:
-
-	datetime	 	expire date of the cookie
-
-   cookiehttponly:
-
-	bool	 	httponly cookie
-
-   cookiesecure:
-
-	bool	 	secure cookie
-
-   conditiontype:
-
-	string	header cookie status	type to match with regex
-
-   conditionmatch:
-
-	string	 	regex string to match
-
-   statuscode:
-
-	int	 	status code to return to the client (e.g. 500)
-
-   CIDRS:
-
-	array of string	 	cidr used for IP/Netmask matching (e.g. "127.0.0.1/32")
-} ]	 	 	 
-Actions
-Allow	Inbound	will deny a client if non of the allowed rules matches the client header/ip
-Deny	Inbound	will deny a client if any of the deny rules matches the client header/ip
-Add	Inbound/Outbound	Adds a header/cookie given match. Only if it does not exist.
-Replace	Inbound/Outbound	Replaces a header/cookie/status code given match. Only if it exists.
-Remove	Inbound/Outbound	Removes a header/cookie given match Only if it exists
-Special Keys
-
-The following special keys are translated in the ACL to a value
-
+## ACL special keys
+The following special keys are translated in the ACL to a value.
 All values are placed between 3 hashes(#) on both sides. for example: ###NODE_ID###
-NODE_ID	returns the uuid of the backend node
-NODE_IP	returns the ip of the backend node
-LB_IP	returns the ip of the listener
-REQ_URL	returns the requested host + path
-REQ_PATH	returns the requested path
-REQ_HOST	returns the requested host
-REQ_IP	returns the ip of the requested host
-CLIENT_IP	returns the remote addr of the client
-UUID	returns a random UUID
+
+Key | Value
+--- | ---
+NODE_ID	| returns the uuid of the backend node
+NODE_IP	| returns the ip of the backend node
+LB_IP | returns the ip of the listener
+REQ_URL | returns the requested host + path
+REQ_PATH | returns the requested path
+REQ_HOST | returns the requested host
+REQ_IP | returns the ip of the requested host
+CLIENT_IP	| returns the remote addr of the client
+UUID | returns a random UUID
 
 
-Examples
+### Examples
+* deny all clients which user-agent specifies Macintosh
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.inboundacls]]
+action = "deny"
+header_key = "User-Agent"
+header_value = ".*Macintosh.*"
+```
 
-{ action: 'deny', header_key: 'User-Agent', header_value: ".*Macintosh.*" },
-	deny all clients which user-agent specifies Macintosh
+* add a location header, effectively redirecting the user to the ssl if this came in on a http connection (see ACL Special keys)
+```
+[[loadbalancer.pools.INTERNAL_VIP_REDIRECT.backends.redirect.outboundacls]]
+action = "add"
+header_key = "Location"
+header_value = "https://###REQ_HOST######REQ_PATH###"
+```
 
-{ action: 'add', header_key: 'Location', header_value: 'https://###REQ_HOST######REQ_PATH###' },
-	add a location header, effectively redirecting the user to the main page (see ACL Special keys)
-
-{ action: 'allow', cidrs: ["127.0.0.1/8", "10.0.0.0/8"] },
-	allow only the local networks specified
+*	allow only the local networks specified
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.inboundacls]]
+action = "allow"
+cidrs = ["10.10.0.197/32", "10.10.0.197/32"]
+```
 
 
 Stickyness Loadbalancing ACL
 
 To use Stickyness you Must apply the following ACL. this will ensure that the correct cookie gets set to direct the client to its sticky backend node
 
-{ action: 'replace', cookie_key: 'stky', cookie_value: '###NODE_ID###', cookie_expire: '24h', cookie_secure: true, cookie_httponly: true, cookie_path: '/' },
-
-
-should the client be directed to another node that its initialsticky cookie, because its unavailable, we need to make sure that this new node is the sticky node for all future requests.
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "add"
+cookie_expire = "24h"
+cookie_httponly = false
+cookie_key = "stky"
+cookie_secure = true
+cookie_value = "###NODE_ID###"
+```
+should the client be directed to another node that its initial sticky cookie, because its unavailable, we need to make sure that this new node is the sticky node for all future requests.
 
 we do this by overwriting the node id with the ID of the new node.
-{ action: 'add', cookie_key: 'stky', cookie_value: '###NODE_ID###', cookie_expire: '24h', cookie_secure: true, cookie_httponly: true, cookie_path: '/' },	adds a stky cookie with the node_id the client is connected to
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "replace"
+cookie_expire = "24h"
+cookie_httponly = false
+cookie_key = "stky"
+cookie_secure = true
+cookie_value = "###NODE_ID###"
+```
+adds a stky cookie with the node_id the client is connected to
 
 
-ErrorPage Attributes
+## ErrorPage Attributes
 
 An error page is shown when an error is generated by Mercury, or if configured, when a 500 or higher error code is given by the backend application.
 
