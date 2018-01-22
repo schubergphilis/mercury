@@ -30,7 +30,7 @@ clean:
 
 get:
 	@echo Getting...
-	go get ./src/
+	go get ./...
 	@echo Done
 
 rice:
@@ -39,7 +39,7 @@ rice:
 	then \
 	go get github.com/GeertJohan/go.rice/rice; \
 	fi;
-	cd src/core && rice embed-go
+	cd internal/core && rice embed-go
 	@echo Done
 
 builddir:
@@ -49,27 +49,27 @@ builddir:
 
 osx: builddir rice get
 	@echo Building OSX...
-	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./src/*.go
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./cmd/mercury.go
 	@echo Done.
 
 osx-fast: builddir
 	@echo Building OSX skipping rice and get...
-	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./src/*.go
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./cmd/mercury.go
 	@echo Done.
 
 osx-race: builddir rice get
 	@echo Building OSX...
-	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -race -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./src/*.go
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -race -v -o ./build/osx/$(NAME) -ldflags ${LDFLAGS} ./cmd/mercury.go
 	@echo Done.
 
 osx-static:
 	@echo Building...
-	CGO_ENABLED=0 go build -v -o ./build/osx/$(NAME) -ldflags '-s -w --extldflags "-static”  ${LDFLAGS}' ./src/*.go
+	CGO_ENABLED=0 go build -v -o ./build/osx/$(NAME) -ldflags '-s -w --extldflags "-static”  ${LDFLAGS}' ./cmd/mercury.go
 	@echo Done.
 
 linux: builddir rice get
 	@echo Building Linux...
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -v -o ./build/linux/$(NAME) -ldflags '-s -w --extldflags "-static”  ${LDFLAGS}' ./src/*.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -v -o ./build/linux/$(NAME) -ldflags '-s -w --extldflags "-static”  ${LDFLAGS}' ./cmd/mercury.go
 	@echo Done.
 
 build: osx linux
@@ -98,13 +98,14 @@ sudo-run: osx
 	sudo ./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
 test:
-	@go test -v ./src/config/*.go --config-file ../../test/${NAME}.toml
+	#@go test -v ./internal/config/*.go --config-file ../../test/${NAME}.toml
+	@go test -v ./...
 
 cover: ## Shows coverage
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi
-	go test ./src/config -coverprofile=coverage.out
+	go test ./internal/config -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 	rm coverage.out
 
@@ -135,6 +136,10 @@ docker-scratch:
 		cp /etc/ssl/certs/ca-certificates.crt build/docker/ca-certificates.crt; \
 	fi;
 	docker build -t mercury-scratch -f build/docker/Dockerfile.scratch .
+
+updatedeps: ## Updates the vendored Go dependencies
+	@dep ensure -update
+
 
 #authors:
 #	@git log --format='%aN <%aE>' | LC_ALL=C.UTF-8 sort | uniq -c | sort -nr | sed "s/^ *[0-9]* //g" > AUTHORS
