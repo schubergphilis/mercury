@@ -1,0 +1,10 @@
+vendor/**
+bin/**
+build/packages/**
+build/linux/mercury/usr/sbin/mercury
+build/linux/mercury/var/mercury
+build/docker/*.crt
+build/docker/*.pem
+build/docker/*.key
+build/test/mercury.toml
+build/test/mercury-secondary.toml

@@ -1,0 +1,54 @@
+{{define "cluster"}}
+{{template "header" dict "Page" .Page}}
+
+<script>
+
+    var jqxhr = $.getJSON( "{{ .ClusterAPIPath }}", function(data) {
+
+      if (data == null) {
+        errorHandler("unable to read data from cluster API (no data)")
+        return
+      }
+
+      if (data.success != true) {
+        errorHandler("unable to read data from cluster API (success=false)")
+        return
+      }
+
+      //{"nodes":{"localhost2":{"name":"localhost2","addr":"127.0.0.1:9002","status":"","error":"","jointime":"0001-01-01T00:00:00Z","lag":0,"packets":0}}}
+
+      //console.log( "got data: " + data.data );
+      //if data.success == true {
+        var json = JSON.parse(data.data)
+
+        $i = '<table><thead><tr><td>Name</td><td>Address</td><td>Status</td><td>Lag</td><td>Packets</td><td>Join Time</td><td>Error</td></tr></tbody>'
+        $.each(json.nodes,function(name, value){
+          $i += '<tr><td>'+value.name+'</td><td>'+value.addr+'</td><td>'+value.status+'</td><td>'+value.lag/1000000+'s</td><td>'+value.packets+'</td><td>'+value.jointime+'</td><td>'+value.error+'</td></tr>'
+        });
+        $i += '</tbody></table>'
+        $('#cluster').html($i)
+        //console.log($i)
+
+      //}
+    })
+      //.done(function() {
+        //console.log( "second success" );
+      //})
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        console.log("error ");
+        console.log("error " + textStatus);
+      //console.log("incoming Text " + jqXHR.responseText);
+      //console.log("incoming status " + jqXHR.status);
+      })
+      //.always(function() {
+        //console.log( "complete" );
+      //});
+
+
+
+</script>
+
+<div id="cluster"></div>
+
+{{template "footer"}}
+{{end}}

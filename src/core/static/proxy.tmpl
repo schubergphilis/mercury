@@ -1,0 +1,82 @@
+{{define "proxy"}}
+{{template "header" dict "Page" .Page}}
+
+<div id="proxy">
+  <div class="searchbox">
+   Search: <input type="text" class="search" placeholder="Search Proxy" />
+  </div>
+   <table>
+     <thead>
+       <tr>
+         <th class="sort" data-sort="vip">Pool</th>
+         <th class="sort" data-sort="backend">Backend</th>
+         <th class="sort" data-sort="balancemode">BalanceMethod</th>
+         <th class="sort" data-sort="listenermode">ListenerMode</th>
+         <th class="sort" data-sort="listener">Local Listener</th>
+         <th class="sort" data-sort="nodes">Active Nodes</th>
+         <th class="sort" data-sort="connectmode">ConnectMode</th>
+         <th class="sort" data-sort="clients">Active Clients</th>
+         <th class="sort" data-sort="connects">Connects</th>
+         <th class="sort" data-sort="responsetime">ResponseTime</th>
+         <th class="sort" data-sort="uuid">UUID</th>
+       </tr>
+     </thead>
+     <tbody class="list">
+{{ range $proxyname, $listener := .Proxies -}}
+  {{ range $backendname, $backend := $listener.Backends -}}
+  <tr>
+    <td class="id" style="display:none;">0</td>
+    <td class="vip">{{$proxyname}}</td>
+    <td class="backend">{{$backendname}}</td>
+    <td class="balancemode">{{$backend.BalanceMode}}</td>
+    <td class="listenermode">{{$listener.ListenerMode}}</td>
+    <td class="listener">{{$listener.IP}}:{{$listener.Port}}</td>
+    <td class="nodes">
+      {{ if eq $backend.ConnectMode "internal" }}
+        Internal
+      {{ else if eq (len $backend.Nodes) 0 }}
+        <span class="offline">None</span>
+      {{ else }}
+        {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
+          <div class="node"><div class="host">{{$backendnode.Name}}::{{$backendnode.Port}}</div><div class="ip">{{$backendnode.IP}}::{{$backendnode.Port}}</div></div>
+        {{- end }}
+      {{- end }}
+    </td>
+    <td class="connectmode">{{$backend.ConnectMode}}</td>
+    <td class="clients">
+      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
+        {{$backendnode.Statistics.TimeCounterGet}}<br>
+      {{- end }}
+    </td>
+    <td class="connects">
+      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
+        {{$backendnode.Statistics.ClientsConnects}}<br>
+      {{- end }}
+    </td>
+    <td class="responsetime">
+      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
+        {{$backendnode.Statistics.ResponseTimeGet}}<br>
+      {{- end }}
+    </td>
+    <td class="uuid">
+      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
+        {{$backendnode.UUID}}<br>
+      {{- end }}
+    </td>
+ </tr>
+  {{- end }}
+{{- end }}
+
+</tbody>
+</table>
+</div>
+
+<script type="text/javascript">
+var userList = new List('proxy', {
+  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects', 'uuid' ]
+});
+</script>
+
+
+{{template "footer"}}
+{{end}}

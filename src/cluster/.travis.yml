@@ -1,0 +1,17 @@
+language: go
+go:
+ - tip
+
+services:
+
+before_install:
+ - sleep 5
+ - go get ./...
+ - go get github.com/golang/lint/golint
+
+script:
+ - go vet -x ./...
+ - $HOME/gopath/bin/golint ./...
+ - go test -v ./...
+ - go test -covermode=count -coverprofile=profile.cov ./...
+ - go tool cover -func=profile.cov

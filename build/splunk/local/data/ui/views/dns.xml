@@ -1,0 +1,252 @@
+<form>
+  <label>DNS</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label/>
+      <default>
+        <earliestTime>-24h@h</earliestTime>
+        <latestTime>now</latestTime>
+      </default>
+    </input>
+    <input type="dropdown" token="environment" searchWhenChanged="true">
+      <label>Environment</label>
+      <choice value="*">ANY</choice>
+      <search>
+        <query>| metadata index=network type=hosts | rex field=host "(?&lt;environment&gt;.*)lb.*$" | dedup environment</query>
+        <earliest>@w0</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+      <prefix>host=</prefix>
+      <suffix>*</suffix>
+      <fieldForLabel>environment</fieldForLabel>
+      <fieldForValue>environment</fieldForValue>
+      <populatingSearch earliest="-7d@h" latest="now" fieldForLabel="environment" fieldForValue="environment">| metadata index=network type=hosts | rex field=host "(?&lt;environment&gt;.*)lb.*$" | dedup environment</populatingSearch>
+    </input>
+    <input type="dropdown" token="site" searchWhenChanged="true">
+      <label>Site</label>
+      <choice value="*">ANY</choice>
+      <search>
+        <query>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" | dedup hostname</query>
+        <earliest>@w0</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+      <prefix>hostname=</prefix>
+      <suffix>*</suffix>
+      <fieldForLabel>hostname</fieldForLabel>
+      <fieldForValue>hostname</fieldForValue>
+      <populatingSearch earliest="-24h@h" latest="now" fieldForLabel="hostname" fieldForValue="hostname">index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" | dedup hostname</populatingSearch>
+    </input>
+    <input type="text" token="usersearch" searchWhenChanged="true">
+      <label>Search</label>
+      <default>*</default>
+    </input>
+    <input type="radio" token="ipv6" searchWhenChanged="true">
+      <label>IPv6</label>
+      <default>!=AAAA</default>
+      <choice value="=*">Show</choice>
+      <choice value="!=AAAA">Hide</choice>
+      <prefix>querytype</prefix>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <chart>
+        <title>DNS request error ratio</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client"  $environment$ $site$ $usersearch$ $ipv6$ | rangemap field=prio error=999-1000 ok=0-499|timechart limit=0 span=5m count by range</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">%</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.labels">[ok,error]</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.seriesColors">[0x66CC00,0xFF0000]</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Top 10 failed DNS queries by Site</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" recordtype="" $environment$ $site$ $usersearch$ $ipv6$  | stats count by hostname | sort 5 -count</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.chart.showPercent">true</option>
+        <drilldown>
+          <set token="site">$click.value$</set>
+          <set token="form.site">$click.value$</set>
+        </drilldown>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="showPercent">true</option>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Top 5 failed DNS queries by Query Type</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" recordtype="" $environment$ $site$ $usersearch$ $ipv6$  | stats count by querytype | sort 5 -count</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Count</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Top 10 IPs making requests</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" $environment$ $site$ $usersearch$ $ipv6$ | stats count(eval(recordtype="")) as errorrate, count by client | eval errorrate=round((errorrate/count)*100) | sort -count | fieldformat "errorrate"=tostring(errorrate)+"%" | rename count as requests | head 10</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <drilldown>
+          <set token="usersearch">client=$row.client$</set>
+          <set token="form.usersearch">client=$row.client$</set>
+        </drilldown>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+        <fields>["client","requests","errorrate"]</fields>
+      </table>
+    </panel>
+    <panel>
+      <chart>
+        <title>Unique IPs making requests</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" $environment$ $site$ $usersearch$ $ipv6$  | timechart span=5m dc(client)</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.axisTitleY.text">Queries</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>DNS record types - detailed</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" $environment$ $site$ $usersearch$ $ipv6$  | timechart  limit=0 span=5m count by querytype</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.text">Queries</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>DNS record types - relative</title>
+        <searchString>index=network source="/var/log/syslog/network-loadbalancer.current" msg="DNS reply to client" $environment$ $site$ $usersearch$ $ipv6$  | timechart  limit=0 span=5m count by querytype</searchString>
+        <earliestTime>$field1.earliest$</earliestTime>
+        <latestTime>$field1.latest$</latestTime>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.text">%</option>
+      </chart>
+    </panel>
+  </row>
+</form>

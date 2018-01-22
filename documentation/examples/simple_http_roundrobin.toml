@@ -1,0 +1,42 @@
+#
+# Simple RoundRobin GLB + Loadbalancing for 2 servers
+# Hosting 1 default domain
+#
+
+[cluster]
+  binding = "localhost"
+  name = "MY_GLB_POOL"
+  nodes = ["localhost", "remotehost"]
+  secretkey = "yourclusterkey"
+
+[dns]
+  binding = "localhost"
+  port = 15353
+  [dns.domains."domain.nl"]
+    ttl = 11
+  [dns.domains."domain.nl".soa]
+
+[loadbalancer.settings]
+  default_balance_method = "roundrobin"
+
+[loadbalancer.pools.INTERNAL_VIP.listener]
+    ip = "127.0.0.1"
+    port = 8080
+    mode = "http"
+  [loadbalancer.pools.INTERNAL_VIP.backends.myotherapp]
+    hostnames = ["default"]
+    connectmode="http"
+  [loadbalancer.pools.INTERNAL_VIP.backends.myotherapp.dnsentry]
+    domain = "domain.nl"
+    hostnames = "www"
+    ttl = 30
+  [loadbalancer.pools.INTERNAL_VIP.backends.myotherapp.healthcheck]
+    type = "tcpconnect"
+  [[loadbalancer.pools.INTERNAL_VIP.backends.myotherapp.nodes]]
+    hostname = "webserver1"
+    ip = "1.2.3.4"
+    port = 80
+  [[loadbalancer.pools.INTERNAL_VIP.backends.myotherapp.nodes]]
+    hostname = "webserver2"
+    ip = "2.3.4.5"
+    port = 80

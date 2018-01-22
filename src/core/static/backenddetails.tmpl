@@ -1,0 +1,40 @@
+{{define "backenddetails"}}
+{{template "header" dict "Page" .Page}}
+
+
+<br>
+<br>
+VIP: {{.PoolName}}<br>
+{{ with .Pool }}<br>
+Listener: {{.Listener.IP}}:{{.Listener.Port}} {{.Listener.Interface}} Protocol: {{.Listener.Mode}}<br>
+ACLs In: {{.InboundACL}}<br>
+ACLs Out: {{.OutboundACL}}<br>
+{{ end }}<br>
+<br>
+Backend: {{.BackendName}}<br>
+{{ with .Backend }}<br>
+DNS: {{.DNSEntry.HostName}} {{.DNSEntry.Domain}} -> {{.DNSEntry.IP}}<br>
+BalanceMode: Method: {{.BalanceMode.Method}} Preference: {{.BalanceMode.Preference}} Topology: {{.BalanceMode.LocalNetwork}}<br>
+ConnectMode: {{.ConnectMode}}<br>
+Hostnames: {{.HostNames}}<br>
+UUID: {{.UUID}}<br>
+Crossconnects: {{.Crossconnects}}<br>
+Online: {{.Online}}<br>
+ACLs In: {{.InboundACL}}<br>
+ACLs Out: {{.OutboundACL}}<br>
+Statistics: {{.Stats}}<br>
+{{ end }}
+<br>
+{{ range $nodeid, $node := .Backend.Nodes -}}
+Node: <br>
+IP: {{$node.IP}}:{{$node.Port}}<br>
+Cluster: {{$node.ClusterName}}<br>
+Online: {{$node.Online}}<br>
+UUID: {{$node.UUID}}<br>
+Statistics: {{$node.Stats}}<br>
+{{- end }}
+
+
+
+{{template "footer"}}
+{{end}}

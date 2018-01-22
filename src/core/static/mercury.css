@@ -1,0 +1,225 @@
+/* Default Sizes and Fonts */
+body {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 14px;
+    background-color:#FFFFFF;
+    color:#000000;
+    margin-left:10px;
+    /*margin-top:220px;*/
+    margin-top:50px;
+    margin-bottom:20px;
+    padding:0px;
+    /*background-image: url(/static/images/background.png);*/
+    /*width:100%;*/
+}
+img {border-style:none;}
+form,ul,li {margin:0px; padding:0px;}
+a {text-decoration: none;}
+a:hover {text-decoration: none;}
+h1 { }
+h3 { color: #ddd; }
+
+a { color:#000; }
+td { vertical-align: top }
+
+.follow {
+  position: fixed;
+  top: 0px;
+}
+
+nav {
+  position: absolute;
+  top:50px;
+  z-index: 1;
+  width:100%;
+  background-color: rgba(255,255,255,0.9);
+}
+
+main {
+  position: absolute;
+  top:100px;
+}
+
+div {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.row {display:table-row; }
+.cell{display:table-cell; text-align: left; }
+
+/* fix for older browsers */
+header, main {
+  display: block;
+}
+
+header .home {
+  font-size: 28px;
+  text-shadow: 2px 2px 2px #cccccc;
+  font-weight: bold;
+  margin-right: 50px;
+  line-height: 30px;
+}
+
+/* Header */
+header {
+  font-size: 12px;
+  font-family: Verdana;
+  position: absolute;
+  top: 10px;
+  /*width: 100%;*/
+  height: 40px;
+  text-align: left;
+  vertical-align: middle;
+  letter-spacing: 1px;
+  /* line-height: 10px;*/
+  /* background-color: rgba(0,0,0,0.70);*/
+  clear: both;
+  z-index: 50;
+}
+header .home {
+  color: inherit;
+}
+header .left {
+   float:left;
+}
+header .right {
+   float:right;
+}
+header div {
+  float:right;
+}
+
+table td, table th {
+  padding:5px;
+  text-align: left;
+}
+
+.online {
+  color: #00d000
+}
+
+.offline {
+  color: #d00000
+}
+
+.checking {
+  color: #d08000
+}
+
+.gray {
+  color: #808080
+}
+
+.searchbox {
+  padding: 10px;
+  width:50%;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+nav li {
+  float: left;
+}
+
+nav li a {
+  display: block;
+  color: black;
+  text-align: center;
+  padding:10px;
+  width:100px;
+  text-decoration: none;
+  border-bottom: 2px solid #888888;
+  border-left: 1px solid #ffffff;
+  border-right: 1px solid #ffffff;
+  border-top: 4px solid #ffffff;
+}
+
+nav li a:hover {
+  background-color: #eeeeee;
+}
+
+
+nav li a.active {
+  border-left: 1px solid #000000;
+  border-right: 1px solid #000000;
+  border-top: 4px solid #bbbb00;
+  border-bottom: 2px solid #ffffff;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    /*border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    padding: 2px;
+}
+
+.tooltip .tooltipnode {
+/*
+  bottom: 100%;
+  left: 50%;
+  width: 180px;
+  margin-left: -90px;
+  */
+}
+/* Tooltip text */
+.tooltip .tooltiptext {
+    /*visibility: hidden;*/
+    background-color: #CCC;
+    color: #000;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    top: -5px;
+    left: 105%;
+
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0s linear 1s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    opacity: 1;
+}
+
+.tooltip .tooltiptext::after {
+   content: " ";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -5px;
+   border-width: 5px;
+   border-style: solid;
+   border-color: transparent #CCC transparent transparent;
+}
+
+.node {
+  position: relative;
+}
+.ip {
+    opacity: 0;
+    position: absolute;
+    top: 0px;
+}
+
+.host, .ip {
+    width: 100%;
+
+    transition: opacity 0.5s linear;
+}
+
+.node:hover .host {
+    opacity: 0;
+}
+.node:hover .ip {
+    opacity: 1;
+}

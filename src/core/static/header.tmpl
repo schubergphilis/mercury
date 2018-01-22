@@ -1,0 +1,50 @@
+{{define "header"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ .Page.Title }}</title>
+    <meta charset="UTF-8" /> <!-- html5 standard //-->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" /> <!-- w3 standard //-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /> <!-- IE9 compatibility //-->
+    <link rel="stylesheet" type="text/css" href="/static/mercury.css">
+    <!--<script src="/static/list.js" type="text/javascript"></script>-->
+    <script src="/static/jquery.min.js"></script>
+
+<script src="/static/mercury.js"></script>
+<script src="/static/list.min.js"></script>
+<script type="text/javascript">
+$(window).on("scroll", function () {
+    if ($(this).scrollTop() > 50) {
+        $("nav").addClass("follow");
+    }
+    else {
+        $("nav").removeClass("follow");
+    }
+});
+</script>
+</head>
+<body>
+  <header>
+   <a class="home" href="/" alt="Home"><img class="left" src="/static/logo32.png">ercury</a><div style="display: block;">host:{{$.Page.Hostname}}<br>time:{{$.Page.Time.Format "02-Jan-2006 15:04"}}</div>
+   <div id="login_out">
+     {{with .Caller}}
+       {{if .UserName}}
+        <a href="/logout">logout</a>
+       {{else}}
+        <a href="/login">login</a>
+       {{end}}
+     {{end}}
+   </div>
+  </header>
+<nav>
+  <ul>
+    <li><a class="{{ if eq .Page.URI "/" -}}active{{- end }}" href="/">Home</a></li>
+    <li><a class="{{ if eq .Page.URI "/glb" -}}active{{- end }}" href="/glb">GLB</a></li>
+    <li><a class="{{ if eq .Page.URI "/proxy" -}}active{{- end }}" href="/proxy">Proxy</a></li>
+    <li><a class="{{ if eq .Page.URI "/backend" -}}active{{- end }}" href="/backend">Backend</a></li>
+    <li><a class="{{ if eq .Page.URI "/cluster" -}}active{{- end }}" href="/cluster">Cluster</a></li>
+    <li><a class="{{ if eq .Page.URI "/localdns" -}}active{{- end }}" href="/localdns">Local DNS</a></li>
+  </ul>
+</nav>
+  <main>
+{{end}}
