@@ -26,7 +26,7 @@ var testRecordsServer2 = []Record{
 const domain = "example.com"
 
 func TestResolving(t *testing.T) {
-	logging.Configure("stdout", "info")
+	logging.Configure("stdout", "error")
 	loadRecords("server1", domain, testRecordsServer1)
 	loadRecords("server2", domain, testRecordsServer2)
 
@@ -75,8 +75,9 @@ func TestRecursive(t *testing.T) {
 	m.SetQuestion("www.google.com.", dnssrv.TypeA)
 	rcode, _ := parseQuery(m, "192.168.0.2:12345")
 
-	if !answerTarget(m, "172.217.19.196") {
-		t.Errorf("Expected 1 records, 172.217.19.196:%t got:%+v", answerTarget(m, "172.217.19.196"), m)
+	//if !answerTarget(m, "172.217.19.196") {
+	if !answerType(m, dnssrv.TypeA) {
+		t.Errorf("Expected 1 records, of type A:%t got:%+v", answerType(m, dnssrv.TypeA), m)
 	}
 	if rcode != -1 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
@@ -117,6 +118,15 @@ func answerCount(m *dnssrv.Msg, c int) bool {
 func answerTarget(m *dnssrv.Msg, chars string) bool {
 	for _, a := range m.Answer {
 		if strings.Contains(a.String(), chars) {
+			return true
+		}
+	}
+	return false
+}
+
+func answerType(m *dnssrv.Msg, qtype uint16) bool {
+	for _, a := range m.Answer {
+		if a.Header().Class == qtype {
 			return true
 		}
 	}
