@@ -115,7 +115,6 @@ linux-package: builddir linux committed
 	cp ./tools/html/* ./build/packages/$(NAME)/var/$(NAME)/
 	fpm -s dir -t rpm -C ./build/packages/$(NAME) --name $(NAME) --rpm-os linux --version $(VERSION) --iteration $(BUILD) --exclude "*/.keepme"
 	mv $(NAME)-$(VERSION)*.rpm build/packages/
-	awk '{$$1=$$1+1}1' tools/rpm/BUILDNR  > tools/rpm/BUILDNR.tmp && mv tools/rpm/BUILDNR.tmp tools/rpm/BUILDNR
 
 docker-scratch:
 	if [ -a /System/Library/Keychains/SystemRootCertificates.keychain ] ; \
