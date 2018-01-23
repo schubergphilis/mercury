@@ -2,6 +2,10 @@
 
  This file is used to list changes made in each major version of Mercury.
 
+## unreleased
+Changes:
+  * Adding Circle-Ci
+
 ## 0.10.1:
 Changes:
   * You can now specify a topology per backend Node allowing you to do topology based loadbalancing on proxy level too (#60)
@@ -23,7 +27,7 @@ Bugs:
   * Fix network dependency in mercury service for systemd
 
 ## 0.9.4:
-Bugs: 
+Bugs:
    * Fix issues with OCSP stapling when using SNI certificates (#54)
 
 ## 0.9.3:
