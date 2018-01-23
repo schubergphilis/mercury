@@ -23,7 +23,5 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       # - run: go get -v -t -d ./...
-      - run: echo ${GOPATH}
-      - run: go get -u github.com/golang/dep/...
-      - run: make get
       - run: make test
+      - run: make build
