@@ -92,7 +92,7 @@ func (w *Worker) UUID() string {
 	if w.uuidStr != "" {
 		return w.uuidStr
 	}
-	s := fmt.Sprintf("%s%s%s%s%s%d", w.Check.UUID(), w.Pool, w.Backend, w.NodeName, w.IP, w.SourceIP, w.Port)
+	s := fmt.Sprintf("%s%s%s%s%s%s%d", w.Check.UUID(), w.Pool, w.Backend, w.NodeName, w.IP, w.SourceIP, w.Port)
 	t := sha256.New()
 	t.Write([]byte(s))
 	//w.uuidStr = string(t.Sum(nil))
