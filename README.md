@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=svg&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
+
 # Mercury
 Mercury is a loadbalancer with Global Loadbalance capababilities across multiple Datacentre or Cloud infrastructures.
 
