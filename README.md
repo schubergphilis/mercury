@@ -92,7 +92,7 @@ Checking the Backend nodes
 
 1. Clone this repository from GitHub:
 
-        $ git clone ssh://git@sbp.gitlab.schubergphilis.com:2228/FXT/mercury.git
+        $ git clone git@github.com:schubergphilis/mercury.git
 
 2. Create a git branch
 
