@@ -27,7 +27,7 @@ clean:
 
 get:
 	@echo Getting...
-	@dep ensure -v
+	@dep ensure -vendor-only -v
 	@echo Done
 
 rice:
@@ -79,6 +79,9 @@ makeconfig:
 run: osx makeconfig
 	./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
+run-linux: linux makeconfig
+	./build/linux/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
+
 run-race: osx-race makeconfig
 	./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
@@ -95,10 +98,8 @@ sudo-run: osx
 	sudo ./build/osx/$(NAME) --config-file ./test/${NAME}.toml --pid-file /tmp/mercury.pid
 
 test:
-	go test -v ./internal/...
-	go vet -v ./internal/...
-	go test -v ./pkg/...
-	go vet -v ./pkg/...
+	go test -v ./...
+	go vet ./...
 
 cover: ## Shows coverage
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
