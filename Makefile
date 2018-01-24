@@ -109,8 +109,7 @@ ifeq ($(PENDINGCOMMIT), 1)
 endif
 
 linux-package: builddir linux committed
-	mkdir -p ./build/packages/$(NAME)/usr/sbin/
-	mkdir -p ./build/packages/$(NAME)/var/$(NAME)/
+	cp -a ./tools/rpm/$(NAME)/* ./build/packages/$(NAME)/
 	cp ./build/linux/$(NAME) ./build/packages/$(NAME)/usr/sbin/
 	cp ./tools/html/* ./build/packages/$(NAME)/var/$(NAME)/
 	fpm -s dir -t rpm -C ./build/packages/$(NAME) --name $(NAME) --rpm-os linux --version $(VERSION) --iteration $(BUILD) --exclude "*/.keepme"
