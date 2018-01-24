@@ -1,4 +1,5 @@
 .DS_Store
+.kitchen
 build/**
 tools/linux/mercury/usr/sbin/mercury
 tools/linux/mercury/var/mercury
