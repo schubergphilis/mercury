@@ -37,16 +37,6 @@ func init() {
 	}
 	flag.Parse()
 	config = &c
-	/*
-		log := logging.For("cmd/parameters")
-		log.WithField("file", *c.ConfigFile).Debug("Parameter for config file")
-		log.WithField("file", *c.PidFile).Debug("Parameter for pid file")
-		log.WithField("bool", *c.CheckBackend).Debug("Parameter for check backend")
-		log.WithField("bool", *c.CheckGLB).Debug("Parameter for check glb")
-		log.WithField("bool", *c.CheckConfig).Debug("Parameter for check config")
-		log.WithField("bool", *c.Debug).Debug("Parameter for debug")
-		log.WithField("bool", *c.Version).Debug("Parameter for version")
-	*/
 }
 
 // Get Allows you to get a parameter

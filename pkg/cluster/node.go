@@ -82,10 +82,6 @@ func (n *Node) ioReader(packetManager chan Packet, timeoutDuration time.Duration
 
 func (n *Node) close() {
 	// FIXME: nicer close with sync.Once (http://www.tapirgames.com/blog/golang-channel-closing)
-	/*defer func() {
-		if recover() != nil {
-		}
-	}()*/
 
 	select {
 	case <-n.quit:

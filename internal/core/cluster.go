@@ -14,13 +14,6 @@ import (
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
 )
 
-const (
-/*globalDNSUpdate      = "globalDNSUpdate"
-globalDNSStatistics  = "globalDNSStatistics"
-clearProxyStatistics = "clearProxyStatistics"
-backendNodeUpdate    = "backendNodeUpdate"*/
-)
-
 // ClusterClient is the interface between the program and the cluster
 func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 	log := logging.For("core/cluster/client")
@@ -31,6 +24,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 		select {
 		case _ = <-signalChan:
 			cl.StateDump()
+
 		case node := <-cl.NodeJoin:
 			log.WithField("func", "core").Debug("Join")
 			log.WithField("func", "cluster").WithField("client", node).WithField("request", "clusterJoin").Info("Received cluster join update")
@@ -74,6 +68,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					log.Warn("Unable to parse ClusterGlobalDNSUpdate request: %s", err.Error())
 					continue
 				}
+
 				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("online", dnsupdate.Online).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
 				log.WithField("func", "core").Debug("globalDNSUpdate OK")
@@ -86,6 +81,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					log.Warn("Unable to parse ClusterGlbalDNSStatisticsUpdate request: %s", err.Error())
 					continue
 				}
+
 				su.ClusterNode = packet.Name
 
 				dnsEntry, err := getDNSentry(su.PoolName, su.BackendName)
@@ -93,6 +89,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					log.WithField("pool", su.PoolName).WithField("backend", su.BackendName).WithError(err).Debug("DNS Get Entry error")
 					continue
 				}
+
 				su.DNSEntry = dnsEntry
 				manager.clusterGlbalDNSStatisticsUpdate <- su
 				log.WithField("func", "core").Debug("globalDNSStatistics OK")
@@ -107,6 +104,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					log.Warn("Unable to parse ClusterClearProxyStatistics request: %s", err.Error())
 					continue
 				}
+
 				log.Debug("Clear proxy status update to clearStatsProxyBackend")
 				manager.clearStatsProxyBackend <- su
 				log.Debug("Clear proxy stats done")
@@ -146,23 +144,23 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				clog.Warn("Pool no longer exists, discarding healthcheck update")
 				continue
 			}
+
 			if _, ok := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]; !ok {
 				clog.Warn("Backend of pool no longer exists, discarding healthcheck update")
 				continue
 			}
+
 			config.UpdateNodeStatus(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID, healthcheck.Online, healthcheck.ErrorMsg)
 
 			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
 			backend := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]
 			clog.WithField("searchnode", healthcheck.NodeUUID).Debug("Search node by uuid")
 			node, err := config.GetNodeByUUID(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID)
-			//node, err := backend.GetNodeByUUID(healthcheck.NodeUUID)
 			if err != nil {
 				clog.WithField("error", err).Warn("ignoring healthcheck update for unknown node")
 				continue
 			}
-			//clog.WithField("foundnode", node.Name()).Debug("Updating status health")
-			//node.UpdateStatus(healthcheck.Online, healthcheck.ErrorMsg)
+
 			clog.WithField("foundnode", node.Name()).Debug("Updated status health")
 
 			if config.Get().Settings.EnableProxy == YES && pool.Listener.IP != "" {
@@ -172,7 +170,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 			}
 
 			// - send DNS updates to local dns servers
-			// TODO newDNSUpdate that acts on both cluster and non cluster version
 			dnsupdate := &config.ClusterPacketGlobalDNSUpdate{
 				ClusterNode: config.Get().Cluster.Binding.Name,
 				PoolName:    healthcheck.PoolName,
@@ -228,7 +225,6 @@ func (manager *Manager) updateProxyBackendNode(poolName string, backendName stri
 
 // InitializeCluster sets up the cluster, starts it, and starts the client
 func (manager *Manager) InitializeCluster() {
-	//log := logging.For("core/cluster/init")
 	cluster.ChannelBufferSize = 100
 	cl := cluster.NewManager(config.Get().Cluster.Binding.Name, config.Get().Cluster.Binding.AuthKey)
 	configured := cl.NodesConfigured()
@@ -241,23 +237,24 @@ func (manager *Manager) InitializeCluster() {
 			cl.AddNode(node.Name, node.Addr)
 		}
 	}
+
 	//  remove old cluster nodes
 	for name := range configured {
 		cl.RemoveNode(name)
 	}
+
 	tlsConfig, err := tlsconfig.LoadCertificate(config.Get().Cluster.TLSConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	err = cl.ListenAndServeTLS(config.Get().Cluster.Binding.Addr, tlsConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//go cluster.Start()
+
 	go writeClusterLog(cl)
 	go manager.ClusterClient(cl)
-	//log.Info("Ready to serve!")
-
 }
 
 func writeClusterLog(cl *cluster.Manager) {
@@ -282,9 +279,9 @@ func (manager *Manager) BackendNodeUpdate(pool string, backend string, node *con
 			return
 		}
 	}
+
 	log.WithField("online", node.Online).Debug("Update of new node")
 	// It is a new Node, add it
-	// TODO: we need to think about locking
 	config.AddBackendNode(pool, backend, node)
 }
 
@@ -327,12 +324,10 @@ func getLocalNodeStatus(poolName, backendName string) bool {
 }
 
 func clusterClearProxyStatistics(cl *cluster.Manager, poolname string, backendname string) {
-
 	c := &config.ClusterPacketClearProxyStatistics{
 		PoolName:    poolname,
 		BackendName: backendname,
 	}
-
 	cl.ToCluster <- c
 }
 
@@ -366,7 +361,6 @@ func clusterDNSUpdateBroadcastAll(cl *cluster.Manager) {
 
 func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
 	online := getLocalNodeStatus(poolName, backendName)
-
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,
@@ -381,7 +375,6 @@ func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode stri
 
 func clusterDNSUpdateBroadcast(cl *cluster.Manager, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
 	online := getLocalNodeStatus(poolName, backendName)
-
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,

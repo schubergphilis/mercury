@@ -31,6 +31,7 @@ func (h apiClusterPublicHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	var message = &APIClusterNodeList{
 		Nodes: make(map[string]APIClusterNode),
 	}
+
 	for _, configured := range h.manager.configuredNodes {
 
 		n := APIClusterNode{

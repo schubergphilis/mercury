@@ -15,6 +15,7 @@ func otherNodes(nodes []string) (diff []string) {
 	for _, val := range nodes {
 		m[val] = 1
 	}
+
 	for _, val := range config.Get().Cluster.Nodes {
 		m[val.Name] = m[val.Name] + 1
 	}
@@ -24,6 +25,7 @@ func otherNodes(nodes []string) (diff []string) {
 			diff = append(diff, key)
 		}
 	}
+
 	return diff
 }
 
@@ -41,28 +43,21 @@ func checkLoadbalancerCount(dnsmanager map[string]dns.Domains) (int, error) {
 	}
 
 	if clusterNodeCount != dnsManagerNodeCount {
-		//return CRITICAL, fmt.Errorf("Expected %d glb cluster nodes, but got %d. Did we lose a glb node?", clusterNodeCount, dnsManagerNodeCount)
 		return CRITICAL, fmt.Errorf("Cluster node(s) %v have not reported in yet! (%d/%d online)", faultyNodes, dnsManagerNodeCount, clusterNodeCount)
 	}
+
 	return OK, nil
 }
 
 // checkEntryOnAllLoadbalancers checks if a dne record has a entry in all loadbalancers
 func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error) {
-	//log := logging.For("check/entriesonallloadbalancers")
 	var faultyTargets []string
-	//clusterNodeCount := len(config.Get().Cluster.Nodes)
 	nodename := config.Get().Cluster.Binding.Name
 	if _, ok := dnsmanager[nodename]; ok {
 		// Only check local cluster, the other cluster will check its self
-		//for nodename := range dnsentries {
-		//fmt.Fprintf(w, "Loadbalancer: %+v", nodename)
 		for domainname := range dnsmanager[nodename].Domains {
-			//fmt.Fprintf(w, "Domain: %+v", domainname)
 			for _, rec := range dnsmanager[nodename].Domains[domainname].Records {
-				// fmt.Printf("\nSearching record : %+v\n", rec)
 				targets, okNodes, _ := dns.FindTargets(dnsmanager, domainname, rec.Name, rec.Type)
-				// fmt.Printf("fqdn:%s.%s type:%s ttl:%d vips:%v vipcount:%d online:%d method:%s\r\n", rec.Name, domainname, rec.Type, rec.TTL, targets, len(targets), len(okNodes), rec.BalanceMode)
 				if rec.ActivePassive == YES {
 					if len(okNodes) == 0 {
 						faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: No backends online on any cluster! (%d/%d)", rec.Name, domainname, len(okNodes), len(targets)))
@@ -74,7 +69,6 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 					// Completely offline
 					faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: No backends online on any cluster! (%d/%d)", rec.Name, domainname, len(okNodes), len(targets)))
 				} else if len(okNodes) < rec.ClusterNodes {
-					//} else if len(okNodes) < clusterNodeCount {
 					// we do not have all ok nodes, faultyNodes however might not know all nodes in error, so lets report all not OK
 					faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: Entry not available on all clusters (ok:%v, faulty:%v expected number of nodes ok:%v)", rec.Name, domainname, okNodes, otherNodes(okNodes), rec.ClusterNodes))
 				}

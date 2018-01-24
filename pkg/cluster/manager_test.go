@@ -34,6 +34,7 @@ func TestOneClusterNode(t *testing.T) {
 			t.Errorf("Read from cluster manager.FromCluster should timeout (we don't send to self). but we received data instead")
 		}
 	}()
+
 	go func() {
 		defer wg.Done()
 		if timeout := channelWriteTimeout(managerONE.ToCluster, Message{Message: "Hello World"}, 1); timeout {
@@ -89,12 +90,14 @@ func TestTwoClusterNode(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	managerTHREE.AddNode("managerTWO", "127.0.0.1:9502")
 
 	node, timeout := channelReadString(managerTWO.NodeJoin, 5)
 	if timeout {
 		t.Errorf("expected Join on managerTWO, but got timeout")
 	}
+
 	if node != "managerTHREE" {
 		t.Errorf("expected Join on managerTWO to be from managerTHREE, but got:%s", node)
 	}
@@ -103,6 +106,7 @@ func TestTwoClusterNode(t *testing.T) {
 	if timeout {
 		t.Errorf("expected Join on managerTHREE, but got timeout")
 	}
+
 	if node != "managerTWO" {
 		t.Errorf("expected Join on managerTHREE to be from managerTWO, but got:%s", node)
 	}
@@ -132,6 +136,7 @@ func TestTwoClusterNode(t *testing.T) {
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerTWO, but got nothing")
 	}
+
 	if DebugLog == 1 {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
@@ -144,6 +149,7 @@ func TestTwoClusterNode(t *testing.T) {
 	if timeout {
 		t.Errorf("expected Leave on managerTHREE, but got timeout")
 	}
+
 	if node != "managerTWO" {
 		t.Errorf("expected Leave on managerTHREE to be from managerTWO, but got:%s", node)
 	}
@@ -169,6 +175,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != false {
 		t.Errorf("expected quorumstate to be false on managerFOUR, but got:%t", quorum)
 	}
@@ -189,6 +196,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != true {
 		t.Errorf("expected quorumstate to be true on managerFOUR, but got:%t", quorum)
 	}
@@ -207,6 +215,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != true {
 		t.Errorf("expected quorumstate to be true on managerFOUR, but got:%t", quorum)
 	}
@@ -218,6 +227,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		if timeout {
 			t.Errorf("expected Join on managerFOUR, but got timeout (loop:%d)", a)
 		}
+
 		if node != "managerFIVE" && node != "managerSIX" {
 			t.Errorf("expected Join on managerFOUR to be from managerFIVE or managerSIX, but got:%s (loop:%d)", node, a)
 		}
@@ -229,6 +239,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		if timeout {
 			t.Errorf("expected Join on managerFIVE, but got timeout (loop:%d)", a)
 		}
+
 		if node != "managerFOUR" && node != "managerSIX" {
 			t.Errorf("expected Join on managerFIVE to be from managerFOUR or managerSIX, but got:%s (loop:%d)", node, a)
 		}
@@ -240,6 +251,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		if timeout {
 			t.Errorf("expected Join on managerSIX, but got timeout (loop:%d)", a)
 		}
+
 		if node != "managerFIVE" && node != "managerFOUR" {
 			t.Errorf("expected Join on managerSIX to be from managerFIVE or managerFOUR, but got:%s (loop:%d)", node, a)
 		}
@@ -304,6 +316,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != true {
 		t.Errorf("expected quorumstate to be true on managerFOUR, but got:%t", quorum)
 	}
@@ -312,6 +325,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected Leave on managerFOUR, but got timeout")
 	}
+
 	if node != "managerSIX" {
 		t.Errorf("expected Leave on managerFOUR to be from managerSIX, but got:%s", node)
 	}
@@ -320,6 +334,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected Leave on managerFIVE, but got timeout")
 	}
+
 	if node != "managerSIX" {
 		t.Errorf("expected Leave on managerFIVE to be from managerSIX, but got:%s", node)
 	}
@@ -330,6 +345,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != false {
 		t.Errorf("expected quorumstate to be false on managerFOUR, but got:%t", quorum)
 	}
@@ -344,6 +360,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
+
 	if quorum != true {
 		t.Errorf("expected quorumstate to be true on managerFOUR, but got:%t", quorum)
 	}
@@ -374,8 +391,8 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	managerNINE.AddNode("managerTEN", "127.0.0.1:9510")
 
+	managerNINE.AddNode("managerTEN", "127.0.0.1:9510")
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -390,12 +407,13 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	managerTEN.AddNode("managerNINE", "127.0.0.1:9509")
 
+	managerTEN.AddNode("managerNINE", "127.0.0.1:9509")
 	node, timeout := channelReadString(managerNINE.NodeJoin, 5)
 	if timeout {
 		t.Errorf("expected Join on managerNINE, but got timeout")
 	}
+
 	if node != "managerTEN" {
 		t.Errorf("expected Join on managerNINE to be from managerTEN, but got:%s", node)
 	}
@@ -404,6 +422,7 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 	if timeout {
 		t.Errorf("expected Join on managerTEN, but got timeout")
 	}
+
 	if node != "managerNINE" {
 		t.Errorf("expected Join on managerTEN to be from managerNINE, but got:%s", node)
 	}
@@ -418,7 +437,6 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 			t.Log("== LOG managerNINE: ", log)
 		}
 	}
-
 }
 
 // channelWriteTimeout writes a message to a channel, or will timeout if failed
@@ -426,6 +444,7 @@ func channelWriteTimeout(channel chan interface{}, message interface{}, timeout 
 	select {
 	case channel <- message:
 		return false // write successfull
+
 	case <-time.After(timeout * time.Second):
 		return true // we were blocked
 	}
@@ -436,6 +455,7 @@ func channelWriteTimeoutPM(channel chan NodeMessage, message NodeMessage, timeou
 	select {
 	case channel <- message:
 		return false // write successfull
+
 	case <-time.After(timeout * time.Second):
 		return true // we were blocked
 	}
@@ -447,6 +467,7 @@ func channelReadPacket(channel chan Packet, timeout time.Duration) (Packet, bool
 		select {
 		case p := <-channel:
 			return p, false // read successfull
+
 		case <-time.After(timeout * time.Second):
 			return Packet{}, true // read was blocked
 		}
@@ -459,6 +480,7 @@ func channelReadString(channel chan string, timeout time.Duration) (string, bool
 		select {
 		case result := <-channel:
 			return result, false // read successfull
+
 		case <-time.After(timeout * time.Second):
 			return "", true // read was blocked
 		}
@@ -471,6 +493,7 @@ func channelReadStrings(channel chan string, timeout time.Duration) (results []s
 		select {
 		case result := <-channel:
 			results = append(results, result)
+
 		case <-time.After(timeout * time.Second):
 			return
 		}
@@ -483,6 +506,7 @@ func channelReadBool(channel chan bool, timeout time.Duration) (bool, bool) {
 		select {
 		case result := <-channel:
 			return result, false // read successfull
+
 		case <-time.After(timeout * time.Second):
 			return false, true // read was blocked
 		}

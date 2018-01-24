@@ -12,7 +12,6 @@ func FindTargets(dnsmanager map[string]Domains, domain, name, request string) ([
 	var faultyNodes []string
 	var okNodes []string
 	for nodename := range dnsmanager {
-		//fmt.Fprintf(w, "Loadbalancer: %+v", nodename)
 		if _, ok := dnsmanager[nodename].Domains[domain]; ok {
 			for _, rec := range dnsmanager[nodename].Domains[domain].Records {
 				if rec.Name == name && rec.Type == request {
@@ -26,6 +25,7 @@ func FindTargets(dnsmanager map[string]Domains, domain, name, request string) ([
 			}
 		}
 	}
+
 	return records, okNodes, faultyNodes
 }
 
@@ -38,17 +38,13 @@ func WebGLBStatus(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Fprintf(w, "{ error:'%s' }", err)
 		}
+
 		fmt.Fprint(w, string(data))
 
 	default:
-		//dnsmanager.RLock()
-		//defer dnsmanager.RUnlock()
 		for nodename := range dnscache {
-			//fmt.Fprintf(w, "Loadbalancer: %+v", nodename)
 			for domainname := range dnscache[nodename].Domains {
-				//fmt.Fprintf(w, "Domain: %+v", domainname)
 				for _, rec := range dnscache[nodename].Domains[domainname].Records {
-					//log.Debugf("Searching record (%d): %+v", id, rec)
 					targets, okNodes, faultyNodes := FindTargets(dnscache, domainname, rec.Name, rec.Type)
 					fmt.Fprintf(w, "fqdn:%s.%s type:%s ttl:%d vips:%v vipcount:%d vipsonline:%d %v vipsoffline:%d %v method:%s\r\n", rec.Name, domainname, rec.Type, rec.TTL, targets, len(targets), len(okNodes), okNodes, len(faultyNodes), faultyNodes, rec.BalanceMode)
 				}

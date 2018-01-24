@@ -38,14 +38,19 @@ func (m *Manager) getDuration(setting string) time.Duration {
 	switch setting {
 	case "pinginterval":
 		return m.settings.PingInterval
+
 	case "joindelay":
 		return m.settings.JoinDelay
+
 	case "connecttimeout":
 		return m.settings.ConnectTimeout
+
 	case "connectinterval":
 		return m.settings.ConnectInterval
+
 	case "readtimeout":
 		return m.settings.ReadTimeout
+
 	default:
 		log.Fatalf("Unknown setting: %s", setting)
 		return 0

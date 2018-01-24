@@ -52,10 +52,10 @@ func TestBalancer(t *testing.T) {
 	for mode, result := range tests {
 		records := getBalanceTests()
 		records, err = MultiSort(records, "127.0.0.1", "sticky", mode)
-		//t.Logf("%s Result: %s", mode, records[0].ID)
 		if err != nil {
 			t.Errorf("%s Resulted in error: %s", mode, err)
 		}
+
 		if records[0].UUID != result {
 			t.Errorf("%s Result: %s Expected: %s", mode, records[0].UUID, result)
 		}
@@ -66,6 +66,7 @@ func TestBalancer(t *testing.T) {
 	if newrecords[0].UUID != "ID1" {
 		t.Errorf("Firstavailable Result: %s Expected: ID1", newrecords[0].UUID)
 	}
+
 	if len(newrecords) > 1 {
 		t.Errorf("Firstavailable Entries: %d Expected: 1", len(newrecords))
 	}
@@ -88,6 +89,7 @@ func TestBalancer(t *testing.T) {
 	if newrecords[0].UUID != "ID1" {
 		t.Errorf("Topology Result: %s Expected: ID1", newrecords[0].UUID)
 	}
+
 	if len(newrecords) > 1 {
 		t.Errorf("Topology Entries: %d Expected: 1", len(newrecords))
 	}
@@ -97,6 +99,7 @@ func TestBalancer(t *testing.T) {
 	if newrecords[0].UUID != "ID4" {
 		t.Errorf("Sticky Result: %s Expected: ID4", newrecords[0].UUID)
 	}
+
 	if len(newrecords) > 1 {
 		t.Errorf("Sticky Entries: %d Expected: 1", len(newrecords))
 	}

@@ -96,27 +96,28 @@ func (l *Listener) Start() {
 			Addr:         fmt.Sprintf("%s:%d", l.IP, l.Port),
 			Handler:      proxy,
 		}
+
 		listener, err = net.Listen("tcp", httpsrv.Addr)
 		if err != nil {
 			log.WithField("error", err).Error("Error starting HTTP proxy listener")
 			return
 		}
+
 		l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
 		go httpsrv.Serve(l.socket)
-		//go httpsrv.Serve(listener)
 
 	case "https":
 		proxy := l.NewHTTPProxy()
-		/*mux := http.NewServeMux()
-		mux.Handle("/", proxy)*/
 		l.TLSConfig.GetClientCertificate = func(t *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 			log.Debugf("Client requestinfo: %+v", t)
 			return nil, nil
 		}
+
 		l.TLSConfig.GetCertificate = func(t *tls.ClientHelloInfo) (*tls.Certificate, error) {
 			log.Debugf("Client Hello: %+v", t)
 			return nil, nil
 		}
+
 		l.TLSConfig.GetConfigForClient = func(t *tls.ClientHelloInfo) (*tls.Config, error) {
 			log.WithField("client_tls_support", fmt.Sprintf("%+v", t)).WithField("handshake", "getConfigForClient").Debug("SSL Handhake")
 			return nil, nil
@@ -130,27 +131,29 @@ func (l *Listener) Start() {
 			TLSConfig:    l.TLSConfig,
 			//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 		}
+
 		httpsrv.ConnState = func(n net.Conn, c http.ConnState) {
 			log.WithField("client_http_server_state", fmt.Sprintf("%+v", c)).WithField("client", n.RemoteAddr()).Debug("HTTP state")
 		}
-		http2.ConfigureServer(httpsrv, &http2.Server{})
 
+		http2.ConfigureServer(httpsrv, &http2.Server{})
 		listener, err = net.Listen("tcp", httpsrv.Addr)
 
 		if err != nil {
 			log.WithField("error", err).Error("Error starting HTTPS proxy listener")
 		}
-		l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
 
+		l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
 		tlsListener := tls.NewListener(l.socket, httpsrv.TLSConfig)
 		if l.OCSPStapling == YES {
 			httpsrv.TLSConfig.ServerName = fmt.Sprintf("%s:%d", l.IP, l.Port)
 			go tlsconfig.OCSPHandler(httpsrv.TLSConfig, ocspQuit)
 		}
+
 		go httpsrv.Serve(tlsListener)
 
 	case "udp":
-		// TBD
+		// TODO: not implemented yet
 	}
 	log.Debug("Proxy ready for clients")
 	for {
@@ -160,8 +163,10 @@ func (l *Listener) Start() {
 			case "tcp":
 				log.Debug("Stopping TCP Proxy on request")
 				tcplistener.Close()
+
 			case "http":
 				fallthrough
+
 			case "https":
 				log.Debug("Stopping HTTP(s) Proxy on request")
 				err := httpsrv.Shutdown(nil)
@@ -169,6 +174,7 @@ func (l *Listener) Start() {
 					log.Debug("Gracefull stop of Proxy failed: %s", err)
 					listener.Close()
 				}
+
 				if l.OCSPStapling == YES {
 					log.Debug("Stopping of Proxy finished, stopping ocsp")
 					select {
@@ -176,8 +182,11 @@ func (l *Listener) Start() {
 					default:
 					}
 				}
+
 			case "udp":
+				// TODO: not implemented yet
 			}
+
 			log.Debug("Stopping of Proxy finished, sending state back")
 			l.stop <- true
 			return
@@ -190,7 +199,6 @@ func (l *Listener) Start() {
 func (l *Listener) Debug() {
 	log := logging.For("proxy/listener/debug").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("mode", l.ListenerMode)
 	log.Debug("Active proxy")
-
 }
 
 // FindBackendByHost searches for matching backend by hostname requested
@@ -202,12 +210,14 @@ func (l *Listener) FindBackendByHost(req string) (string, *Backend) {
 			if strings.EqualFold(host, req) {
 				return id, backend
 			}
+
 			if strings.EqualFold(host, "default") {
 				defaulthost = id
 				defaultbackend = backend
 			}
 		}
 	}
+
 	return defaulthost, defaultbackend
 }
 
@@ -219,6 +229,7 @@ func (l *Listener) FindAllHostNames() []string {
 			hostname = append(hostname, host)
 		}
 	}
+
 	return hostname
 }
 
@@ -293,34 +304,6 @@ func (l *Listener) GetBackendStats(backendName string) *balancer.Statistics {
 		backendStats.RXAdd(node.Statistics.RXGet())
 		backendStats.ResponseTimeValueMerge(node.Statistics.ResponseTimeValueGet())
 	}
+
 	return backendStats
-	/*
-		return balancer.Statistics{
-			UUID:              l.Backends[backendName].UUID,
-			ClientsConnected:  l.Backends[backendName].Statistics.ClientsConnectedGet(),
-			ClientsConnects:   l.Backends[backendName].Statistics.ClientsConnectsGet(),
-			RX:                l.Backends[backendName].Statistics.RXGet(),
-			TX:                l.Backends[backendName].Statistics.TXGet(),
-			ResponseTimeValue: l.Backends[backendName].Statistics.ResponseTimeValueGet(),
-		}
-	*/
 }
-
-// tEMP
-
-/*
-type tcpKeepAliveListener struct {
-	*net.TCPListener
-}
-
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
-	tc, err := ln.AcceptTCP()
-	if err != nil {
-		return
-	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
-	return tc, nil
-}
-
-*/

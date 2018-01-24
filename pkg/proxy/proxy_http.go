@@ -80,8 +80,10 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 		}
 		res = customStatusPage(statuscode, statusmessage, req)
 		return res, nil
+
 	case "internal":
 		res = customStatusPage(200, "OK", req)
+
 	default: // http/https
 		req.URL.Scheme = scheme[0]
 		res, err = t.Transport.RoundTrip(req)
@@ -89,6 +91,7 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 			// We have an error, generate a 500
 			res = customStatusPage(500, err.Error(), req)
 		}
+
 		log = log.WithField("scheme", req.URL.Scheme)
 	}
 	// At this point res can never by nil
@@ -119,6 +122,7 @@ func processACLVariables(acl []ACL, l *Listener, backendnode BackendNode, req *h
 		log.WithField("error", err).Warn("Unable to compile regex")
 		return acl
 	}
+
 	var newACL []ACL
 	for _, acl := range acl {
 		// regex conversion
@@ -127,23 +131,31 @@ func processACLVariables(acl []ACL, l *Listener, backendnode BackendNode, req *h
 			switch p[1] {
 			case "NODE_ID":
 				return backendnode.UUID
+
 			case "NODE_IP":
 				return backendnode.IP
+
 			case "LB_IP":
 				return l.IP
+
 			case "REQ_URL":
 				return req.Host + req.URL.Path
+
 			case "REQ_PATH":
 				return req.URL.Path
+
 			case "REQ_HOST":
 				val := strings.Split(req.Host, ":")
 				return val[0]
+
 			case "REQ_IP":
 				val := strings.Split(req.Host, ":")
 				return val[1]
+
 			case "CLIENT_IP":
 				val := strings.Split(req.RemoteAddr, ":")
 				return val[0]
+
 			case "UUID":
 				id, uerr := uuid.NewV4() // used for sticky cookies
 				if uerr == nil {
@@ -175,6 +187,7 @@ func addClientSessionID(req *http.Request, res *http.Response, id string) {
 	if res == nil {
 		return
 	}
+
 	expire := time.Now().Add(24 * time.Hour)
 	sessionCookie := &http.Cookie{
 		Name:     sessionIDCookie,
@@ -185,6 +198,7 @@ func addClientSessionID(req *http.Request, res *http.Response, id string) {
 	if strings.EqualFold(req.URL.Scheme, "https") {
 		sessionCookie.Secure = true
 	}
+
 	res.Header.Add("Set-Cookie", sessionCookie.String())
 }
 
@@ -278,6 +292,7 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 		if aclDenies > 0 && aclAllows > 0 {
 			log.Errorf("Found ALLOW and DENY ACL's in the same block, only allows will be processed")
 		}
+
 		if aclAllows > 0 && aclsHit == 0 { // setting an allow ACL, will deny all who do not match atleast 1 allow
 			req.URL.Scheme = "error//" + backendname + "//403//Access denied - does not match ALLOW ACL"
 			clog.Infof("Client did not match allow acl")
@@ -295,16 +310,13 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 		if err != nil {
 			backendnode.Statistics.RXAdd(int64(len(reqDump)))
 		}
-		clog.WithField("statistics", fmt.Sprintf("%+v", backendnode.Statistics)).Debug("Statistics updated")
 
+		clog.WithField("statistics", fmt.Sprintf("%+v", backendnode.Statistics)).Debug("Statistics updated")
 		req.URL.Scheme = fmt.Sprintf("%s//%s//%s", backend.ConnectMode, backendname, backendnode.UUID)
 		req.URL.Host = fmt.Sprintf("%s:%d", backendnode.IP, backendnode.Port)
 	}
 
 	modifyresponse := func(res *http.Response) error {
-		/*if res == nil {
-			return nil
-		}*/
 		// Process OutboundACL if we have a valid request (does not apply to errors)
 		localerror := false
 		var errorpage []byte
@@ -322,6 +334,7 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 					showerrorpage = l.Backends[backendname].ErrorPage.threshold(res.StatusCode)
 				}
 			}
+
 			// if no errors
 			if proto != "error" {
 				if backendname != "localhost" && backendname != "" {
@@ -363,8 +376,8 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 			res.Header.Add("Cache-Control", "no-cache, no-store, must-revalidate")
 			res.Header.Add("Pragma", "no-cache")
 			res.Header.Add("Expires", "0")
-
 		}
+
 		return nil
 	}
 
@@ -380,11 +393,6 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 	if errl != nil {
 		panic(errl)
 	}
-	/*
-		xtmp := net.ParseIP("10.10.0.149")
-		xlocalTCPAddr := net.TCPAddr{
-			IP: xtmp.To4(),
-		}*/
 
 	localTCPAddr := net.TCPAddr{
 		IP: localAddr.IP,
@@ -429,10 +437,3 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 	}
 	return reverseproxy
 }
-
-/*
-func requestIsWebsocket(req *http.Request) bool {
-
-	return strings.ToLower(req.Header.Get("Upgrade")) == "websocket" && strings.Contains(strings.ToLower(req.Header.Get("Connection")), "upgrade")
-}
-*/

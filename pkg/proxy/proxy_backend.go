@@ -66,29 +66,28 @@ func (b *Backend) RemoveBackendNode(nodeid int) {
 	for _, node := range b.Nodes {
 		node.Statistics.Reset()
 	}
-
 }
 
 // RemoveNodeByID remove backend node by ID
 func (b *Backend) RemoveNodeByID(uuid string) error {
-	//b.sync.RLock()
-	//defer b.sync.RUnlock()
 	for id, node := range b.Nodes {
 		if node.UUID == uuid {
 			b.RemoveBackendNode(id)
 			return nil
 		}
 	}
+
 	return fmt.Errorf("Unable to find node with uuid:%s", uuid)
 }
 
-// GetBackendNodeByID Return backend node by ID
+// GetBackendsUUID Return backend node by ID
 func (b *Backend) GetBackendsUUID() (n []string, err error) {
 	b.sync.RLock()
 	defer b.sync.RUnlock()
 	for _, node := range b.Nodes {
 		n = append(n, node.UUID)
 	}
+
 	return n, fmt.Errorf("Unable to find any nodes for backend: %s", b.UUID)
 }
 
@@ -101,6 +100,7 @@ func (b *Backend) GetBackendNodeByID(uuid string) (*BackendNode, error) {
 			return node, nil
 		}
 	}
+
 	return nil, fmt.Errorf("Unable to find node with uuid:%s", uuid)
 }
 
@@ -111,6 +111,7 @@ func (b *Backend) GetBackend() (*BackendNode, error) {
 	for _, node := range b.Nodes {
 		return node, nil
 	}
+
 	return nil, fmt.Errorf("Unable to find a backend node")
 }
 
@@ -124,8 +125,10 @@ func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode st
 	switch len(b.Nodes) {
 	case 0: // return error of no nodes
 		return &BackendNode{}, fmt.Errorf("Unable to find a node in backend %s", backendpool)
+
 	case 1: // return node if there is only 1 present
 		return b.Nodes[0], nil
+
 	default: // balance across N Nodes
 		stats := BackendNodeStats(b.Nodes)
 		nodes, err := balancer.MultiSort(stats, ip, sticky, balancemode)
@@ -138,6 +141,7 @@ func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode st
 		if err != nil {
 			return &BackendNode{}, err
 		}
+
 		return node, nil
 	}
 
@@ -149,6 +153,7 @@ func BackendNodeStats(n []*BackendNode) []balancer.Statistics {
 	for _, node := range n {
 		s = append(s, *node.Statistics)
 	}
+
 	return s
 }
 
@@ -159,6 +164,7 @@ func (b *Backend) SetACL(direction string, acl []ACL) {
 	switch direction {
 	case "in":
 		b.InboundACL = acl
+
 	case "out":
 		b.OutboundACL = acl
 	}
@@ -172,6 +178,7 @@ func (b *Backend) ClearStats() {
 	for _, node := range b.Nodes {
 		node.Statistics.Reset()
 	}
+
 	log.Debug("Cleared proxy stats")
 
 }

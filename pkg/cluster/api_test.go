@@ -54,7 +54,6 @@ func startHTTPServer(addr string) *http.Server {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			// cannot panic, because this probably is an intentional close
-			//log.Printf("Httpserver: ListenAndServe() error: %s", err)
 		}
 	}()
 	// returning reference so caller can call Shutdown()
@@ -75,10 +74,12 @@ func getWithKey(authKey, url string) ([]byte, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, resp.StatusCode, err
 	}
+
 	return body, resp.StatusCode, nil
 }
 
@@ -93,15 +94,18 @@ func (h apiLogin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, loginPage)
 		return
 	}
+
 	if r.FormValue("username") == "" {
 		fmt.Fprint(w, loginPage)
 		return
 	}
+
 	tokenKey, err := apiMakeKey(r.FormValue("username"), h.authKey, 0)
 	if err != nil {
 		fmt.Fprintf(w, "Unable to create token")
 		return
 	}
+
 	cookie := &http.Cookie{
 		Name:    "session",
 		Value:   tokenKey,
@@ -118,6 +122,7 @@ func testAPICluster(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get %s, error:%s", url, err)
 	}
+
 	if statusCode != 200 {
 		t.Errorf("incorrect status code for %s expected:200, got:%d", url, statusCode)
 	}
@@ -141,10 +146,10 @@ func testAPICluster(t *testing.T) {
 			foundNode = true
 		}
 	}
+
 	if foundNode == false {
 		t.Errorf("unable to find ManagerAPI in result of %s data:%s", url, data)
 	}
-
 }
 
 func testAPIClusterPublic(t *testing.T) {
@@ -153,6 +158,7 @@ func testAPIClusterPublic(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get %s, error:%s", url, err)
 	}
+
 	if statusCode != 200 {
 		t.Errorf("incorrect status code for %s expected:200, got:%d", url, statusCode)
 	}
@@ -169,6 +175,7 @@ func testAPIClusterPublic(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable to parse output from %s data:%s error:%s", url, data, err)
 	}
+
 	if _, ok := clusterNodes.Nodes["managerAPI2"]; !ok {
 		t.Errorf("expected managerAPI2 in output of %s, for %+v", url, data)
 	}
@@ -182,6 +189,7 @@ func testAPIClusterAdmin(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get %s, error:%s", url, err)
 	}
+
 	if statusCode != 403 {
 		t.Errorf("incorrect status code for %s, expected:403, got:%d", url, statusCode)
 	}
@@ -191,6 +199,7 @@ func testAPIClusterAdmin(t *testing.T) {
 	if err != nil {
 		t.Errorf("authentication key creation failed, error:%s", err)
 	}
+
 	if authKey == "" {
 		t.Errorf("authentication key is empty, expected some more")
 	}
@@ -199,6 +208,7 @@ func testAPIClusterAdmin(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get url, error:%s", err)
 	}
+
 	if statusCode != 200 {
 		t.Errorf("incorrect status code for %s expected:200, got:%d", url, statusCode)
 	}

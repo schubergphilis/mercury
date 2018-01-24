@@ -53,13 +53,16 @@ func simpleMaskLength(mask []byte) int {
 		if v != 0 {
 			return -1
 		}
+
 		for i++; i < len(mask); i++ {
 			if mask[i] != 0 {
 				return -1
 			}
 		}
+
 		break
 	}
+
 	return n
 }
 
@@ -69,6 +72,7 @@ func getConfig() (map[string]Iface, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	oldiface := ""
 	newiface := Iface{}
 	ifaces := make(map[string]Iface)
@@ -81,14 +85,13 @@ func getConfig() (map[string]Iface, error) {
 		if iface != "" {
 			// found new interface
 			if oldiface != iface && oldiface != "" {
-				//log.Debug("Found ip(s):%+v for interface:%s", oldiface, newiface)
 				ifaces[oldiface] = newiface
 			}
-			//log.Debugf("Found Interface:%s", iface)
 
 			newiface = Iface{}
 			oldiface = iface
 		}
+
 		ipv4 := ipv4re.FindStringSubmatch(line)
 		if len(ipv4) > 0 {
 			// found new ip on interface
@@ -99,8 +102,8 @@ func getConfig() (map[string]Iface, error) {
 			newiface.Ipv4 = append(newiface.Ipv4, addr)
 		}
 	}
+
 	ifaces[oldiface] = newiface
-	//log.Infof("All interfaces discovered:%+v", ifaces)
 	return ifaces, nil
 
 }

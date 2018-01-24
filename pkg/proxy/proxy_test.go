@@ -21,9 +21,11 @@ func TestACLCookie(t *testing.T) {
 	var TestACLForCookie = []ACL{
 		{Action: "add", CookieKey: "testkey", CookieValue: "testvalue", CookieExpire: TestDuration, CookieSecure: true, Cookiehttponly: true},
 	}
+
 	var TestACLForCookieResult = []string{
 		"testkey=testvalue; Expires=.*GMT; HttpOnly; Secure",
 	}
+
 	// ACL Cookie on Request
 	req, _ := http.NewRequest("GET", "/", nil)
 	for id, acl := range TestACLForCookie {
@@ -47,6 +49,7 @@ func TestACLCookie(t *testing.T) {
 		Header:     http.Header{},
 		Request:    req,
 	}
+
 	for id, acl := range TestACLForCookie {
 		acl.ProcessResponse(&res)
 		newcookie := res.Header.Get("Set-Cookie")
@@ -107,6 +110,7 @@ func TestACLHeader(t *testing.T) {
 		ProtoMinor: 1,
 		Header:     http.Header{},
 	}
+
 	for id, acl := range TestACLForHeader {
 		acl.ProcessResponse(&res)
 		for key, value := range TestACLForHeaderResult[id] {
@@ -133,6 +137,7 @@ func TestACLStatusCode(t *testing.T) {
 			ProtoMinor: 1,
 			Header:     http.Header{},
 		}
+
 		acl.ProcessResponse(&res)
 		if res.StatusCode != acl.StatusCode {
 			t.Errorf("Wrong statuscode result for response. got:%d expected:%d", res.StatusCode, acl.StatusCode)
@@ -144,6 +149,7 @@ func TestACLCIDRDeny(t *testing.T) {
 	var TestACLForCIDR = []ACL{
 		{Action: "deny", CIDRS: []string{"127.0.0.1/32"}},
 	}
+
 	// ACL Cookie on Request
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.RemoteAddr = "127.0.0.1"
@@ -168,6 +174,7 @@ func TestACLCIDRAllow(t *testing.T) {
 	var TestACLForCIDR = []ACL{
 		{Action: "allow", CIDRS: []string{"127.0.0.1/32"}},
 	}
+
 	// ACL Cookie on Request
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.RemoteAddr = "127.0.0.1"
@@ -202,8 +209,6 @@ func TestACLResponse(t *testing.T) {
 }
 
 func TestTCPProxy(t *testing.T) {
-	//logging.Configure("stdout", "debug")
-
 	serverIP := "127.0.0.1"
 	serverPort := 32323
 
@@ -226,7 +231,6 @@ func TestTCPProxy(t *testing.T) {
 	// Create a TCP Proxy
 	newProxy := New("UUIDP1", "tcpProxy", 1)
 	newBackendNode := NewBackendNode("UUIDBN1", serverIP, serverIP, serverPort, 1, []string{}, 0)
-	//newProxy.SetListener(pool.Listener.Mode, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout)
 	newProxy.SetListener("tcp", proxyIP, proxyPort, 10, &tls.Config{}, 10, 10, 2, "yes")
 	newProxy.AddBackend("UUIDB1", "tcpBackend", "leastconnected", "tcp", []string{}, 1, ErrorPage{})
 	newProxy.Backends["tcpBackend"].AddBackendNode(newBackendNode)
@@ -241,10 +245,6 @@ func TestTCPProxy(t *testing.T) {
 	}
 
 	newProxy.Stop()
-
-	//newProxy.UpdateBackend(backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames)
-	//				backend.SetACL("in", inboundACLs)
-
 	exit <- true
 }
 
@@ -261,6 +261,7 @@ func tcpDummyClient(ip string, port int, send string, t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer conn.Close()
 	// send data
 	fmt.Fprintf(conn, send)
@@ -269,6 +270,7 @@ func tcpDummyClient(ip string, port int, send string, t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	buf = bytes.Trim(buf, "\x00") // remove nul
 	return string(buf)
 }
@@ -279,6 +281,7 @@ func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	buf := make([]byte, 256)
 	go func() {
 		for {
@@ -286,14 +289,17 @@ func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
 			if err != nil {
 				return
 			}
+
 			_, err = conn.Read(buf)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			fmt.Fprintf(conn, string(buf))
 			conn.Close()
 		}
 	}()
+
 	// wait for exit signal to close listener
 	for {
 		select {

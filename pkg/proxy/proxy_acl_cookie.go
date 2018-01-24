@@ -13,8 +13,9 @@ import (
 func removeCookie(header *http.Header, cookieHeader string, match string) {
 	if cookieHeader == "Set-Cookie" {
 		// Set-Cookies must have their own header for each cookie
-		//header.Del(fmt.Sprintf("%s: %s")cookieHeader: match)
+		// header.Del(fmt.Sprintf("%s: %s")cookieHeader: match)
 	} else {
+		// TODO: put something meaning full here
 	}
 }
 
@@ -35,10 +36,12 @@ func addCookie(header *http.Header, reqHeader *http.Header, cookieHeader string,
 			return
 		}
 	}
+
 	cookie := acl.newCookie()
 	if cookieHeader == "Set-Cookie" {
 		// Set-Cookies must have their own header for each cookie
 		header.Add(cookieHeader, cookie.String())
+
 	} else {
 		// Cookies can have multiple values on 1 cookie: header
 		if c := header.Get(cookieHeader); c != "" {
@@ -47,6 +50,7 @@ func addCookie(header *http.Header, reqHeader *http.Header, cookieHeader string,
 			header.Set(cookieHeader, cookie.String())
 		}
 	}
+
 	log.WithField("cookie", cookieHeader).WithField("value", cookie.Value).Debug("Adding Cookie")
 }
 
@@ -55,11 +59,14 @@ func (acl ACL) processCookie(header *http.Header, reqHeader *http.Header, cookie
 	switch acl.Action {
 	case removeMatch:
 		removeCookie(header, cookieName, acl.ConditionMatch)
+
 	case replaceMatch:
 		replaceCookie(header, reqHeader, cookieName, acl.ConditionMatch, acl)
+
 	case addMatch:
 		addCookie(header, reqHeader, cookieName, acl, false)
 	}
+
 	return false
 }
 
@@ -72,7 +79,9 @@ func (acl ACL) newCookie() *http.Cookie {
 		Path:     acl.CookiePath,
 		Expires:  expire,
 		Secure:   acl.CookieSecure,
-		HttpOnly: acl.Cookiehttponly}
+		HttpOnly: acl.Cookiehttponly,
+	}
+
 	return cookie
 
 }
@@ -83,6 +92,7 @@ func cookieExists(header *http.Header, cookieHeader string, cookieKey string) bo
 	if err != nil {
 		return false
 	}
+
 	for key, hdr := range *header {
 		for _, hdrstr := range hdr {
 			if regex.MatchString(fmt.Sprintf("%s: %s", key, hdrstr)) == true {
@@ -90,5 +100,6 @@ func cookieExists(header *http.Header, cookieHeader string, cookieKey string) bo
 			}
 		}
 	}
+
 	return false
 }

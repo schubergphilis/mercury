@@ -37,6 +37,7 @@ func TestResolving(t *testing.T) {
 	if !answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 2 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
+
 	if rcode != 0 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 
@@ -49,6 +50,7 @@ func TestResolving(t *testing.T) {
 	if answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 1 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
+
 	if rcode != 0 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 	}
@@ -60,6 +62,7 @@ func TestResolving(t *testing.T) {
 	if !answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 2 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
+
 	if rcode != 0 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 	}
@@ -79,6 +82,7 @@ func TestRecursive(t *testing.T) {
 	if !answerType(m, dnssrv.TypeA) {
 		t.Errorf("Expected 1 records, of type A:%t got:%+v", answerType(m, dnssrv.TypeA), m)
 	}
+
 	if rcode != -1 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 	}
@@ -91,6 +95,7 @@ func TestRecursive(t *testing.T) {
 	if !answerCount(m, 0) {
 		t.Errorf("Expected 0 records for denied recursive lookup, got:%d", len(m.Answer))
 	}
+
 	if rcode != 5 {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 	}

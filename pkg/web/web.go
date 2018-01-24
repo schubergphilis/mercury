@@ -27,21 +27,13 @@ type Page struct {
 	Time     time.Time
 }
 
-/*
-func LoadTemplates(box, name string) (*template.Template, error) {
-	tbox := rice.FindBox("static")
-	post_template = template.Must(template.Parse(tbox.String("layout.html") + tbox.String("post.html")))
-	error_template = template.Must(template.Parse(tbox.String("layout.html") + tbox.String("error.html")))
-
-}
-*/
-
 // LoadTemplates a template from the rice box
 func LoadTemplates(box string, name []string) (*template.Template, error) {
 	templateBox, err := rice.FindBox(box)
 	if err != nil {
 		return nil, fmt.Errorf("Error loading box:%s error:%s", box, err.Error())
 	}
+
 	var combined string
 	for _, templateName := range name {
 		templateString, erro := templateBox.String(templateName)
@@ -56,19 +48,23 @@ func LoadTemplates(box string, name []string) (*template.Template, error) {
 			if len(values)%2 != 0 {
 				return nil, errors.New("invalid dict call")
 			}
+
 			dict := make(map[string]interface{}, len(values)/2)
 			for i := 0; i < len(values); i += 2 {
 				key, ok := values[i].(string)
 				if !ok {
 					return nil, errors.New("dict keys must be strings")
 				}
+
 				dict[key] = values[i+1]
 			}
 			return dict, nil
 		},
 	}).Parse(combined)
+
 	if err != nil {
 		return nil, err
 	}
+
 	return tmplMessage, nil
 }

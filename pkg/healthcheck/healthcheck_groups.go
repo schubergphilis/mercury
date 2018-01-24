@@ -12,7 +12,6 @@ type HealthStatus struct {
 	AdminDown   bool     // manual override
 	AdminUp     bool     // manual override
 	ErrorMsg    []string // error message
-	//Required     map[string]HealthRequired
 }
 
 // HealthPool contains a per nodeuuid information about all checks that apply to this node
@@ -74,6 +73,7 @@ func (m *Manager) GetNodeStatus(nodeUUID string) (bool, string, string, string, 
 				} else {
 					nok++
 				}
+
 				errors = append(errors, worker.ErrorMsg...)
 			} else {
 				nok++
@@ -81,15 +81,19 @@ func (m *Manager) GetNodeStatus(nodeUUID string) (bool, string, string, string, 
 				errors = append(errors, fmt.Sprintf("Pending health check with worker:%s", workerUUID))
 			}
 		}
+
 		log.WithField("ok", ok).WithField("nok", nok).WithField("nodeuuid", nodeUUID).WithField("match", pool.Match).WithField("pool", pool.PoolName).WithField("backend", pool.BackendName).WithField("node", pool.NodeName).Debug("Health Status Check")
 		if pool.Match == "any" && ok > 0 {
 			return true, pool.PoolName, pool.BackendName, pool.NodeName, errors
 		}
+
 		if pool.Match == "all" && nok == 0 {
 			return true, pool.PoolName, pool.BackendName, pool.NodeName, errors
 		}
+
 		return false, pool.PoolName, pool.BackendName, pool.NodeName, errors
 	}
+
 	return false, "", "", "", []string{"no healthcheck result recorded yet"}
 }
 
@@ -104,5 +108,6 @@ func (m *Manager) GetPools(workerUUID string) (s []string) {
 			}
 		}
 	}
+
 	return
 }

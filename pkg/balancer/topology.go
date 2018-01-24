@@ -6,8 +6,6 @@ import (
 	"net"
 )
 
-// TODO: return and check error in upper function
-
 // Topology Balance based on Topology, this only returns stats where the ip matches the topolology
 func Topology(s []Statistics, ip string) []Statistics {
 	var matches []Statistics

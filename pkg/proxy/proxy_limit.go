@@ -50,7 +50,6 @@ func (l *limitListener) release() {
 }
 
 // Accepts accepts a tcp connection
-//func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 func (l limitListener) Accept() (c net.Conn, err error) {
 	log := logging.For("proxy/limit").WithField("listener", l.Addr())
 	l.acquire()
@@ -62,6 +61,7 @@ func (l limitListener) Accept() (c net.Conn, err error) {
 		l.release()
 		return
 	}
+
 	c = &limitListenerConn{Conn: c, release: l.release}
 	log.WithField("client", c.RemoteAddr()).Debug("Client connected")
 	return

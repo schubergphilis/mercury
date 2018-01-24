@@ -52,14 +52,13 @@ func getConfig() (map[string]Iface, error) {
 		if len(iface) > 0 {
 			// found new interface
 			if oldiface != iface[1] && oldiface != "" {
-				//log.Debug("Found ip(s):%+v for interface:%s", oldiface, newiface)
 				ifaces[oldiface] = newiface
 			}
-			//log.Debugf("Found Interface:%s", iface[1])
 
 			newiface = Iface{}
 			oldiface = iface[1]
 		}
+
 		ipv4 := ipv4re.FindStringSubmatch(line)
 		if len(ipv4) > 0 {
 			// found new ip for interface
@@ -69,6 +68,7 @@ func getConfig() (map[string]Iface, error) {
 			newiface.Ipv4 = append(newiface.Ipv4, addr)
 		}
 	}
+
 	ifaces[oldiface] = newiface
 	//log.Infof("All interfaces discovered:%+v", ifaces)
 	return ifaces, nil

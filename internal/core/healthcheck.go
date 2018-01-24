@@ -47,12 +47,15 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 				if poolName != "" {
 					checkresult.PoolName = poolName
 				}
+
 				if nodeName != "" {
 					checkresult.NodeName = nodeName
 				}
+
 				if backendName != "" {
 					checkresult.BackendName = backendName
 				}
+
 				log.WithField("pool", checkresult.PoolName).WithField("backend", checkresult.BackendName).WithField("node", checkresult.NodeName).WithField("online", checkresult.Online).WithField("error", checkresult.ErrorMsg).Info("Sending status update to cluster")
 				manager.healthchecks <- checkresult // do not send pointers, since pointer will change data
 			}
@@ -80,9 +83,9 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				if check.IP != "" {
 					worker := healthcheck.NewWorker(poolName, backendName, "", "", check.IP, check.Port, pool.Listener.IP, check, h.Incoming)
 					backendWorkers = append(backendWorkers, worker)
-					//
 				}
 			}
+
 			for _, node := range backend.Nodes {
 				var nodeWorkers []*healthcheck.Worker
 				// For each node
@@ -98,12 +101,15 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				for _, w := range nodeWorkers {
 					nodeChecks = append(nodeChecks, w.UUID())
 				}
+
 				for _, w := range backendWorkers {
 					nodeChecks = append(nodeChecks, w.UUID())
 				}
+
 				for _, w := range poolWorkers {
 					nodeChecks = append(nodeChecks, w.UUID())
 				}
+
 				// Register all checks applicable to the node UUID
 				h.SetCheckPool(node.UUID, poolName, backendName, node.Name(), backend.HealthCheckMode, nodeChecks)
 
@@ -125,7 +131,6 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	for cid, cworker := range current {
 		// go through all current workers
 		found := false
-		//expected := expectedChecks
 
 		// Get copy of existing worker, and trim them to keep removableProxy list
 		var expected []*healthcheck.Worker
@@ -141,6 +146,7 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				found = true
 			}
 		}
+
 		if found == false {
 			// stop worker, its no longer expected
 			log.Debugf("Nonexisting worker check: current:%s ", cworker.UUID())
@@ -151,7 +157,6 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	log.WithField("count", len(removeWorkers)).Debug("Workers to be stopped")
 	for _, id := range reverse(removeWorkers) {
 		log.WithField("id", id).Debug("Stopping worker")
-		//checkuuid := h.GetUUID(id)
 		h.StopWorker(id)
 	}
 

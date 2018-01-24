@@ -26,22 +26,9 @@ type Domains struct {
 
 // Domain is a dns domain
 type Domain struct {
-	//Soa     Soa      `toml:"soa" json:"soa"`
 	Records []Record `toml:"records" json:"records"`
 	TTL     int      `json:"ttl"`
 }
-
-// Soa record
-/*type Soa struct {
-	Name    string `toml:"name" json:"name"`
-	Ns      string `toml:"ns" json:"ns"`
-	Email   string `toml:"email" json:"email"`
-	Serial  int    `toml:"serial" json:"serial"`
-	Refresh int    `toml:"refresh" json:"refresh"`
-	Retry   int    `toml:"retry" json:"retry"`
-	Expire  int    `toml:"expire" json:"expire"`
-	Minimum int    `toml:"minimum" json:"minimum"`
-}*/
 
 // Record of any type
 type Record struct {
@@ -104,6 +91,7 @@ func updateCounter(domain string, record Record) {
 				}
 			}
 		}
+
 	}
 }
 
@@ -134,21 +122,22 @@ func getRecordsBalanced(r []Record, ip, balancemode string) ([]Record, error) {
 	switch len(r) {
 	case 0: // return error of no nodes
 		return []Record{}, fmt.Errorf("Unable to find a record")
+
 	case 1: // return node if there is only 1 present
 		return r, nil
+
 	default: // balance across N Nodes
 		stats := getDNSStats(r)
 		statrecords, err := balancer.MultiSort(stats, ip, "stickyness_not_supported_in_dns", balancemode)
 		if err != nil {
 			return r, fmt.Errorf("Unable to parse balance mode %s, err: %s", balancemode, err)
 		}
-		records, err := GetRecordsByStats(r, statrecords)
 
-		//log.Debugf("Records Balanced: %+v", records)
-		//log.WithField("cluster", nodename).WithField("hostname", name).WithField("domain", domain).WithField("type", request).Debug("Resetting Counters")
+		records, err := GetRecordsByStats(r, statrecords)
 		if err != nil {
 			return r, err
 		}
+
 		return records, nil
 	}
 
@@ -164,9 +153,11 @@ func GetRecordsByStats(rec []Record, stat []balancer.Statistics) ([]Record, erro
 			}
 		}
 	}
+
 	if len(new) == 0 {
 		return []Record{}, fmt.Errorf("Unable to find DNS record by IDs")
 	}
+
 	return new, nil
 }
 
@@ -176,6 +167,7 @@ func getDNSStats(n []Record) []balancer.Statistics {
 	for _, record := range n {
 		s = append(s, *record.Statistics)
 	}
+
 	return s
 }
 
@@ -187,7 +179,6 @@ func getAllowedRequests() []string {
 }
 
 func getRecordsByType(hostName string, domainName string, queryType uint16) (records []Record) {
-	//log := logging.For("dns/server/recbytype")
 	// Get all related records
 	isAllowed := false
 	allowedRequests := getAllowedRequests()
@@ -197,10 +188,12 @@ func getRecordsByType(hostName string, domainName string, queryType uint16) (rec
 			break
 		}
 	}
+
 	// If we have limited the allowed requests, and we are not allowed, then return empty
 	if len(allowedRequests) > 0 && isAllowed == false {
 		return []Record{}
 	}
+
 	switch queryType {
 	case dnssrv.TypeANY:
 		// loop through available record types
@@ -208,18 +201,16 @@ func getRecordsByType(hostName string, domainName string, queryType uint16) (rec
 		for i := uint16(0); i <= 258; i++ {
 			if dnssrv.TypeToString[i] != "" {
 				anyR := getAllRecords(hostName, domainName, dnssrv.TypeToString[i])
-				//log.Debugf("Parsing record type: %s result:%+v", dnssrv.TypeToString[i], anyR)
-				//log.WithField("domain", domainName).WithField("hostname", r.Name).WithField("target", r.Target).WithField("type", r.Type).Debug("DNS Records balanced")
 				for _, r := range anyR {
 					records = append(records, r)
 				}
 			}
 		}
+
 	default:
 		// get specified record
 		records = getAllRecords(hostName, domainName, dnssrv.TypeToString[queryType])
 	}
-	//log.WithField("domain", domainName).WithField("hostname", r.Name).WithField("target", r.Target).WithField("type", r.Type).Debug("DNS Records balanced")
 	return records
 }
 
@@ -253,16 +244,15 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 		if err == nil {
 			q.Name = strings.TrimRight(reverseName, ".")
 			q.Qtype = dnssrv.TypePTR
-			//domainName = reverseName
 		}
 
-		//domainName = strings.TrimRight(domainName, ".")
 		if !localZone(domainName) { // if request is not our domain then its a fqdn
 			log.WithField("fqdn", strings.ToLower(q.Name)).WithField("domain", strings.ToLower(domainName)).WithField("querytype", dnssrv.TypeToString[q.Qtype]).Debug("Non local zone request")
 			s := dnssrv.SplitDomainName(q.Name)
 			hostName = strings.Join(s[:1], ".")
 			domainName = strings.Join(s[1:len(s)], ".")
 		}
+
 		clog := log.WithField("domain", strings.ToLower(domainName)).WithField("hostname", strings.ToLower(hostName)).WithField("querytype", dnssrv.TypeToString[q.Qtype]).WithField("client", clientIP.String()).WithField("0x20", q.Name != strings.ToLower(q.Name))
 		clog.Info("DNS request from client")
 
@@ -271,13 +261,13 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 		for id, r := range records {
 			clog.WithField("prio", id).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
 		}
+
 		// If we have no A records, check for CNAME
 		if len(records) == 0 && q.Qtype == dnssrv.TypeA {
 			records = getRecordsByType(hostName, domainName, dnssrv.TypeCNAME)
 			for id, r := range records {
 				clog.WithField("prio", id).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
 			}
-
 		}
 
 		if len(records) == 0 && !localZone(domainName) {
@@ -288,15 +278,7 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			}
 			// no local zone, and nog allowed to forward
 			return dnssrv.RcodeRefused, nil
-			// No records, and no local zone, attempted recursive query? =  return access denied?
-			// m.SetRcode(r, dnssrv.RcodeRefused)
 		}
-		/*
-			if len(records) == 0 {
-				clog.WithField("prio", 999).WithField("target", "").WithField("recordtype", "").Debug("DNS reply to client")
-				return fmt.Errorf("We have no records for %s.%s", hostName, domainName)
-			}
-		*/
 
 		// If we have more then 1 record, see how we should balance these records
 		if len(records) > 1 {
@@ -308,6 +290,7 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			}
 			records = orderedrec
 		}
+
 		var additionalrecords []Record
 		switch q.Qtype {
 		case dnssrv.TypeAAAA:
@@ -319,10 +302,10 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 					return dnssrv.RcodeSuccess, nil
 				}
 			}
+
 		case dnssrv.TypeSOA:
-			//log.Debugf("Adding additional records: %s %s %s", hostName, domainName, dnssrv.TypeNS)
-			//additionalrecords = getRecordsByType(hostName, domainName, dnssrv.TypeNS)
 			fallthrough
+
 		case dnssrv.TypeNS, dnssrv.TypeMX:
 			for _, currec := range records {
 				first := strings.Split(currec.Target, " ")
@@ -334,7 +317,6 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 				}
 				hostName := strings.ToLower(strings.Join(s[:1], "."))
 				domainNameNS := strings.ToLower(strings.Join(s[1:len(s)], "."))
-				// log.Debugf("Adding additional records: %s %s %s", hostName, domainName, dnssrv.TypeA)
 
 				nsrecords := getRecordsByType(hostName, domainNameNS, dnssrv.TypeA)
 				log.Debugf("Got NS records: %+v", nsrecords)
@@ -354,20 +336,21 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			m.Authoritative = true
 			m.RecursionAvailable = true
 		}
-		for prio, record := range records {
 
+		for prio, record := range records {
 			var newRecord string
 			if record.TTL == 0 {
 				record.TTL = 10
 			}
+
 			if record.Name == "" {
 				newRecord = fmt.Sprintf("%s %d %s %s", q.Name, record.TTL, record.Type, record.Target)
 			} else {
 				newRecord = fmt.Sprintf("%s.%s %d %s %s", record.Name, domainName, record.TTL, record.Type, record.Target)
 			}
+
 			rr, err := dnssrv.NewRR(newRecord)
 			if err == nil {
-				//log.Debugf("Adding localdns answer to reply: %+v", rr)
 				clog.WithField("prio", prio).WithField("target", record.Target).WithField("recordtype", record.Type).Info("DNS reply to client")
 				m.Answer = append(m.Answer, rr)
 			} else {
@@ -383,6 +366,7 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 				if record.TTL == 0 {
 					record.TTL = 10
 				}
+
 				authrecordtxt := fmt.Sprintf("%s %d %s %s", domainName, record.TTL, record.Type, record.Target)
 				nsrec, err := dnssrv.NewRR(authrecordtxt)
 				if err == nil {
@@ -397,11 +381,13 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			if record.TTL == 0 {
 				record.TTL = 10
 			}
+
 			if record.Name == "" {
 				newRecord = fmt.Sprintf("%s %d %s %s", q.Name, record.TTL, record.Type, record.Target)
 			} else {
 				newRecord = fmt.Sprintf("%s.%s %d %s %s", record.Name, domainName, record.TTL, record.Type, record.Target)
 			}
+
 			rr, err := dnssrv.NewRR(newRecord)
 			if err == nil {
 				clog.WithField("prio", prio).WithField("target", record.Target).WithField("recordtype", record.Type).Info("Additional DNS reply to client")
@@ -413,9 +399,11 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 		}
 
 	}
+
 	if len(m.Answer) > 0 {
 		return dnssrv.RcodeSuccess, nil
 	}
+
 	return dnssrv.RcodeServerFailure, fmt.Errorf("No records returned")
 }
 
@@ -423,27 +411,25 @@ func dnsForwarder(m *dnssrv.Msg, q dnssrv.Question) {
 	log := logging.For("dns/server/forward")
 
 	// Local resolving failed, if we have forwarding enabled, pass the request on
-	//for _, q := range m.Question {
 	log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).Infof("DNS Forwarding")
 	rrs, err := dnsmanager.Resolver.ResolveErr(q.Name, dnssrv.TypeToString[q.Qtype])
 	log.Debugf("Got forwarded DNS reply: %+v", rrs)
 	if err != nil {
 		log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).Warn("Failed to resolve forwarded dns")
-	} else {
-		m.RecursionAvailable = true
-		// Convert records to reply
-		for _, dnsrr := range rrs {
-			log.WithField("string", dnsrr.String()).Debugf("Forwarding request")
-			rr, err := dnssrv.NewRR(dnsrr.String())
-			if err != nil {
-				log.WithField("reply", dnsrr.String()).Warn("Failed to create reply")
-			} else {
-				log.Debugf("Got forwarded DNS reply: %v", rr)
-				m.Answer = append(m.Answer, rr)
-			}
+		return
+	}
+	m.RecursionAvailable = true
+	// Convert records to reply
+	for _, dnsrr := range rrs {
+		log.WithField("string", dnsrr.String()).Debugf("Forwarding request")
+		rr, err := dnssrv.NewRR(dnsrr.String())
+		if err != nil {
+			log.WithField("reply", dnsrr.String()).Warn("Failed to create reply")
+		} else {
+			log.Debugf("Got forwarded DNS reply: %v", rr)
+			m.Answer = append(m.Answer, rr)
 		}
 	}
-	//}
 
 }
 
@@ -461,11 +447,12 @@ func handleDNSRequest(w dnssrv.ResponseWriter, r *dnssrv.Msg) {
 			// No record found or other error, give server failure so resolv will move to next server for query
 			m.SetRcode(r, dnssrv.RcodeServerFailure)
 		}
+
 		if rcode >= 0 {
 			m.SetRcode(r, rcode)
 		}
 	}
-	// write back the result
+
 	w.WriteMsg(m)
 }
 
@@ -477,16 +464,16 @@ func GetCache() map[string]Domains {
 	for id, domain := range dnsmanager.node {
 		d[id] = domain
 	}
+
 	return d
-	//return dnsmanager.node
 }
 
 // Listen starts the listener
 func Listen(server *dnssrv.Server) error {
-	//server := &dnssrv.Server{Addr: name + ":" + strconv.Itoa(port), Net: proto}
 	if err := server.ListenAndServe(); err != nil {
 		return fmt.Errorf("Failed to setup the "+server.Addr+" server: %s\n", err.Error())
 	}
+
 	defer server.Shutdown()
 	return nil
 }
@@ -513,11 +500,13 @@ func Server(host string, port int, allowedRequests []string) {
 			clog.Debug("Stopping old listener")
 			dnsmanager.stop <- true
 		}
+
 		tcpListener, err := net.Listen("tcp", addr)
 		if err != nil {
 			clog.WithField("error", err).Error("Failed to start DNS TCP listener")
 			return
 		}
+
 		serverTCP = &dnssrv.Server{Addr: host + ":" + strconv.Itoa(port), Net: "TCP", Listener: tcpListener}
 		go serverTCP.ActivateAndServe()
 		dnsmanager.TCPServer = serverTCP
@@ -530,6 +519,7 @@ func Server(host string, port int, allowedRequests []string) {
 			clog.WithField("error", err).Error("Failed to start DNS UDP listener")
 			return
 		}
+
 		serverUDP = &dnssrv.Server{Addr: host + ":" + strconv.Itoa(port), Net: "UDP", PacketConn: udpListener}
 		go serverUDP.ActivateAndServe()
 		dnsmanager.UDPServer = serverUDP
@@ -575,6 +565,7 @@ func getAllRecords(hostName, domainName, request string) (r []Record) {
 	searchHost := strings.ToLower(hostName)
 	dnsmanager.RLock()
 	defer dnsmanager.RUnlock()
+
 	for nodeName := range dnsmanager.node {
 		// Search domains for records such as NS, CAA, SOA
 		// Search domains for records such as A, AAAA
@@ -602,6 +593,7 @@ func getAllRecords(hostName, domainName, request string) (r []Record) {
 					} else {
 						offlineRecords = append(offlineRecords, record)
 					}
+
 					total++
 				}
 			}
@@ -612,6 +604,7 @@ func getAllRecords(hostName, domainName, request string) (r []Record) {
 		log.WithField("records", total).WithField("online", len(r)).WithField("offline", len(offlineRecords)).Warn("No online dns records, using fallback")
 		return offlineRecords
 	}
+
 	return
 }
 
@@ -625,6 +618,7 @@ func allowedToForward(clientIP net.IP) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -637,5 +631,6 @@ func localZone(domainName string) bool {
 			return true
 		}
 	}
+
 	return false
 }

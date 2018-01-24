@@ -26,11 +26,6 @@ type Manager struct {
 	addProxyBackend                 chan *config.ProxyBackendNodeUpdate
 	removeProxyBackend              chan *config.ProxyBackendNodeUpdate
 	proxyBackendStatisticsUpdate    chan *config.ProxyBackendStatisticsUpdate
-	/*clusterin                       chan *string
-	clusterout                      chan *cluster.Packet
-	clusterjoin                     chan *string
-	clusterleave                    chan *string*/
-	//dnsupdates    chan *config.DNSUpdate
 }
 
 // NewManager creates a new manager
@@ -45,10 +40,6 @@ func NewManager() *Manager {
 		proxyBackendStatisticsUpdate:    make(chan *config.ProxyBackendStatisticsUpdate),
 		clusterGlbalDNSStatisticsUpdate: make(chan *config.ClusterPacketGlbalDNSStatisticsUpdate),
 		clearStatsProxyBackend:          make(chan *config.ClusterPacketClearProxyStatistics),
-		/*clusterin:                       make(chan *string),
-		clusterout:                      make(chan *cluster.Packet),
-		clusterjoin:                     make(chan *string),
-		clusterleave:                    make(chan *string),*/
 	}
 	return manager
 }
@@ -83,13 +74,6 @@ func Initialize(reload <-chan bool) {
 
 	// Webserver
 	go InitializeWebserver()
-
-	// Statistics
-	// Disable stats, we should no longer use this
-	/*if config.Get().Stats.Host != "" {
-		statsManager := InitializeStats(config.Get().Stats)
-		go gatherStats(statsManager)
-	}*/
 
 	for {
 		select {
