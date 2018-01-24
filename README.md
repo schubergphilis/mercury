@@ -1,4 +1,5 @@
-[![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=svg&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
+[![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
+[![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 
 # Mercury
 Mercury is a loadbalancer with Global Loadbalance capababilities across multiple Datacentre or Cloud infrastructures.
