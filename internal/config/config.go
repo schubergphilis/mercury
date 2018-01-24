@@ -155,20 +155,24 @@ func LoadConfig(file string) error {
 			}
 			// Check if we have certificates on a backend
 			for backendName, backend := range pool.Backends {
-				//log.Debugf("Backend has TLS: %+v", backend.TLSConfig)
 				if backend.TLSConfig.CertificateFile != "" {
+
 					if _, err := os.Stat(backend.TLSConfig.CertificateFile); err != nil {
 						return fmt.Errorf("Cannot access certificate file for pool:%s backend:%s file:%s error:%s", poolName, backendName, backend.TLSConfig.CertificateFile, err)
 					}
+
 					if _, err := os.Stat(backend.TLSConfig.CertificateKey); err != nil {
 						return fmt.Errorf("Cannot access certificate key for pool:%s backend:%s file:%s error:%s", poolName, backendName, backend.TLSConfig.CertificateKey, err)
 					}
+
 					if _, err := tlsconfig.LoadCertificate(backend.TLSConfig); err != nil {
 						return fmt.Errorf("Cannot load TLS configutation for pool:%s backend:%s error:%s", poolName, backendName, err)
 					}
+
 					certcount++
 				}
 			}
+
 			if certcount == 0 {
 				return fmt.Errorf("No certificate file specified for HTTPS mode on pool %s", poolName)
 			}
@@ -289,6 +293,7 @@ func LoadConfig(file string) error {
 				h.ConnectMode = temp.Loadbalancer.Pools[poolName].Listener.Mode
 				save = true
 			}
+
 			if backend.DNSEntry.IP == "" && temp.Loadbalancer.Pools[poolName].Listener.IP == "" {
 				return fmt.Errorf("No IP defined in either the pool's listener IP or the DNSentry IP for backend:%s", backendName)
 			}
@@ -311,6 +316,7 @@ func LoadConfig(file string) error {
 					//healthcheck.Interval = 10
 					save = true
 				}
+
 				if healthcheck.Timeout < 1 {
 					h.HealthChecks[hid].Timeout = 10
 					//healthcheck.Timeout = 10
@@ -335,6 +341,7 @@ func LoadConfig(file string) error {
 					h.HealthChecks[hid].ActivePassiveID = ""
 					save = true
 				}
+
 				if healthcheck.Type == "" {
 					h.HealthChecks[hid].Type = "tcpconnect"
 					save = true
@@ -355,10 +362,12 @@ func LoadConfig(file string) error {
 				h.HealthCheckMode = "all"
 				save = true
 			}
+
 			if backend.BalanceMode.ClusterNodes == 0 {
 				h.BalanceMode.ClusterNodes = len(temp.Cluster.Nodes)
 				save = true
 			}
+
 			if backend.BalanceMode.LocalTopology != "" {
 				if val, ok := temp.Loadbalancer.Networks[backend.BalanceMode.LocalTopology]; ok {
 					for _, network := range val.CIDRs {
@@ -388,6 +397,7 @@ func LoadConfig(file string) error {
 					log.Infof("Node:%s UUID:%s", h.Nodes[nodeID].Name(), h.Nodes[nodeID].UUID)
 				}
 			}
+
 			if save == true {
 				temp.Loadbalancer.Pools[poolName].Backends[backendName] = h
 				//log.Debugf("Set defaults for %s: (config:%+v new:%+v)", backendName, backend, h)
@@ -406,40 +416,6 @@ func LoadConfig(file string) error {
 				}
 			}
 
-			/*
-				if Get() != nil {
-					log.Debug("Config is not empty, copying node status if it still exists")
-					if pool, ok := Get().Loadbalancer.Pools[poolName]; ok { // pool exists in old config
-						if backendnode, ok := pool.Backends[backendName]; ok { // pool backend exists in old config
-							// go over all nodes of backend of new config
-							for nodeID, node := range temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
-								// Nodes exist, but order might have changed? (a new one was added on top)
-								for _, oldnode := range backendnode.Nodes {
-									if node.IP == oldnode.IP &&
-										node.Port == oldnode.Port {
-										// we have the same node
-										n := node
-										n.Online = oldnode.Online
-										n.UUID = oldnode.UUID
-										n.Errors = oldnode.Errors
-										h.Nodes[nodeID] = n
-										log.Debugf("Old node:%s uuid:%s copied to New node:%s uuid:%s", oldnode.Name(), oldnode.UUID, n.Name(), n.UUID)
-									}
-								}
-							}
-							// Check for remote nodes to take along
-							for _, oldnode := range backendnode.Nodes {
-								if oldnode.ClusterName != Get().Cluster.Binding.Name { // remote nodes are always taken along
-									log.Debugf("Re-Adding Remote node: %+v (nodes:%+v)", oldnode, h.Nodes)
-									h.Nodes = append(h.Nodes, oldnode)
-								}
-							}
-							save = true
-						}
-					}
-
-				}
-			*/
 			// Copy node Status if exists
 			if Get() != nil {
 				log.Debug("Config is not empty, copying node status if it still exists")
@@ -480,6 +456,7 @@ func LoadConfig(file string) error {
 	if temp.Web.Binding == "" {
 		temp.Web.Binding = "localhost"
 	}
+
 	if temp.Web.Port == 0 {
 		temp.Web.Port = 9001
 	}
@@ -499,22 +476,27 @@ func LoadConfig(file string) error {
 		s.ConnectInterval = 10
 		saveconfig = true
 	}
+
 	if s.ConnectTimeout < 1*time.Second {
 		s.ConnectTimeout = 10
 		saveconfig = true
 	}
+
 	if s.PingInterval < 1*time.Second {
 		s.PingInterval = 5
 		saveconfig = true
 	}
+
 	if s.ReadTimeout < 1*time.Second {
 		s.ReadTimeout = 11
 		saveconfig = true
 	}
+
 	if s.JoinDelay < 1 {
 		s.JoinDelay = 500 * time.Microsecond
 		saveconfig = true
 	}
+
 	if saveconfig == true {
 		//log.Debugf("Set defaults for cluster settings: (config:%+v new:%+v)", temp.Cluster.Settings, s)
 		temp.Cluster.Settings = s
@@ -527,15 +509,18 @@ func LoadConfig(file string) error {
 		d.Binding = "localhost"
 		save = true
 	}
+
 	if d.Port < 1 {
 		d.Port = 53
 		save = true
 	}
+
 	if len(d.AllowedRequests) == 0 {
 		// Allow the most common DNS request types
 		d.AllowedRequests = []string{"A", "AAAA", "NS", "MX", "SOA", "TXT", "CAA", "ANY", "CNAME", "MB", "MG", "MR", "WKS", "PTR", "HINFO", "MINFO", "SPF"}
 		save = true
 	}
+
 	for domainName, localDomain := range d.Domains {
 		for rid, record := range localDomain.Records {
 			if record.Statistics == nil {
@@ -552,6 +537,7 @@ func LoadConfig(file string) error {
 			}
 		}
 	}
+
 	if save == true {
 		//log.Debugf("Set defaults for dns settings: (config:%+v new:%+v)", temp.DNS, d)
 		temp.DNS = d

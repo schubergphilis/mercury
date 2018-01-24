@@ -7,7 +7,6 @@ import (
 
 // ProxyBackendNodeUpdate contains backend updates to proxy
 type ProxyBackendNodeUpdate struct {
-	//ClusterNode string            `json:"clusternode"`
 	PoolName        string            `json:"poolname"`
 	BackendName     string            `json:"backendname"`
 	BackendNodeUUID string            `toml:"uuid" json:"uuid"`
@@ -16,7 +15,6 @@ type ProxyBackendNodeUpdate struct {
 
 // ProxyBackendStatisticsUpdate contains backend updates to proxy
 type ProxyBackendStatisticsUpdate struct {
-	//ClusterNode string            `json:"clusternode"`
 	ClusterNode string              `json:"clusternode"`
 	DNSEntry    DNSEntry            `json:"dnsentry"`
 	PoolName    string              `json:"poolname"`
@@ -47,7 +45,6 @@ type ClusterPacketGlbalDNSStatisticsUpdate struct {
 	RX                int64     `json:"rx"`
 	TX                int64     `json:"tx"`
 	ResponseTimeValue []float64 `json:"responsetimevalue"`
-	///Statistics  balancer.Statistics `toml:"statistics" json:"statistics"`
 }
 
 // ClusterPacketClearProxyStatistics contains a request to clear the proxy statistics

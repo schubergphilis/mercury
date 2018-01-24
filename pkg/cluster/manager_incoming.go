@@ -25,6 +25,7 @@ func (m *Manager) handleIncommingConnections() {
 				conn.Close()
 				return
 			}
+
 			if authRequest.AuthKey != m.authKey {
 				// auth failed
 				m.log("%s sent an invalid authentication key")
@@ -33,6 +34,7 @@ func (m *Manager) handleIncommingConnections() {
 				conn.Close()
 				return
 			}
+
 			authTime := time.Now()
 			authResponse, _ := m.newPacket(packetAuthResponse{Status: true, Time: authTime})
 			err = m.connectedNodes.writeSocket(conn, authResponse)

@@ -80,15 +80,18 @@ func LoadCertificate(t TLSConfig) (c *tls.Config, err error) {
 			return c, fmt.Errorf("Unknown TLSMinVersion: %s", t.MinVersion)
 		}
 	}
+
 	if t.MaxVersion != "" {
 		c.MaxVersion = TLSVersionLookup[strings.ToLower(t.MaxVersion)]
 		if c.MaxVersion == 0 {
 			return c, fmt.Errorf("Unknown TLSMaxVersion: %s", t.MaxVersion)
 		}
 	}
+
 	if t.Renegotiation != "" {
 		c.Renegotiation = TLSRenegotiateLookup[strings.ToLower(t.Renegotiation)]
 	}
+
 	if len(t.CipherSuites) > 0 {
 		for _, cipher := range t.CipherSuites {
 			cn := TLSCipherLookup[strings.ToLower(cipher)]
@@ -98,6 +101,7 @@ func LoadCertificate(t TLSConfig) (c *tls.Config, err error) {
 			c.CipherSuites = append(c.CipherSuites, cn)
 		}
 	}
+
 	if len(t.CurvePreferences) > 0 {
 		for _, curve := range t.CurvePreferences {
 			cn := TLSCurveLookup[strings.ToLower(curve)]
@@ -133,9 +137,11 @@ func AddCertificate(t TLSConfig, c *tls.Config) error {
 		if err != nil {
 			return fmt.Errorf("Failed to parse certificate for details")
 		}
+
 		if len(details.Subject.CommonName) > 0 {
 			names = append(names, details.Subject.CommonName)
 		}
+
 		names = append(names, details.DNSNames...)
 
 		// Check if we already loaded all dns names mentioned in this certificates
@@ -145,21 +151,11 @@ func AddCertificate(t TLSConfig, c *tls.Config) error {
 				existing = append(existing, dnsname)
 			}
 		}
-		//fmt.Printf("Cert Add of names: %v\n", names)
-		//fmt.Printf("Cert Existing names: %v\n", existing)
-		//fmt.Printf("Cert Difference: %v\n", differenceArr(names, existing))
+
 		if len(differenceArr(names, existing)) == 0 {
 			fmt.Printf("Already loaded all the certificates in the new one, skipping load")
-			//log.Fatal("bye\n")
 		}
-		//for _, knownCert := range c.Certificates {
-		//fmt.Printf("Cert Add: %v\n", cert.Leaf.DNSNames)
-		/*
-			if reflect.DeepEqual(knownCert.Leaf.DNSNames, cert.Leaf.DNSNames) {
-				return fmt.Errorf("Duplicate certificate defined in config: %v\n", cert.Leaf.DNSNames)
-			}
-		*/
-		//}
+
 		c.Certificates = append(c.Certificates, cert)
 		c.BuildNameToCertificate()
 	}
@@ -173,11 +169,13 @@ func differenceArr(a, b []string) []string {
 	for _, x := range b {
 		mb[x] = true
 	}
+
 	ab := []string{}
 	for _, x := range a {
 		if _, ok := mb[x]; !ok {
 			ab = append(ab, x)
 		}
 	}
+
 	return ab
 }

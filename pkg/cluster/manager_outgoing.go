@@ -40,6 +40,7 @@ func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
 		m.log("Connecting to %s (%s) with-tls", name, addr)
 		conn, err = tls.DialWithDialer(&net.Dialer{Timeout: m.getDuration("connecttimeout")}, "tcp", addr, tlsConfig)
 	}
+
 	if err == nil {
 		// on dialing out, we need to send an auth
 		authRequest, _ := m.newPacket(packetAuthRequest{AuthKey: m.authKey})
@@ -51,6 +52,7 @@ func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
 			conn.Close()
 			return
 		}
+
 		authResponse := &packetAuthResponse{}
 		err = packet.Message(authResponse)
 		if err != nil {
@@ -59,6 +61,7 @@ func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
 			conn.Close()
 			return
 		}
+
 		if authResponse.Status != true {
 			m.log("auth failed on dial: %s", authResponse.Error)
 			conn.Close()

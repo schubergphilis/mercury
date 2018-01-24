@@ -41,11 +41,11 @@ func Configure(output string, l string) {
 	if output == "" || output == "stdout" {
 		log.Out = os.Stdout
 		log.Formatter = &logrus.TextFormatter{DisableColors: false, DisableTimestamp: false, QuoteEmptyFields: true}
-		//logrus.SetOutput(os.Stderr)
+
 	} else if output == "stderr" {
 		log.Out = os.Stderr
 		log.Formatter = &logrus.TextFormatter{DisableColors: false, DisableTimestamp: false, QuoteEmptyFields: true}
-		//logrus.SetOutput(os.Stderr)
+
 	} else if output == outputSyslog {
 		log.Formatter = &logrus.TextFormatter{DisableColors: true, DisableTimestamp: true, QuoteEmptyFields: true}
 		hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_LOCAL5, "")
@@ -54,6 +54,7 @@ func Configure(output string, l string) {
 			log.Hooks.Add(hook)
 			log.Out = ioutil.Discard
 		}
+
 	} else {
 		log.Formatter = &logrus.TextFormatter{DisableColors: true, DisableTimestamp: false, QuoteEmptyFields: true}
 		f, err := os.OpenFile(output, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0755)
@@ -78,14 +79,6 @@ func Configure(output string, l string) {
 func For(name string) *logrus.Entry {
 	lock.Lock()
 	defer lock.Unlock()
-	/*
-		l, _ := logrus.ParseLevel("DEBUG")
-		if logrus.GetLevel() == l {
-			pc, file, line, _ := runtime.Caller(1)
-			fName := runtime.FuncForPC(pc).Name()
-			return logrus.WithField("name", name).WithField("file", path.Base(file)).WithField("line", line).WithField("func", path.Base(fName))
-		}
-	*/
 	tag := strings.Split(name, "/")
 	return log.WithField("tag", name).WithField("func", tag[0])
 }

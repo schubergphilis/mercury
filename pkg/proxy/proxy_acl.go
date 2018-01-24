@@ -23,6 +23,7 @@ type ACL struct {
 	CIDRS          []string `json:"cidrs" toml:"cidrs"`                     // network cidr
 }
 
+// ACLS contains a list of ACL
 type ACLS []ACL
 
 type duration struct {
@@ -59,15 +60,19 @@ func (acl ACL) ProcessRequest(req *http.Request) (deny bool) {
 	switch acl.ConditionType {
 	case headerMatch:
 		return acl.processHeader(&req.Header)
+
 	case cookieMatch:
 		return acl.processCookie(&req.Header, nil, "Cookie")
+
 	default: // always executed
 		if acl.HeaderKey != "" {
 			return acl.processHeader(&req.Header)
 		}
+
 		if acl.CookieKey != "" {
 			return acl.processCookie(&req.Header, nil, "Cookie")
 		}
+
 		if len(acl.CIDRS) > 0 {
 			return acl.processCIDR(req.RemoteAddr)
 		}
@@ -80,27 +85,35 @@ func (acl ACL) ProcessResponse(res *http.Response) (deny bool) {
 	if res == nil {
 		return false
 	}
+
 	if res.Header == nil {
 		return false
 	}
+
 	switch acl.ConditionType {
 	case headerMatch:
 		return acl.processHeader(&res.Header)
+
 	case cookieMatch:
 		return acl.processCookie(&res.Header, &res.Request.Header, "Set-Cookie")
+
 	case statusMatch:
 		return acl.processStatus(res)
+
 	default: // always executed
 		if acl.HeaderKey != "" {
 			return acl.processHeader(&res.Header)
 		}
+
 		if acl.CookieKey != "" {
 			return acl.processCookie(&res.Header, &res.Request.Header, "Set-Cookie")
 		}
+
 		if acl.StatusCode >= 100 {
 			return acl.processStatus(res)
 		}
 	}
+
 	return false
 }
 
@@ -111,5 +124,6 @@ func (acls ACLS) CountActions(action string) (count int) {
 			count++
 		}
 	}
+
 	return
 }

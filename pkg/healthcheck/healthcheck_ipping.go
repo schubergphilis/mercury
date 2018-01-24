@@ -23,6 +23,7 @@ func ipPing(proto string, host string, port int, sourceIP string, healthCheck He
 			errorcount++
 			errormsg = err.Error()
 		}
+
 		time.Sleep(1 * time.Second)
 	}
 
@@ -50,10 +51,12 @@ func pingAddr(proto string, host string, port int, sourceIP string, seq int, dat
 			Timeout:   timeout,
 			DualStack: true,
 		}
+
 		conn, err = dialer.Dial("ip4:icmp", host)
 		if err != nil {
 			return false, 0, err
 		}
+
 	case "udp":
 		localAddr, errl := net.ResolveIPAddr("ip", sourceIP)
 		if errl != nil {
@@ -74,6 +77,7 @@ func pingAddr(proto string, host string, port int, sourceIP string, seq int, dat
 		if err != nil {
 			return false, 0, err
 		}
+
 	case "tcp":
 		localAddr, errl := net.ResolveIPAddr("ip", sourceIP)
 		if errl != nil {
@@ -90,6 +94,7 @@ func pingAddr(proto string, host string, port int, sourceIP string, seq int, dat
 			Timeout:   timeout,
 			DualStack: true,
 		}
+
 		conn, err = dialer.Dial("tcp4", fmt.Sprintf("%s:%d", host, port))
 		if err != nil {
 			return false, 0, err
@@ -103,9 +108,11 @@ func pingAddr(proto string, host string, port int, sourceIP string, seq int, dat
 	if err != nil {
 		return false, 0, err
 	}
+
 	if size != len(pingMsg) {
 		return false, 0, errors.New("send ping data err")
 	}
+
 	beginTime := time.Now()
 	for time.Now().Sub(beginTime) < timeout {
 		allData := make([]byte, 20+size)
@@ -114,24 +121,29 @@ func pingAddr(proto string, host string, port int, sourceIP string, seq int, dat
 		if err != nil {
 			return false, 0, err
 		}
+
 		header, err := ipv4.ParseHeader(allData)
 		if err != nil {
 			return false, 0, err
 		}
+
 		var msg *icmp.Message
 		msg, err = icmp.ParseMessage(1, allData[header.Len:header.TotalLen])
 		if err != nil {
 			return false, 0, nil
 		}
+
 		switch msg.Type {
 		case ipv4.ICMPTypeEcho:
 			continue
+
 		case ipv4.ICMPTypeEchoReply:
 			msg.Body.Marshal(1)
 			if _, ok := msg.Body.(*icmp.Echo); !ok {
 				return false, 0, errors.New("ping recv err data")
 			}
 			return true, header.TTL, nil
+
 		default:
 			continue
 		}
@@ -153,9 +165,11 @@ func getEchoMsg(seq int, data []byte) []byte {
 			Data: data,
 		},
 	}
+
 	echoData, err := echoMsg.Marshal(nil)
 	if err != nil {
 		panic(err)
 	}
+
 	return echoData
 }

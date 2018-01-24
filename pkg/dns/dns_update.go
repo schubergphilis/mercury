@@ -12,8 +12,6 @@ func addRecord(node string, domain string, record Record) {
 	dnsmanager.Lock()
 	defer dnsmanager.Unlock()
 	// Add new record
-	//log := logging.For("dns/update")
-	//log.Debugf("-------> Appending Record: %+v", record)
 	// Create cluster node entry if not there yet
 	if _, ok := dnsmanager.node[node]; !ok {
 		dnsmanager.node[node] = Domains{
@@ -25,7 +23,6 @@ func addRecord(node string, domain string, record Record) {
 	if _, ok := dnsmanager.node[node].Domains[domain]; !ok {
 		dnsmanager.node[node].Domains[domain] = Domain{
 			Records: make([]Record, 0),
-			//TTL:        ttl,
 		}
 	}
 
@@ -89,22 +86,15 @@ func createDomain(node, domain string) {
 func Update(node string, domain string, record Record) {
 	log := logging.For("dns/update").WithField("domain", domain).WithField("cluster", node).WithField("online", record.Online).WithField("name", record.Name).WithField("target", record.Target).WithField("mode", record.BalanceMode).WithField("uuid", record.UUID)
 	log.Debug("Received DNS update")
-	//log.Debugf("Got DNS update for node:%s domain:%s online:%t record:%+v", node, domain, record.Online, record)
 
 	// Create cluster node entry if not there yet
 	if _, ok := dnsmanager.node[node]; !ok {
 		createNode(node)
-		/*dnsmanager.node[node] = Domains{
-			Domains: make(map[string]Domain),
-		}*/
 	}
 
 	// Create dns domains entry if not there yet
 	if _, ok := dnsmanager.node[node].Domains[domain]; !ok {
 		createDomain(node, domain)
-		/*dnsmanager.node[node].Domains[domain] = Domain{
-			Records: make([]Record, 0),
-		}*/
 	}
 
 	// This happens if there is no config anymore when removing a update, we remove by uuid
@@ -123,8 +113,6 @@ func Update(node string, domain string, record Record) {
 	}
 	if existingid >= 0 {
 		// We have an existing record, we need to update it
-		//log.Debugf("Update existing record:%d on cluster node:%s (old:%v new:%v)", existingid, node, dnsmanager.node[node].Domains[domain].Records[existingid], record)
-		//log.Infof("Update existing record:%s.%s on cluster node:%s (old:%v new:%v)", record.Name, domain, node, dnsmanager.node[node].Domains[domain].Records[existingid].Target, record.Target)
 		log.WithField("oldtarget", dnsmanager.node[node].Domains[domain].Records[existingid].Target).Info("Updating existing DNS record")
 		updateRecord(node, domain, existingid, record)
 
@@ -201,8 +189,8 @@ func GetAllLocalDomainRecords(domain string) []Record {
 	for _, record := range dnsmanager.node["localdns"].Domains[domain].Records {
 		records = append(records, record)
 	}
+
 	return records
-	//return dnsmanager.node["localdns"].Domains[domain].Records
 }
 
 // UpdateStatistics for node
@@ -210,14 +198,12 @@ func UpdateStatistics(clusterNode string, domain string, s *balancer.Statistics)
 	dnsmanager.Lock()
 	defer dnsmanager.Unlock()
 	if _, ok := dnsmanager.node[clusterNode].Domains[domain]; ok {
-		// if records exist
 		for id, rec := range dnsmanager.node[clusterNode].Domains[domain].Records {
 			if rec.UUID == s.UUID {
 				dnsmanager.node[clusterNode].Domains[domain].Records[id].Statistics = s
 			}
 		}
 	}
-
 }
 
 // EnableProxyStats set to true to use proxy stats, or to false to use internal stats of dns manager
@@ -236,8 +222,10 @@ func AllowForwarding(cidr []string) {
 		if err != nil {
 			log.WithField("cidr", c).Warn("Invalid cids in forwarding allow list")
 		}
+
 		cidrs = append(cidrs, ipnet)
 	}
+
 	dnsmanager.Lock()
 	defer dnsmanager.Unlock()
 

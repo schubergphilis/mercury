@@ -16,11 +16,10 @@ import (
 
 /* dateParseFunc parses the ###DATE+3mFORMAT### string and returns specified date */
 func dataParseFunc(t time.Time, mod string, duration string, format string, utc string) string {
-	//var t time.Time
-	//t = time.Now()
 	if utc == "|UTC" {
 		t = t.UTC()
 	}
+
 	if duration != "" {
 		d, err := time.ParseDuration(duration)
 		if err != nil {
@@ -33,12 +32,15 @@ func dataParseFunc(t time.Time, mod string, duration string, format string, utc 
 			t = t.Add(-d)
 		}
 	}
+
 	if t.IsZero() {
 		return "INVALID TIME"
 	}
+
 	if format == "" {
 		format = time.RFC3339
 	}
+
 	return t.Format(format)
 }
 
@@ -47,6 +49,7 @@ func postDataParser(t time.Time, data string) string {
 	if err != nil {
 		return data
 	}
+
 	newdata := r.ReplaceAllStringFunc(data,
 		func(m string) string {
 			p := r.FindStringSubmatch(m)
@@ -67,7 +70,6 @@ func postDataParser(t time.Time, data string) string {
 
 // httpRequest does a http request check
 func httpRequest(method string, host string, port int, sourceIP string, healthCheck HealthCheck) (bool, error) {
-	//log := logging.For("healthcheck/httprequest")
 	var err error
 
 	localAddr, errl := net.ResolveIPAddr("ip", sourceIP)
@@ -84,13 +86,11 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 		LocalAddr: &localTCPAddr,
 		Timeout:   time.Duration(healthCheck.Timeout) * time.Second,
 		KeepAlive: 10 * time.Second,
-		//Deadline:  time.Now().Add(10 * time.Second),
+		//Deadline:  time.Now().Add(10 * time.Second), TODO: do we still need this or was this moved?
 		DualStack: true,
 	}
 
 	// Parse TLS config if provided
-	//tlsConfig := &tls.Config{}
-	//err = healthCheck.TLSConfig.LoadConfig(tlsConfig)
 	tlsConfig, err := tlsconfig.LoadCertificate(healthCheck.TLSConfig)
 	if err != nil {
 		return false, fmt.Errorf("Unable to setup TLS:%s", err)
@@ -111,19 +111,18 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 
 	client := &http.Client{Transport: tr}
 
-	//log.Debugf("Creating new %s request on:%s (%s:%d)", method, healthCheck.Request, host, port)
 	var postData *bytes.Buffer
 	var req *http.Request
 	t := time.Now()
 	if healthCheck.HTTPPostData != "" {
-		//log.Debugf("REQUEST with POST DATA")
 		postData = bytes.NewBufferString(postDataParser(t, healthCheck.HTTPPostData))
 		req, err = http.NewRequest(method, healthCheck.HTTPRequest, postData)
+
 	} else {
-		//log.Debugf("REQUEST without post data")
 		req, err = http.NewRequest(method, healthCheck.HTTPRequest, nil)
 
 	}
+
 	if err != nil {
 		return false, err
 	}
@@ -137,7 +136,6 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	}
 
 	req.Header.Set("User-Agent", "mercury/1.0")
-	//log.Debugf("Executing check:%+v", req)
 	resp, err := client.Do(req)
 	if err != nil {
 		return false, err
@@ -145,7 +143,6 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 
 	defer resp.Body.Close()
 
-	//log.Debugf("Check result for:%s (%s:%d) result:%d", healthCheck.Request, host, port, healthCheck.HTTPStatus)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return false, fmt.Errorf("Error reading HTTP Body: %s", err)
@@ -154,10 +151,6 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	// Check health status
 	if healthCheck.HTTPStatus > 0 {
 		if resp.StatusCode != healthCheck.HTTPStatus {
-			//return false, fmt.Errorf("HTTP Response code incorrect (got:%d %s expected:%d) Body:%s", resp.StatusCode, resp.Status, healthCheck.HTTPStatus, html.EscapeString(string(body)))
-			//return false, fmt.Errorf("HTTP Response code incorrect (got:%d %s expected:%d)<br>Body:%s<br>PostData:%s", resp.StatusCode, resp.Status, healthCheck.HTTPStatus, string(body), postDataParser(t, healthCheck.PostData))
-			//reqDump, _ := httputil.DumpRequest(req, true)
-			//log.Debugf("Request: %s", reqDump)
 			return false, fmt.Errorf("HTTP Response code incorrect (got:%d %s expected:%d)", resp.StatusCode, resp.Status, healthCheck.HTTPStatus)
 		}
 	}
@@ -169,7 +162,6 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	}
 
 	if len(healthCheck.HTTPReply) != 0 {
-		//log.Debugf("Body check for:%s", healthCheck.Request)
 		if !r.MatchString(string(body)) {
 			return false, fmt.Errorf("Reply '%s' not found in body", healthCheck.HTTPReply)
 		}

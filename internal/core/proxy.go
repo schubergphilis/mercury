@@ -52,7 +52,6 @@ func (manager *Manager) InitializeProxies() {
 	}
 
 	// Loop through pools -> proxy vip's
-	//for poolname, pool := range loadbalancer.Pools {
 	for poolname, pool := range loadbalancer {
 		var newProxy *proxy.Listener
 
@@ -64,7 +63,6 @@ func (manager *Manager) InitializeProxies() {
 		}
 
 		if existingProxy, ok := proxies.pool[poolname]; ok {
-			//log.Debugf("pool:%s Reload: Proxy already exists: %+v", poolname, pool)
 			plog.Debug("Existing proxy")
 			// Proxy already exists
 			// See if we have a reason to stop it
@@ -94,12 +92,6 @@ func (manager *Manager) InitializeProxies() {
 				}
 			}
 
-			/*
-				for n, backend := range pool.Backends {
-					tlsconfig.AddCertificate(backend.TLSConfig, newTLS)
-					log.Debugf("ADDCERT: adding cert for %s", n)
-				}
-			*/
 			// Update listener if the below changed
 			listenerChanged := existingProxy.ListenerMode != pool.Listener.Mode ||
 				existingProxy.IP != pool.Listener.IP ||
@@ -144,10 +136,6 @@ func (manager *Manager) InitializeProxies() {
 			uuid := fmt.Sprintf("%x", h.Sum(nil))
 			newProxy = proxy.New(uuid, poolname, pool.Listener.MaxConnections)
 
-			// UUID replace
-			//uuidv4, _ := uuid.NewV4() // replaced by sha256
-			//newProxy = proxy.New(uuidv4.String(), poolname, pool.Listener.MaxConnections)
-
 			newTLS, err := tlsconfig.LoadCertificate(pool.Listener.TLSConfig)
 			if err != nil {
 				plog.Warn("Error loading certificate")
@@ -157,6 +145,7 @@ func (manager *Manager) InitializeProxies() {
 			for backendName := range pool.Backends {
 				backendSorted = append(backendSorted, backendName)
 			}
+
 			sort.Strings(backendSorted)
 
 			for _, backendName := range backendSorted {
@@ -165,13 +154,6 @@ func (manager *Manager) InitializeProxies() {
 					log.Debugf("ADDCERT: adding cert for %s", backendName)
 				}
 			}
-			/*
-				for n, backend := range pool.Backends {
-					if backend.TLSConfig.CertificateFile != "" {
-						tlsconfig.AddCertificate(backend.TLSConfig, newTLS)
-						log.Debugf("ADDCERT: adding cert for %s", n)
-					}
-				}*/
 
 			newProxy.SetListener(pool.Listener.Mode, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
 			go newProxy.Start()
@@ -209,12 +191,9 @@ func (manager *Manager) InitializeProxies() {
 				plog.WithField("backend", backendname).Debug("Marking backend to keep")
 			}
 
-			//log.Debugf("proxy:%s backend:%s before: %+v", poolname, backendname, newProxy.Backends[backendname])
 			// Add backend  (will merge if exists)
 			plog.WithField("backend", backendname).Info("Adding/Updating backend")
 			newProxy.UpdateBackend(backendpool.UUID, backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames, pool.Listener.MaxConnections, backendpool.ErrorPage)
-
-			//log.Debugf("proxy:%s backend:%s after: %+v", poolname, backendname, newProxy.Backends[backendname])
 
 			// Use backend to attach acl's
 			backend := newProxy.Backends[backendname]
@@ -316,6 +295,7 @@ func (manager *Manager) ProxyHandler() {
 				plog.WithError(err).Debug("Unable to get backend")
 				continue
 			}
+
 			nodeid, err := proxyGetNodeByUUID(backend, update.BackendNodeUUID)
 			if err != nil {
 				plog.WithError(err).Debug("Unable to get backend node by UUID")
@@ -340,6 +320,7 @@ func (manager *Manager) ProxyHandler() {
 				plog.WithError(err).Debug("Unable to get backend")
 				continue
 			}
+
 			plog.Debugf("proxyGetBackend OK")
 			plog.Debugf("proxyGetNodeByUUID")
 			nodeid, err := proxyGetNodeByUUID(backend, update.BackendNodeUUID)
@@ -347,6 +328,7 @@ func (manager *Manager) ProxyHandler() {
 				plog.WithError(err).Debug("Unable to get backend node by UUID")
 				continue
 			}
+
 			plog.Debugf("proxyGetNodeByUUID OK")
 
 			// Remove proxy backend
@@ -354,6 +336,7 @@ func (manager *Manager) ProxyHandler() {
 				plog.WithField("node", update.BackendNode.Name()).WithField("ip", update.BackendNode.IP).WithField("port", update.BackendNode.Port).Debug("Remove proxy node")
 				backend.RemoveBackendNode(nodeid)
 			}
+
 			log.Debug("removeProxyBackend OK")
 
 		case update := <-manager.clearStatsProxyBackend:
@@ -365,6 +348,7 @@ func (manager *Manager) ProxyHandler() {
 				log.WithError(err).Debug("Unable to get backend")
 				continue
 			}
+
 			backend.ClearStats()
 			log.Debug("clearStatsProxyBackend OK")
 
@@ -383,6 +367,7 @@ func proxyGetBackend(poolname, backendname string) (*proxy.Backend, error) {
 	if backend, ok := proxies.pool[poolname].Backends[backendname]; ok {
 		return backend, nil
 	}
+
 	return nil, fmt.Errorf("proxy:%s Received update for unknown backend:%s", poolname, backendname)
 }
 
@@ -399,6 +384,7 @@ func proxyGetNodeByUUID(backend *proxy.Backend, uuid string) (int, error) {
 			nodeid = bnid
 		}
 	}
+
 	return nodeid, nil
 }
 
@@ -416,15 +402,11 @@ func (manager *Manager) GetAllProxyStatsHandler() {
 						if old.Statistics.ClientsConnects != new.Statistics.ClientsConnects {
 							manager.proxyBackendStatisticsUpdate <- new
 						}
-						/*
-							if !reflect.DeepEqual(old.Statistics, new.Statistics) {
-								manager.proxyBackendStatisticsUpdate <- new
-							}
-						*/
-					}
-				}
-			}
+					} // uuid
+				} // old
+			} // new
 			oldstats = newstats
+
 		}
 	}
 }
@@ -443,24 +425,7 @@ func (manager *Manager) GetAllProxyStats() []*config.ProxyBackendStatisticsUpdat
 				Statistics:  *s,
 			}
 			stats = append(stats, ps)
-			//manager.proxyBackendStatisticsUpdate <- ps
 		}
 	}
 	return stats
 }
-
-/*
-func getProxyStats(poolname, backendname string) (*balancer.Statistics, error) {
-	proxies.RLock()
-	defer proxies.RUnlock()
-
-	if _, ok := proxies.pool[poolname]; !ok {
-		return nil, fmt.Errorf("Received request for unknown pool:%s", poolname)
-	}
-
-	if _, ok := proxies.pool[poolname].Backends[backendname]; ok {
-		return proxies.pool[poolname].GetBackendStats(backendname), nil
-	}
-	return nil, fmt.Errorf("No backend for pool %s", poolname)
-}
-*/

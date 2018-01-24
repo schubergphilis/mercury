@@ -37,24 +37,11 @@ func WebBackendDetails(w http.ResponseWriter, r *http.Request) {
 	log := logging.For("core/backenddetails").WithField("func", "web")
 	w.Header().Add("Cache-Control", "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 	r.URL.Query().Get("backend")
-	//pool := "INTERNAL_VIP_LB"
-	//backend := "ghostbox_lc"
 	pool := r.URL.Query().Get("pool")
 	backend := r.URL.Query().Get("backend")
 
 	poolDetails := config.Get().Loadbalancer.Pools[pool]
 	backendDetails := config.Get().Loadbalancer.Pools[pool].Backends[backend]
-	/*
-		switch r.Header.Get("Content-type") {
-		case applicationJSONHeader:
-			data, err := json.Marshal(clusternodes)
-			if err != nil {
-				fmt.Fprintf(w, "{ error:'%s' }", err)
-			}
-			fmt.Fprint(w, string(data))
-
-		default:
-	*/
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Backend Details %s", clusternode, backend)
 	page := newPage(title, r.RequestURI)
@@ -77,9 +64,6 @@ func WebBackendDetails(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WithField("error", err).Warn("Error executing template")
 	}
-	/*
-		}
-	*/
 }
 
 // WebClusterStatus Provides a status page for Cluster status
@@ -115,13 +99,11 @@ func WebProxyStatus(w http.ResponseWriter, r *http.Request) {
 		if err := pusher.Push("/static/logo32.png", nil); err != nil {
 			log.Printf("Failed to push: %v", err)
 		}
-		/* type definetion now working with golang yet - so lets not push this one
-		if err := pusher.Push("/static/mercury.css", nil); err != nil {
-			log.Printf("Failed to push: %v", err)
-		}*/
+
 		if err := pusher.Push("/static/list.min.js", nil); err != nil {
 			log.Printf("Failed to push: %v", err)
 		}
+
 		if err := pusher.Push("/static/jquery.min.js", nil); err != nil {
 			log.Printf("Failed to push: %v", err)
 		}
@@ -340,8 +322,7 @@ func newPage(title, uri string) *web.Page {
 // NewServer sets up a new webserver
 func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) {
 	s = &http.Server{
-		Addr: fmt.Sprintf("%s:%d", ip, port),
-		//Handler:        goweb.DefaultHttpHandler(),
+		Addr:           fmt.Sprintf("%s:%d", ip, port),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
@@ -354,7 +335,6 @@ func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) 
 	fs := http.FileServer(http.Dir(config.Get().Web.Path))
 	http.Handle("/internal/", http.StripPrefix("/internal/", fs))
 
-	//http.HandleFunc("/glb", dns.WebGLBStatus)
 	http.HandleFunc("/glb", WebGLBStatus)
 	http.HandleFunc("/localdns", WebLocalDNSStatus)
 	http.HandleFunc("/backend", WebBackendStatus)
@@ -364,7 +344,6 @@ func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) 
 	http.HandleFunc("/", WebRoot)
 
 	l, err = net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
-	//  return s
 	return
 }
 
@@ -385,6 +364,7 @@ func InitializeWebserver() {
 
 		listener = tls.NewListener(listener, server.TLSConfig)
 	}
+
 	if err == nil {
 		defer listener.Close()
 		log.Info("Started web server")

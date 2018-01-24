@@ -68,13 +68,5 @@ func TestTLSConfig(t *testing.T) {
 
 	// TODO: write a test
 	RenewOCSP(c)
-	//_, err = RenewOCSP(c)
-	/*
-		if err == nil {
-			t.Errorf("Unless your loading a valid certificate, this should have failed. err=%s", err)
-		} else if err.Error() != "no OCSP server specified in cert" {
-			t.Errorf("OCSP expected no server specified in cert. got:%s", err)
-		}
-	*/
 
 }

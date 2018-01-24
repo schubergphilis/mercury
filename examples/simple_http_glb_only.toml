@@ -2,10 +2,15 @@
   manage_network_interfaces = "yes"
   enable_proxy = "no"
 [cluster]
-  binding = "localhost"
   name = "MY_GLB_POOL"
-  nodes = ["localhost", "remotehost"]
-  secretkey = "yourclusterkey"
+  [cluster.binding]
+  name = "localhost1"
+  addr = "127.0.0.1:9000"
+  authkey = "test"
+  [[cluster.nodes]]
+  name = "localhost2"
+  addr = "127.0.0.1:10000"
+  authkey = "test"
 
 [dns]
   binding = "localhost"

@@ -28,6 +28,7 @@ func (c *connectionPool) nodeAdd(newNode *Node) (*Node, error) {
 	if node, ok := c.nodes[newNode.name]; ok {
 		return node, fmt.Errorf("Node %s already exists in connection pool add(%s->%s) existing(%s->%s)", newNode.name, newNode.conn.LocalAddr(), newNode.conn.RemoteAddr(), node.conn.LocalAddr(), node.conn.RemoteAddr())
 	}
+
 	c.nodes[newNode.name] = newNode
 	return nil, nil
 }
@@ -38,6 +39,7 @@ func (c *connectionPool) nodeRemove(newNode *Node) error {
 	if _, ok := c.nodes[newNode.name]; ok {
 		delete(c.nodes, newNode.name)
 	}
+
 	return nil
 }
 
@@ -47,6 +49,7 @@ func (c *connectionPool) nodeExists(name string) bool {
 	if _, ok := c.nodes[name]; ok {
 		return true
 	}
+
 	return false
 }
 
@@ -56,6 +59,7 @@ func (c *connectionPool) getSocket(name string) (net.Conn, error) {
 	if node, ok := c.nodes[name]; ok {
 		return node.conn, nil
 	}
+
 	return nil, fmt.Errorf("node not found: %s", name)
 }
 
@@ -65,6 +69,7 @@ func (c *connectionPool) getAllSockets() (conns []net.Conn) {
 	for _, node := range c.nodes {
 		conns = append(conns, node.conn)
 	}
+
 	return
 }
 
@@ -77,6 +82,7 @@ func (c *connectionPool) writeAll(p []byte) error {
 			errors = append(errors, err.Error())
 		}
 	}
+
 	if len(errors) > 0 {
 		return fmt.Errorf("writeAll failed: %s", strings.Join(errors, ","))
 	}
@@ -89,10 +95,12 @@ func (c *connectionPool) write(name string, p []byte) error {
 	if err != nil {
 		return fmt.Errorf("write failed: %s", err)
 	}
+
 	err = c.writeSocket(conn, p)
 	if err != nil {
 		return fmt.Errorf("write failed: %s", err)
 	}
+
 	return nil
 }
 
@@ -102,6 +110,7 @@ func (c *connectionPool) writeSocket(conn net.Conn, p []byte) error {
 	if err != nil {
 		return fmt.Errorf("writeSocket failed: %s", err)
 	}
+
 	return nil
 }
 
@@ -112,10 +121,12 @@ func (c *connectionPool) readSocket(conn net.Conn) (*Packet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from socket: %s", err)
 	}
+
 	packet, err := UnpackPacket(bytes)
 	if err != nil {
 		return nil, fmt.Errorf("unpack failed: %s", err)
 	}
+
 	return packet, nil
 }
 

@@ -15,6 +15,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 		for backendname, backend := range pool.Backends {
 			offline := 0
 			online := 0
+
 			for _, node := range backend.Nodes {
 				if node.Online == false {
 					offline++
@@ -22,6 +23,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 					online++
 				}
 			}
+
 			// Report error nodes if any node is offline, or if active/passive has none online - with the exception of active/passive with only 1 node - we ignore this
 			if (offline > 0 && backend.BalanceMode.ActivePassive != YES) || (offline > 1 && online == 0 && backend.BalanceMode.ActivePassive == YES) {
 				for _, node := range backend.Nodes {
@@ -30,6 +32,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 					}
 				}
 			}
+
 		}
 	}
 	if faultyTargets != nil {
@@ -44,14 +47,13 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 	for poolname, pool := range pools {
 		for backendname, backend := range pool.Backends {
 			nodes := 0
+
 			for _, node := range backend.Nodes {
 				if node.Online == true {
 					nodes++
 				}
 			}
-			/*
-				BUG: for some reason 1 node offline, doesn't hit the backend down message it seems?
-			*/
+
 			if backend.BalanceMode.ActivePassive == YES {
 				if nodes == 0 && len(backend.Nodes) > 1 {
 					faultyTargets = append(faultyTargets, fmt.Sprintf("(Backend:%s (Pool:%s)", backendname, poolname))
@@ -61,9 +63,11 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 			}
 		}
 	}
+
 	if faultyTargets != nil {
 		return CRITICAL, fmt.Errorf("The following backend(s) have NO nodes available and are Offline: %v", faultyTargets)
 	}
+
 	return OK, nil
 }
 
@@ -71,19 +75,24 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 func Backend() int {
 	log := logging.For("check/glb")
 	body, err := GetBody(fmt.Sprintf("https://%s:%d/backend", config.Get().Web.Binding, config.Get().Web.Port))
+
 	if err != nil {
 		fmt.Printf("Error connecting to Mercury at %s:%d. Is the service running? (error:%s)\n", config.Get().Web.Binding, config.Get().Web.Port, err)
 		return CRITICAL
 	}
+
 	var loadbalancer config.Loadbalancer
 	err = json.Unmarshal(body, &loadbalancer)
+
 	if err != nil {
 		fmt.Printf("Error parsing json given by the Mercury service: %s\n", err)
 		return CRITICAL
 	}
+
 	// Prepare data
 	var criticals []string
 	var warnings []string
+
 	// Execute Checks
 	log.Debug("Checking if backend has atleast 1 node online")
 	if exitcode, err := checkBackendsHasNodes(loadbalancer.Pools); err != nil {
@@ -94,6 +103,7 @@ func Backend() int {
 			warnings = append(warnings, err.Error())
 		}
 	}
+
 	log.Debug("Checking if all backend nodes are online")
 	if exitcode, err := checkBackendsOnline(loadbalancer.Pools); err != nil {
 		switch exitcode {
@@ -103,14 +113,17 @@ func Backend() int {
 			warnings = append(warnings, err.Error())
 		}
 	}
+
 	if len(criticals) > 0 {
 		fmt.Printf("CRITICAL: %+v\n", criticals)
 		return CRITICAL
 	}
+
 	if len(warnings) > 0 {
 		fmt.Printf("WARNING: %v\n", warnings)
 		return WARNING
 	}
+
 	fmt.Println("OK: All checks are fine!")
 	return OK
 }

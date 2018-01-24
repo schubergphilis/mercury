@@ -119,7 +119,6 @@ func (m *Manager) addClusterAPI() {
 func (m *Manager) ListenAndServeTLS(addr string, tlsConfig *tls.Config) (err error) {
 	m.log("Starting TLS listener on %s", addr)
 	s := newServer(addr, tlsConfig)
-	//m.useTLS = true
 	m.listener, err = s.Listen()
 	if err == nil {
 		m.start(s, tlsConfig)
@@ -209,6 +208,7 @@ func (m *Manager) NodesConfigured() map[string]bool {
 	for name := range m.configuredNodes {
 		node[name] = true
 	}
+
 	return node
 }
 
@@ -219,6 +219,7 @@ func (m *Manager) NodeConfigured(nodeName string) bool {
 	if _, ok := m.configuredNodes[nodeName]; ok {
 		return true
 	}
+
 	return false
 }
 
@@ -230,10 +231,12 @@ func (m *Manager) RemoveNode(nodeName string) {
 	if _, ok := m.configuredNodes[nodeName]; ok {
 		delete(m.configuredNodes, nodeName)
 	}
+
 	select {
 	case m.internalMessage <- internalMessage{Type: "noderemove", Node: nodeName}:
 	default:
 	}
+
 	m.connectedNodes.close(nodeName)
 }
 
@@ -243,6 +246,7 @@ func (m *Manager) getConfiguredNodes() (nodes []Node) {
 	for _, node := range m.configuredNodes {
 		nodes = append(nodes, node)
 	}
+
 	return
 }
 
@@ -252,6 +256,7 @@ func (m *Manager) StateDump() {
 	for _, node := range m.configuredNodes {
 		m.log("configured nodes: %+v", node)
 	}
+
 	for _, node := range m.connectedNodes.nodes {
 		m.log("connected nodes: %+v", node)
 	}

@@ -3,6 +3,16 @@
 # Mercury
 Mercury is a loadbalancer with Global Loadbalance capababilities across multiple Datacentre or Cloud infrastructures.
 
+## What is Mercury ?
+Mercury is a Global loadbalancer, designed to add a dns based loadbalancing layer on top of its internal loadbalancer or 3rd pary loadbalancers such as cloud services.
+This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbancer sollutions in place.
+
+## Resources
+
+* Binaries: https://github.com/schubergphilis/mercury/releases
+* Chef Cookbook: https://github.com/sbp-cookbooks/mercury
+* Additional Documentation: http://mercury-global-loadbalancer.readthedocs.io/en/latest/
+
 # Requirements
 * OSX
 * Linux (with iproute 3+)

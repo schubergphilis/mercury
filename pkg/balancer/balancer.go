@@ -16,8 +16,6 @@ func (s statistics) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 // ID can be a IP for ip based loadbalancing.
 // ID van be sessionID for stickyness based loadbalancing.
 func Sort(s []Statistics, ip string, sticky string, mode string) ([]Statistics, error) {
-	//log := logging.For("balancer/sort")
-	//log.Debug("Balancing mode: %s values before: %+v", mode, s)
 	switch mode {
 	case "roundrobin":
 		sort.Sort(RoundRobin{s})
@@ -40,15 +38,11 @@ func Sort(s []Statistics, ip string, sticky string, mode string) ([]Statistics, 
 	default:
 		return s, fmt.Errorf("Unknown balance mode: %s", mode)
 	}
-	//log.WithField("mode", mode)
-	//log.Debugf("Balancing mode: %s values after: %+v", mode, s)
 	return s, nil
 }
 
 // MultiSort sorts statistics based on multiple modes
 func MultiSort(s []Statistics, ip string, sticky string, mode string) ([]Statistics, error) {
-	//log := logging.For("balancer/multisort")
-	//log.Debug("Balancing mode: %s values before: %+v", mode, s)
 	modes := reverse(strings.Split(mode, ","))
 	var err error
 	for _, m := range modes {
@@ -57,7 +51,6 @@ func MultiSort(s []Statistics, ip string, sticky string, mode string) ([]Statist
 			return s, err
 		}
 	}
-	//log.Debug("Balancing mode: %s values after: %+v", mode, s)
 	return s, nil
 }
 

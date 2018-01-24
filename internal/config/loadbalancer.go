@@ -60,11 +60,6 @@ type BackendNode struct {
 	Online      bool     `json:"online" toml:"online" yaml:"-"`
 	Errors      []string `json:"error" toml:"error" yaml:"-"`
 	ClusterName string   `json:"clustername" toml:"clustername" yaml:"-"`
-	//IP          string               `json:"ip" toml:"ip"`
-	//Port        int                  `json:"port" toml:"port"`
-	//Hostname    string               `json:"hostname" toml:"hostname"`
-	//Stats       *balancer.Statistics `json:"stats" toml:"stats" yaml:"-"`
-	//UUID        string               `json:"uuid" toml:"uuid" yaml:"-"`
 }
 
 // DNSEntry for GLB
@@ -102,7 +97,6 @@ type BalanceMode struct {
 	Preference    int      `json:"preference" toml:"preference"`         // used for preference based loadbalancing
 	LocalNetwork  []string `json:"local_network" toml:"local_network"`   // used for topology based loadbalancing
 	ClusterNodes  int      `json:"clusternodes" toml:"clusternodes"`     // affects monitoring only: how many cluster nodes serve this backend
-	//StickyMask    string `json:"stickymask" toml:"stickymask"`
 }
 
 // Network Contains network information
@@ -162,20 +156,6 @@ func GetNodeByUUID(poolName string, backendName string, nodeUUID string) (Backen
 	return BackendNode{}, fmt.Errorf("node UUID not found:%s", nodeUUID)
 }
 
-// GetNodeByUUID returns the node based on UUID
-/*
-func (backendPool *BackendPool) GetNodeByUUID(uuid string) (BackendNode, error) {
-	configLock.RLock()
-	defer configLock.RUnlock()
-	for id, node := range backendPool.Nodes {
-		if node.UUID == uuid {
-			return backendPool.Nodes[id], nil
-		}
-	}
-	return nil, fmt.Errorf("Could not find backend with UUID:%s", uuid)
-}
-*/
-
 // PoolsCopy returns a copy of pool
 func (l *Loadbalancer) PoolsCopy() map[string]LoadbalancePool {
 	configLock.RLock()
@@ -197,7 +177,6 @@ func RemoveBackendNodeUUID(poolName string, backendName string, nodeUUID string)
 	Lock()
 	defer Unlock()
 	backend := GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName]
-	//for nodeID, node := range backend.Nodes {
 	for nid := len(GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes) - 1; nid >= 0; nid-- {
 		if backend.Nodes[nid].UUID == nodeUUID {
 			nodes := removeBackendNodeID(backend.Nodes, nid)
@@ -207,26 +186,11 @@ func RemoveBackendNodeUUID(poolName string, backendName string, nodeUUID string)
 	GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName] = backend
 }
 
-/*
-// RemoveBackendNode removed a backend node to a backend
-func RemoveBackendNode(poolName string, backendName string, nodeID int) {
-	Lock()
-	defer Unlock()
-	//if _, ok := dnsmanager.node[node]; !ok {
-	if backend, ok := GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName]; ok {
-		nodes := removeBackendNodeID(backend.Nodes, nodeID)
-		backend.Nodes = nodes
-		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName] = backend
-	}
-}
-*/
-
 // AddBackendNode adds a backend node to a backend
 func AddBackendNode(poolName string, backendName string, node *BackendNode) {
 	Lock()
 	defer Unlock()
 	if backend, ok := GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName]; ok {
-		//backend := GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName]
 		backend.Nodes = append(backend.Nodes, node)
 		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName] = backend
 	}
@@ -240,5 +204,4 @@ func UpdateBackendNode(poolName string, backendName string, nodeID int, online b
 		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].Online = online
 		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].Errors = err
 	}
-
 }

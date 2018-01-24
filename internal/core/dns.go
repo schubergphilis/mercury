@@ -17,15 +17,13 @@ func (manager *Manager) DNSHandler() {
 	for {
 		select {
 		case dnsupdate := <-manager.dnsupdates:
-			log.Debugf("dnsupdates")
-
-			//log.Debugf("Got: %+v", dnsupdate)
 			stats := &balancer.Statistics{
 				UUID:       dnsupdate.BackendUUID,
 				Preference: dnsupdate.BalanceMode.Preference,
 				Topology:   dnsupdate.BalanceMode.LocalNetwork,
 				RWMutex:    new(sync.RWMutex),
 			}
+
 			record := dns.Record{
 				Name:          dnsupdate.DNSEntry.HostName,
 				TTL:           config.Get().DNS.Domains[dnsupdate.DNSEntry.Domain].TTL,
@@ -42,7 +40,6 @@ func (manager *Manager) DNSHandler() {
 			if dnsupdate.DNSEntry.IP != "" {
 				record.Type = "A"
 				record.Target = dnsupdate.DNSEntry.IP
-				//log.Infof("DNS Update for:%s.%s type:%s record:%s balancemode:%s online:%s uuid:%s", dnsupdate.DNSEntry.HostName, dnsupdate.DNSEntry.Domain, "A", dnsupdate.DNSEntry.IP, dnsupdate.BalanceMode.Method, dnsupdate.Online, dnsupdate.BackendUUID)
 				clog.WithField("target", dnsupdate.DNSEntry.IP).Debug("Received DNS update from cluster")
 				dns.Update(dnsupdate.ClusterNode, dnsupdate.DNSEntry.Domain, record)
 			}
@@ -50,14 +47,11 @@ func (manager *Manager) DNSHandler() {
 			if dnsupdate.DNSEntry.IP6 != "" {
 				record.Type = "AAAA"
 				record.Target = dnsupdate.DNSEntry.IP6
-				//log.Infof("DNS Update for:%s.%s type:%s record:%s balancemode:%s online:%s uuid:%s", dnsupdate.DNSEntry.HostName, dnsupdate.DNSEntry.Domain, "AAAA", dnsupdate.DNSEntry.IP6, dnsupdate.BalanceMode.Method, dnsupdate.Online, dnsupdate.BackendUUID)
 				clog.WithField("target", dnsupdate.DNSEntry.IP6).Debug("Received DNS update from cluster")
 				dns.Update(dnsupdate.ClusterNode, dnsupdate.DNSEntry.Domain, record)
 			}
-			log.Debugf("dnsupdates OK")
-		case dnsStatistics := <-manager.clusterGlbalDNSStatisticsUpdate:
-			log.Debugf("clusterGlbalDNSStatisticsUpdate")
 
+		case dnsStatistics := <-manager.clusterGlbalDNSStatisticsUpdate:
 			log.Debugf("Received DNS statistics from DNS manager")
 			stats := balancer.NewStatistics(dnsStatistics.UUID, 1)
 			stats.ClientsConnectedSet(dnsStatistics.ClientsConnected)
@@ -66,15 +60,12 @@ func (manager *Manager) DNSHandler() {
 			stats.TXAdd(dnsStatistics.TX)
 			stats.ResponseTimeValue = dnsStatistics.ResponseTimeValue
 			dns.UpdateStatistics(dnsStatistics.ClusterNode, dnsStatistics.DNSEntry.Domain, stats)
-			log.Debugf("clusterGlbalDNSStatisticsUpdate OK")
+
 		case node := <-manager.dnsdiscard:
-			log.Debugf("dnsdiscard")
 			dns.Discard(node)
-			log.Debugf("dnsdiscard OK")
+
 		case node := <-manager.dnsoffline:
-			log.Debugf("dnsoffline")
 			dns.MarkOffline(node)
-			log.Debugf("dnsoffline OK")
 		}
 	}
 }
@@ -111,7 +102,6 @@ func UpdateDNSConfig() {
 		for _, record := range allRecords {
 			oldRecords = append(oldRecords, record)
 		}
-		//log.WithField("domain", domainName).WithField("records", oldRecords).Debug("Records before reload")
 
 		// Add Records
 		for _, record := range domain.Records {
@@ -142,10 +132,6 @@ func UpdateDNSConfig() {
 			log.WithField("domain", domainName).WithField("hostname", record.Name).WithField("target", record.Target).WithField("uuid", record.UUID).WithField("type", record.Type).Info("Removing old DNS record")
 			dns.RemoveLocalRecordByContent(domainName, record.Name, record.TTL, record.Target, record.Type)
 		}
-
-		// debugging
-		//oldRecords = dns.GetAllLocalDomainRecords(domainName)
-		//log.WithField("domain", domainName).WithField("records", oldRecords).Debug("Records after reload")
 
 	}
 	log.Info("Initializing DNS Config Updates OK")

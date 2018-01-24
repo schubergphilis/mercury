@@ -18,6 +18,7 @@ func (l *Listener) NewTCPProxy() (net.Listener, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error starting listener on %s:%d error:%s", l.IP, l.Port, err)
 	}
+
 	l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
 	return l.socket, nil
 }
@@ -29,15 +30,18 @@ func (l *Listener) TCPProxy(n net.Listener) {
 		log.Warn("No listener was connected, cannot accept its connections!")
 		return
 	}
+
 	for {
 		client, err := n.Accept()
 		if err != nil {
 			if v, ok := n.(*limitListener); ok && v.IsClosed() {
 				return // Do nothing for we closed it.
 			}
+
 			log.WithField("error", err).Warn("Error accepting connection, closing listener")
 			return
 		}
+
 		log.WithField("client", client.RemoteAddr()).Info("New TCP proxy client connected")
 		go l.Handler(client)
 	}
@@ -62,12 +66,14 @@ func (l *Listener) Handler(client net.Conn) {
 		client.Close()
 		return
 	}
+
 	node, err := backend.GetBackendNodeBalanced(l.Name, clientip[0], "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
 	if err != nil {
 		log.WithField("connecttime", 0).WithField("transfertime", 0).WithError(err).Error("Forwarding TCP aborted")
 		client.Close()
 		return
 	}
+
 	clog := log.WithField("remoteip", node.IP).WithField("remoteport", node.Port)
 	clog.Debug("Forwarding client to node")
 	starttime := time.Now()
@@ -95,6 +101,7 @@ func (l *Listener) Handler(client net.Conn) {
 		client.Close()
 		return
 	}
+
 	connecttime := time.Since(starttime)
 	node.Statistics.ClientsConnectsAdd(1)
 	node.Statistics.ClientsConnectedAdd(1)
@@ -104,7 +111,6 @@ func (l *Listener) Handler(client net.Conn) {
 
 	firstbytetime := firstByte.Sub(starttime)
 	node.Statistics.ResponseTimeAdd(firstbytetime.Seconds())
-
 	node.Statistics.ClientsConnectedSub(1)
 	node.Statistics.RXAdd(in)
 	node.Statistics.TXAdd(out)
@@ -123,10 +129,12 @@ func copySourceToDestination(src io.ReadWriter, dst io.ReadWriter, datasent chan
 		if err != nil {
 			break
 		}
+
 		// we got data, register first byte
 		if len(firstbytereceived) == 0 {
 			firstbytereceived <- time.Now()
 		}
+
 		b := buff[:n]
 		sent += int64(len(b))
 

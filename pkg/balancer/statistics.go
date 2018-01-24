@@ -19,7 +19,6 @@ type Statistics struct {
 	TimeCounter       chan bool `json:"-"`         // counts the elements
 	TimeTimer         int       `json:"timetimer"` // time to keep elements
 	ResponseTimeValue []float64 `json:"responsetimevalue"`
-	//Selected          int64     `json:"selected"`
 }
 
 // NewStatistics returns new statistics
@@ -39,7 +38,6 @@ func (s *Statistics) Reset() {
 	defer s.Unlock()
 	s.ClientsConnects = 0
 	s.ClientsConnected = 0
-	//s.Selected = 0
 	s.RX = 0
 	s.TX = 0
 	s.ResponseTimeValue = []float64{}
@@ -127,7 +125,6 @@ func (s *Statistics) TimeCounterGet() int {
 
 // ResponseTimeAdd adds a response time to the array, and cycles through them if full
 func (s *Statistics) ResponseTimeAdd(f float64) {
-	//s.responseTimeRemoveFirst()
 	s.Lock()
 	defer s.Unlock()
 	if len(s.ResponseTimeValue) <= cap(s.ResponseTimeValue) {
@@ -136,19 +133,11 @@ func (s *Statistics) ResponseTimeAdd(f float64) {
 	}
 }
 
-// ResponseTimeMerge merges 2 response time arrays
+// ResponseTimeValueMerge merges 2 response time arrays
 func (s *Statistics) ResponseTimeValueMerge(f []float64) {
 	s.Lock()
 	defer s.Unlock()
 	s.ResponseTimeValue = append(s.ResponseTimeValue, f...)
-	/*
-		newlen := len(s.ResponseTimeValue) + len(s.ResponseTimeValue)
-		ResponseTimeValues := make([]float64, newlen)
-		for _, current := range s.ResponseTimeValue {
-			ResponseTimeValues = append(ResponseTimeValues, current)
-		}
-	*/
-
 }
 
 func (s *Statistics) responseTimeRemoveFirstDelayed() {
@@ -169,6 +158,7 @@ func (s *Statistics) responseTimeRemoveFirst() {
 	if len(s.ResponseTimeValue) < 1 {
 		return
 	}
+
 	_, s.ResponseTimeValue = s.ResponseTimeValue[0], s.ResponseTimeValue[1:]
 }
 
@@ -177,6 +167,7 @@ func (s *Statistics) ResponseTimeGet() float64 {
 	if s.ResponseTimeValue == nil || len(s.ResponseTimeValue) <= 5 { // require 5 data points before using the values
 		return 0
 	}
+
 	s.RLock()
 	defer s.RUnlock()
 	var r float64
@@ -184,8 +175,8 @@ func (s *Statistics) ResponseTimeGet() float64 {
 	for _, v := range s.ResponseTimeValue {
 		r = r + v
 	}
+
 	return toFixed(r/float64(len(s.ResponseTimeValue)), 4)
-	//return r / float64(len(s.ResponseTimeValue))
 }
 
 func round(num float64) int {

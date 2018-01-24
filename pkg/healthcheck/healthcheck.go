@@ -61,11 +61,11 @@ func (h HealthCheck) UUID() string {
 	if h.uuidStr != "" {
 		return h.uuidStr
 	}
+
 	sort.Strings(h.HTTPHeaders)
 	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck)
 	t := sha256.New()
 	t.Write([]byte(s))
-	//h.uuidStr = string(t.Sum(nil))
 	h.uuidStr = fmt.Sprintf("%x", t.Sum(nil))
 	return h.uuidStr
 }
@@ -75,9 +75,11 @@ func (m *Manager) Debug() {
 	for _, worker := range m.Workers {
 		worker.Debug()
 	}
+
 	for wid, wm := range m.WorkerMap {
 		fmt.Printf("Workermap -> worker:%s status:%+v\n", string(wid), wm)
 	}
+
 	for pmid, pm := range m.PoolMap {
 		fmt.Printf("Poolmap -> node:%s map:%v\n", string(pmid), pm)
 	}
@@ -108,6 +110,7 @@ func NewManager() *Manager {
 		WorkerMap: make(map[string]HealthStatus),
 		PoolMap:   make(map[string]HealthPool),
 	}
+
 	return manager
 }
 
@@ -123,6 +126,7 @@ func (m *Manager) StopWorkers() {
 	for _, worker := range m.Workers {
 		worker.Stop()
 	}
+
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
 	m.Workers = []*Worker{}

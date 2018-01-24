@@ -25,11 +25,11 @@ func tcpData(host string, port int, sourceIP string, healthCheck HealthCheck) (b
 	}
 
 	// Custom dialer with
-
 	conn, err := net.DialTCP("tcp", &localTCPAddr, tcpAddr)
 	if err != nil {
 		return false, err
 	}
+
 	defer conn.Close()
 
 	fmt.Fprintf(conn, healthCheck.TCPRequest)
@@ -44,9 +44,9 @@ func tcpData(host string, port int, sourceIP string, healthCheck HealthCheck) (b
 		if err != nil {
 			return false, err
 		}
+
 		if r.MatchString(line) {
 			return true, nil
 		}
-
 	}
 }

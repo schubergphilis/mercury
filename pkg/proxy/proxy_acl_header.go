@@ -11,13 +11,13 @@ import (
 
 // removeHeader removes matching headers
 func removeHeader(header *http.Header, match string) {
-	log := logging.For("proxy/removeheader")
 	var matches = 0
-	//log.Debugf("Remove header -> regex match: %s", match)
+	log := logging.For("proxy/removeheader")
 	reg, err := regexp.Compile("(?i)" + match)
 	if err != nil {
 		log.WithField("match", match).WithError(err).Warn("Invalid regex while matching headers")
 	}
+
 	for s, m := range *header {
 		line := fmt.Sprintf("%s: %s", s, strings.Join(m, " "))
 		if reg.MatchString(line) {
@@ -26,10 +26,10 @@ func removeHeader(header *http.Header, match string) {
 			matches++
 		}
 	}
+
 	if matches == 0 {
 		log.WithField("match", match).Debug("Could not remove non-existing header")
 	}
-	//log.Debugf("Headers after remove:", header)
 }
 
 // removeHeader removes matching headers
@@ -41,6 +41,7 @@ func replaceHeader(header *http.Header, match string, key string, value string) 
 	if err != nil {
 		log.WithField("match", match).WithError(err).Warn("Invalid regex while matching headers")
 	}
+
 	for s, m := range *header {
 		line := fmt.Sprintf("%s: %s", s, strings.Join(m, " "))
 		if reg.MatchString(line) {
@@ -48,14 +49,15 @@ func replaceHeader(header *http.Header, match string, key string, value string) 
 			header.Del(s)
 			addheader = 1
 		}
-		//new := reg.ReplaceAllString(line, action)
 	}
+
 	if addheader == 1 {
 		log.WithField("match", match).WithField("old", old).WithField("new", fmt.Sprintf("%s: %s", key, value)).Debug("Replacing header")
 		header.Add(key, value)
 	} else {
 		log.WithField("match", match).WithField("new", fmt.Sprintf("%s: %s", key, value)).Debug("Not replacing nonexisting header")
 	}
+
 	return
 }
 
@@ -73,14 +75,14 @@ func addHeader(header *http.Header, key string, value string) {
 
 // matchHeader returns true or false if a header matches
 func matchHeader(header *http.Header, match string) bool {
-	log := logging.For("proxy/matchheader")
-	//log.Debugf("UserAgent XXX: %s", header.Get("User-Agent"))
 	var matches = 0
+	log := logging.For("proxy/matchheader")
 	log.Debugf("Match header -> regex match: %s", match)
 	reg, err := regexp.Compile("(?i)" + match)
 	if err != nil {
 		log.WithField("match", match).WithError(err).Warn("Invalid regex while matching headers")
 	}
+
 	for s, m := range *header {
 		line := fmt.Sprintf("%s: %s", s, strings.Join(m, " "))
 		if reg.MatchString(line) {
@@ -90,6 +92,7 @@ func matchHeader(header *http.Header, match string) bool {
 			log.Debugf("line '%s' does not match regex '%s'", line, "(?i)"+match)
 		}
 	}
+
 	log.Debugf("Match header -> regex match(%d): %s", matches, match)
 	return matches > 0
 }
@@ -104,19 +107,24 @@ func (acl ACL) processHeader(header *http.Header) (deny bool) {
 		} else if acl.ConditionMatch != "" {
 			removeHeader(header, acl.ConditionMatch)
 		}
+
 	case replaceMatch:
 		if acl.ConditionMatch != "" {
 			replaceHeader(header, acl.ConditionMatch, acl.HeaderKey, acl.HeaderValue)
 		} else {
 			replaceHeader(header, fmt.Sprintf("^%s:", acl.HeaderKey), acl.HeaderKey, acl.HeaderValue)
 		}
+
 	case addMatch:
 		addHeader(header, acl.HeaderKey, acl.HeaderValue)
+
 	case denyMatch:
 		if acl.ConditionMatch != "" {
 			return matchHeader(header, acl.ConditionMatch)
 		}
 		return matchHeader(header, fmt.Sprintf("^%s:%s", acl.HeaderKey, acl.HeaderValue))
+
 	}
+
 	return false
 }

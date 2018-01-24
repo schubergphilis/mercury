@@ -64,6 +64,7 @@ func (m *Manager) pinger(node *Node) {
 			return
 		default:
 		}
+
 		p, _ := m.newPacket(&packetPing{Time: time.Now()})
 		m.log("Sending ping to %s (%s)", node.name, node.conn.RemoteAddr())
 		err := m.connectedNodes.writeSocket(node.conn, p)
@@ -72,6 +73,7 @@ func (m *Manager) pinger(node *Node) {
 			node.close()
 			return
 		}
+
 		time.Sleep(m.getDuration("pinginterval"))
 	}
 }
@@ -82,6 +84,7 @@ func (m *Manager) writeCluster(dataMessage interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	err = m.connectedNodes.writeAll(packet)
 	return err
 
@@ -92,6 +95,7 @@ func (m *Manager) writeClusterNode(node string, dataMessage interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	err = m.connectedNodes.write(node, packet)
 	return err
 }

@@ -13,6 +13,7 @@ func TestConfig(t *testing.T) {
 	if err := LoadConfig("nonexistantfile"); err == nil {
 		t.Errorf("Expected error on loading false config (got:%s)", err)
 	}
+
 	if err := LoadConfig("../../test/broken-config.toml"); err == nil {
 		t.Errorf("Expected error on loading false config (got:%s)", err)
 	}
