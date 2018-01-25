@@ -195,6 +195,31 @@ func TestACLCIDRAllow(t *testing.T) {
 
 }
 
+func TestACLCIDRAllowPath(t *testing.T) {
+	var TestACLForCIDR = []ACL{
+		{Action: "deny", CIDRS: []string{"127.0.0.1/32"}, URLPath: "^/denied"},
+	}
+
+	// ACL we allow localhost, only if path is not ^/denied
+	req, _ := http.NewRequest("GET", "/allowed", nil)
+	req.RemoteAddr = "127.0.0.1"
+	for _, acl := range TestACLForCIDR {
+		match := acl.ProcessRequest(req)
+		if match {
+			t.Errorf("ACL which denies 127.0.0.1 to path /denied, has denied our request. our host: %s our path:%s", req.RemoteAddr, req.URL.Path)
+		}
+	}
+
+	req.URL.Path = "/denied"
+	for _, acl := range TestACLForCIDR {
+		match := acl.ProcessRequest(req)
+		if !match {
+			t.Errorf("ACL which denies 127.0.0.1 to path /denied, has accepted our request. our host: %s our path:%s", req.RemoteAddr, req.URL.Path)
+		}
+	}
+
+}
+
 func TestACLResponse(t *testing.T) {
 	var acl = ACL{Action: "add", HeaderKey: "testkey", HeaderValue: "testvalue"}
 	acl.ProcessResponse(nil) // this should not fatal, we can get an empty reply from host

@@ -85,7 +85,65 @@ Key | Option | Default | Values | Description
 [parent.tls] | certificatefile | "" | "/path/to/file" | file containing your ssl certificate file
 [parent.tls] | insecureskipverify | false | true/false | to to true to ignore insecure certificates, usable for self-signed certificates
 
-## TLS Attributes
+### TLS Min/Max version
+
+Supported versions are:
+* VersionSSL30
+* VersionTLS10
+* VersionTLS11
+* VersionTLS12
+
+For details: https://golang.org/pkg/crypto/tls/#pkg-constants
+
+### TLS Ciphersuites
+
+Supported ciphersuites are:
+* TLS_RSA_WITH_RC4_128_SHA
+* TLS_RSA_WITH_3DES_EDE_CBC_SHA
+* TLS_RSA_WITH_AES_128_CBC_SHA
+* TLS_RSA_WITH_AES_256_CBC_SHA
+* TLS_RSA_WITH_AES_128_CBC_SHA256
+* TLS_RSA_WITH_AES_128_GCM_SHA256
+* TLS_RSA_WITH_AES_256_GCM_SHA384
+* TLS_ECDHE_ECDSA_WITH_RC4_128_SHA
+* TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+* TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+* TLS_ECDHE_RSA_WITH_RC4_128_SHA
+* TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
+* TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+* TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+* TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+* TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+* TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+* TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+* TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+* TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+* TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+* TLS_FALLBACK_SCSV
+
+For details: https://golang.org/pkg/crypto/tls/#pkg-constants
+
+#### TLS Recommended Cyphers and HTTP/2:
+
+* TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 <- has to be first if you want HTTP/2 support!
+
+The 4 cipers below are need for the best SSL-Labs certificate but do not support HTTP/2, the HTTP/2 one will slightly downgrade your score
+
+* TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+* TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+* TLS_RSA_WITH_AES_256_GCM_SHA384
+* TLS_RSA_WITH_AES_256_CBC_SHA
+
+### TLS Curve preferences
+
+Supported Curve preferences:
+* CurveP256
+* CurveP384
+* CurveP521
+* X25519
+
+## ACL Attributes
 ACL attributes can adjust headers, cookies or allow/deny clients based on ip/headers
 
 To adjust headers towards the client a rule should be applied on the `outboundacl`
@@ -114,11 +172,8 @@ Key | Option | Default | Values | Description
 ... | conditiontype | "" | string | header/cookie status	type to match with regex
 ... | conditionmatch | "" | string | regex string to match
 ... | statuscode |  | int | status code to return to the client (e.g. 500)
-... | action | "" | string | action to do when matching
-... | action | "" | string | action to do when matching
-... | action | "" | string | action to do when matching
-... | action | "" | string | action to do when matching
-
+... | cidrs |  | ["ip/nm"] | cidr for use with allow/deny acl's (e.g. 127.0.0.1/32)
+... | urlpath | "" | regex string | request path to which this acl applies. if path is set and does not match, acl is ignored.  (e.g. ^/path/to/file )
 
 ## ACL Actions
 Action | ACL Type | Result
@@ -145,6 +200,11 @@ REQ_IP | returns the ip of the requested host
 CLIENT_IP	| returns the remote addr of the client
 UUID | returns a random UUID
 
+## ACL Deny/allows
+
+ACL's can be set to add/replace/modify headers, or to allow/deny requests based on headers/cidr (see examples above).
+
+To use ALLOW/DENY, you must use the INBOUND acl. you cannot mix allow and deny ACL's together, this will result in only the allow beeing processed.
 
 ### Examples
 * deny all clients which user-agent specifies Macintosh
@@ -212,6 +272,11 @@ Key | Option | Default | Values | Description
 [..errorpage] | file | "" | "/path/to/file" | Path to html file to serve if an error is generated
 [..errorpage] | triggerthreshold | int | 500 | threshold to show error page, if the backend application reply is >= this value, it will show the error page. set this to 600 or higher if you do not want the loadbalancer to show an error page if the application generates a 500+ error message
 
+## ErrorPage Handling
+
+When a error page is set in the config, it will always show on internal errors (no backend available, or acl allow/deny) For errors given by a webserver you can use the trigger_threshold which will only trigger errors if the status code is equal or higher.
+
+If you do not want the sorry page to show on return codes from the webserver, then set this to a higher number then the http error codes (e.g. 600 or up)
 
 ## DNSEntry attributes
 

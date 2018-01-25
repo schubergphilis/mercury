@@ -20,6 +20,7 @@ type ACL struct {
 	ConditionType  string   `json:"conditiontype" toml:"conditiontype"`     // header, cookie, other?
 	ConditionMatch string   `json:"conditionmatch" toml:"conditionmatch"`   // header text (e.g. /^Content-Type: (.*)/(.*)$/i)
 	StatusCode     int      `json:"status_code" toml:"status_code"`         // status code
+	URLPath        string   `json:"url_path" toml:"url_path"`               // request path to match this acl if provided
 	CIDRS          []string `json:"cidrs" toml:"cidrs"`                     // network cidr
 }
 
@@ -57,6 +58,15 @@ const (
 
 // ProcessRequest processes ACL's for request
 func (acl ACL) ProcessRequest(req *http.Request) (deny bool) {
+
+	// If we have a request path, see if we match this before processing this request
+	if acl.URLPath != "" && req.URL != nil {
+		regex, _ := regexp.Compile(acl.URLPath)
+		if regex.MatchString(req.URL.Path) == false {
+			return false
+		}
+	}
+
 	switch acl.ConditionType {
 	case headerMatch:
 		return acl.processHeader(&req.Header)
@@ -82,6 +92,15 @@ func (acl ACL) ProcessRequest(req *http.Request) (deny bool) {
 
 // ProcessResponse processes ACL's for response
 func (acl ACL) ProcessResponse(res *http.Response) (deny bool) {
+
+	// If we have a request path, see if we match this before processing this request
+	if acl.URLPath != "" && res.Request != nil && res.Request.URL != nil {
+		regex, _ := regexp.Compile(acl.URLPath)
+		if regex.MatchString(res.Request.URL.Path) == false {
+			return false
+		}
+	}
+
 	if res == nil {
 		return false
 	}
