@@ -160,7 +160,6 @@ func TestTwoClusterNode(t *testing.T) {
 
 func TestTreeNodeCluster(t *testing.T) {
 	t.Parallel()
-	LogTraffic = true
 	// Manager 4
 	managerFOUR := NewManager("managerFOUR", "secret")
 	managerFOUR.AddNode("managerFIVE", "127.0.0.1:9505")
