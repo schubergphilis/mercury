@@ -6,18 +6,22 @@
 Changes:
   * Adding Circle-Ci
 
+Bug:
+  * fix race condition when forming multiple clusters
+  * fix double close race condition on cluster node exit
+
 ## 0.10.1:
 Changes:
-  * You can now specify a topology per backend Node allowing you to do topology based loadbalancing on proxy level too (#60)
+  * You can now specify a topology per backend Node allowing you to do topology based loadbalancing on proxy level too
 
 Bug:
   * Default TTL on all outgoing dns requests is now set to 10 seconds
 
 ## 0.10.0:
 Feature:
-  * Added Support for multiple healthchecks (#38)
-  * Added Support for healtchecks on VIP - these would affect all backends of the vip (#58)
-  * Added Support for ICMP/UDP/TCP pings (#59)
+  * Added Support for multiple healthchecks
+  * Added Support for healtchecks on VIP - these would affect all backends of the vip
+  * Added Support for ICMP/UDP/TCP pings
 
 Changes:
   * Now a random time before first health check (max 5000ms) to spread the load on servers with many checks
@@ -28,18 +32,18 @@ Bugs:
 
 ## 0.9.4:
 Bugs:
-   * Fix issues with OCSP stapling when using SNI certificates (#54)
+   * Fix issues with OCSP stapling when using SNI certificates
 
 ## 0.9.3:
 Changes:
-  * Cluster config has changed to increase stability within the cluster - see readme for config changes (#41)
-  * Graphing to collectd has been removed, splunk is the prefered way to go. code is still in place should we change our mind (#52)
+  * Cluster config has changed to increase stability within the cluster - see readme for config changes
+  * Graphing to collectd has been removed, splunk is the prefered way to go. code is still in place should we change our mind
 
 Bugs:
   * Fix incorrect listener exit on update causing crash
   * Fix certificate loading order, since map is random - causing issues on reload
   * Add correct no-caching headers to sorry and mercury custom errors
-  * Fix 0x20 case insensitive requests beeing handled according to https://tools.ietf.org/html/draft-vixie-dnsext-dns0x20-00 (#53)
+  * Fix 0x20 case insensitive requests beeing handled according to https://tools.ietf.org/html/draft-vixie-dnsext-dns0x20-00
 
 ## 0.9.2:
 Bugs:
@@ -48,10 +52,10 @@ Bugs:
 
 ## 0.9.2:
 Feature:
-  * Your now allowed to specify the amount of cluster nodes that serve a dns record (#48)
+  * Your now allowed to specify the amount of cluster nodes that serve a dns record
 
 Bugs:
-  * Fix loglevel not affected by reload (#51)
+  * Fix loglevel not affected by reload
   * Fix monitoring message output to correctly show only the failing nodes on glb errors
 
 ## 0.9.1:
@@ -69,15 +73,15 @@ Changes:
   * UUID's are now hash based, so they won't change up on restarts
 
 Bugs:
-  * Fix locking issue that could occur on dns updates (#42)
+  * Fix locking issue that could occur on dns updates
   * Fix possible dns pointer overwrite before cluster updates were sent
 
 ## 0.8.9:
 Feature:
- * Add option to specify at which level to trigger sorry page, will always trigger on internal errors, but you can specify to trigger on 500+ or other result codes (#39)
+ * Add option to specify at which level to trigger sorry page, will always trigger on internal errors, but you can specify to trigger on 500+ or other result codes
  * Add OCSP Stapling support for SSL certificate verification (enabled by default for all https sites)
  * Add option to deny requests based on header match
- * Add option to allow/deny request based on CIDRS (#3)
+ * Add option to allow/deny request based on CIDR
 
 ## 0.8.8:
 Feature:
@@ -93,7 +97,7 @@ Changes:
 
 ## 0.8.6:
 Feature:
- * Now supports DNS forwarding for specified cidr's (#36)
+ * Now supports DNS forwarding for specified cidr's
 
 Changes:
  * Allow resolving and serving of domain-only A and CNAME records
@@ -109,19 +113,19 @@ Bugs:
 ## 0.8.5:
 
 Changes:
- * Offline GLB pools now return all IP's instead of none, directing client to proper error instead of dns not found (#33)
+ * Offline GLB pools now return all IP's instead of none, directing client to proper error instead of dns not found
 
 Bugs:
  * fix incorrect domain name in dns result
- * fix backend duplication on reload with cross-connects with more than one node in a single backend (#32)
+ * fix backend duplication on reload with cross-connects with more than one node in a single backend
 
 ## 0.8.4:
 Features:
- * Websocket support (note that you must force httpproto on the listener to 1, as websocket is not supported by http/2 which is enabled by default) (#30)
+ * Websocket support (note that you must force httpproto on the listener to 1, as websocket is not supported by http/2 which is enabled by default)
  * Better support for SOA records and serial updating
 
 Bugs:
- * Stale node in proxy config if removed by reload, should no longer occur (#31)
+ * Stale node in proxy config if removed by reload, should no longer occur
  * Properly handle main and sub certificates and check them all during config loading
  * Fix web interface for local dns entries
  * Fix additional replies for dns entries
@@ -143,7 +147,7 @@ Features:
  * DNS server now uses proxy statistics for loadbalancing algorithm when using internal loadbalancer (uses its own counter if not)
 
 Bugs:
- * Fix Roundrobin statistics (#25)
+ * Fix Roundrobin statistics
 
 ## 0.8.1:
 Features:
@@ -152,33 +156,33 @@ Features:
     * reply -> httpreply / tcpreply depending on check
     * request -> httprequest / tcprequest depending on check
     * postdata -> httppostdata
- * No longer are session ID's automaticly added (#26)
+ * No longer are session ID's automaticly added
     * Requires config to add:
     * example: { action: 'add', cookie_key: 'mercid', cookie_value: '###UUID###', cookie_expire: '24h', cookie_secure: true, cookie_httponly: true }
- * Sticky session cookies are only parsed if we use sticky based loadbalancing (#27)
+ * Sticky session cookies are only parsed if we use sticky based loadbalancing
  * adding of cookies will now only add if cookie is not set yet
 
 Bugs:
- * fix ACLs on self-generated responses (#24)
+ * fix ACLs on self-generated responses
 
 ## 0.8.0:
 Features:
- * HTTP/2 Support added for both client and backend (#19)
- * ResponseTime based Load-balancing added (#23)
+ * HTTP/2 Support added for both client and backend
+ * ResponseTime based Load-balancing added
  * Failed http requests to backend now return 500 Internal Server Error
 
 Bugs:
- * DNS responses now are case insensitive (#18)
- * Fix client connected count (#10)
+ * DNS responses now are case insensitive
+ * Fix client connected count
 
 ## 0.7.0:
 Features:
- * Add sorry page ability (#4)
- * Added client session tracking (#13)
+ * Add sorry page abilit
+ * Added client session tracking
 
 Bugs:
- * Reload now works for DNS Listener (#5)
- * Fix concurrency issues (#20, #21)
+ * Reload now works for DNS Listene
+ * Fix concurrency issue
 
 ## 0.6.0:
  * Start of Change log
