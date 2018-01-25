@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const DebugLog = 1
+const DebugLog = 0
 
 type Message struct {
 	Message string `json:"message"`

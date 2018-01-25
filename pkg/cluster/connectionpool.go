@@ -166,3 +166,9 @@ func (c *connectionPool) setStatusError(name, err string) {
 		node.errorStr = err
 	}
 }
+
+func (c *connectionPool) count() int {
+	c.Lock()
+	defer c.Unlock()
+	return len(c.nodes)
+}
