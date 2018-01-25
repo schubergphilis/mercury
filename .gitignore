@@ -5,5 +5,6 @@ tools/linux/mercury/var/mercury
 tools/docker/*.crt
 tools/docker/*.pem
 tools/docker/*.key
-tools/test/mercury.toml
-tools/test/mercury-secondary.toml
+test/mercury.toml
+test/mercury-secondary.toml
+

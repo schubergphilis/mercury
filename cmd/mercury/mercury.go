@@ -35,7 +35,6 @@ func main() {
 	logging.Configure("stdout", "info")
 
 	log := logging.For("main")
-	//log.WithFields(logging.Fields{"request_id": request_id, "user_ip": user_ip})
 
 	// pprof profiling disabled by default
 	// go http.ListenAndServe("localhost:6060", nil)
@@ -44,11 +43,12 @@ func main() {
 
 	// Default logging before reading the config
 	config.LogTarget = "stdout"
-	if *param.Get().Debug == true {
+	switch {
+	case *param.Get().Debug == true:
 		config.LogLevel = "debug"
-	} else if *param.Get().CheckGLB == true || *param.Get().CheckBackend == true || *param.Get().CheckConfig == true {
+	case *param.Get().CheckGLB == true || *param.Get().CheckBackend == true || *param.Get().CheckConfig == true:
 		config.LogLevel = "warn"
-	} else {
+	default:
 		config.LogLevel = "info"
 	}
 	logging.Configure(config.LogTarget, config.LogLevel)
@@ -61,25 +61,22 @@ func main() {
 
 	err := config.LoadConfig(*param.Get().ConfigFile)
 	if err != nil {
-		//log.Fatalf("Error loading config file:%s", err)
 		log.WithField("file", *param.Get().ConfigFile).WithField("error", err).Fatal("Error reading config file")
 	}
 
-	// IF we are checking the config, we can exit safely here
+	// If we are checking the config, we can exit safely here
 	if *param.Get().CheckConfig == true {
 		return
 	}
 
-	if *param.Get().CheckGLB == true {
+	switch {
+	case *param.Get().CheckGLB == true:
 		os.Exit(check.GLB())
-	} else if *param.Get().CheckBackend == true {
+	case *param.Get().CheckBackend == true:
 		os.Exit(check.Backend())
 	}
 
 	logging.Configure(config.Get().Logging.Output, config.Get().Logging.Level)
-	//log.Debug("Starting")
-	//log.WithField("key", "value").Error("key error")
-
 	pidValue, err := pid.Create(*param.Get().PidFile)
 	if err != nil {
 		log.WithField("file", *param.Get().PidFile).WithField("error", err).Fatalf("Create pid failed")
@@ -101,8 +98,8 @@ func main() {
 		case <-sigterm:
 			log.Warn("Program killed by signal!")
 			core.Cleanup()
-			//p.Stop()
 			return
+
 		case <-sighup:
 			log.Warn("Program received HUP signal!")
 			config.ReloadConfig()
