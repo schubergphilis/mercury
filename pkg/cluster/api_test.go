@@ -36,8 +36,6 @@ func TestApi(t *testing.T) {
 	// Start HTTP
 	srv := startHTTPServer(httpAddr)
 
-	time.Sleep(500 * time.Millisecond)
-
 	t.Run("apiCalls", func(t *testing.T) {
 		t.Run("Cluster", testAPICluster)
 		t.Run("ClusterPublic", testAPIClusterPublic)
@@ -53,10 +51,12 @@ func startHTTPServer(addr string) *http.Server {
 	srv := &http.Server{Addr: addr}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
+
 			// cannot panic, because this probably is an intentional close
 		}
 	}()
 	// returning reference so caller can call Shutdown()
+	time.Sleep(2000 * time.Millisecond)
 	return srv
 }
 

@@ -173,7 +173,7 @@ func (m *Manager) quorum() bool {
 	case 1:
 		return true // 2 cluster node, we don't send quorum loss, as that would nullify the additional node
 	default:
-		return float64(len(m.configuredNodes)+1)/2 < float64(len(m.connectedNodes.nodes)+1) // +1 to add our selves
+		return float64(len(m.configuredNodes)+1)/2 < float64(m.connectedNodes.count()+1) // +1 to add our selves
 	}
 }
 

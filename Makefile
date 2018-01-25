@@ -90,6 +90,7 @@ sudo-run: osx
 
 test:
 	go test -v ./...
+	go test -v ./... --race --short
 	go vet ./...
 
 cover: ## Shows coverage
