@@ -9,6 +9,7 @@ Changes:
 Bug:
   * fix race condition when forming multiple clusters
   * fix double close race condition on cluster node exit
+  * improve stability when 2 nodes connecting to eachother on the same milisecond
 
 ## 0.10.1:
 Changes:
