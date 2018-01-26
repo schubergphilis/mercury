@@ -117,7 +117,7 @@ func (m *Manager) addClusterAPI() {
 
 // ListenAndServeTLS starts the TLS listener and serves connections to clients
 func (m *Manager) ListenAndServeTLS(addr string, tlsConfig *tls.Config) (err error) {
-	m.log("Starting TLS listener on %s", addr)
+	m.log("%s Starting TLS listener on %s", m.name, addr)
 	s := newServer(addr, tlsConfig)
 	m.listener, err = s.Listen()
 	if err == nil {
@@ -128,7 +128,7 @@ func (m *Manager) ListenAndServeTLS(addr string, tlsConfig *tls.Config) (err err
 
 // ListenAndServe starts the listener and serves connections to clients
 func (m *Manager) ListenAndServe(addr string) (err error) {
-	m.log("Starting listener on %s", addr)
+	m.log("%s Starting listener on %s", m.name, addr)
 	s := newServer(addr, &tls.Config{})
 	m.listener, err = s.Listen()
 	if err == nil {
@@ -142,7 +142,7 @@ func (m *Manager) start(s *server, tlsConfig *tls.Config) {
 	go m.handleOutgoingConnections(tlsConfig) // creates connections to remote nodes
 	go m.handlePackets()                      // handles all incomming packets
 	go s.Serve(m.newSocket, m.quit)           // accepts new connections and passes them on to the manager
-	m.log("Cluster quorum state: %t", m.quorum())
+	m.log("%s Cluster quorum state: %t", m.name, m.quorum())
 	select {
 	case m.QuorumState <- m.quorum(): // quorum update to client application
 	default:
@@ -152,7 +152,7 @@ func (m *Manager) start(s *server, tlsConfig *tls.Config) {
 
 // Shutdown stops the cluster node
 func (m *Manager) Shutdown() {
-	m.log("Stopping listener on %s", m.listener.Addr())
+	m.log("%s Stopping listener on %s", m.name, m.listener.Addr())
 	// write exit message to remote cluster
 	packet, _ := m.newPacket(&packetNodeShutdown{})
 	m.connectedNodes.writeAll(packet)
@@ -178,7 +178,7 @@ func (m *Manager) quorum() bool {
 }
 
 func (m *Manager) updateQuorum() {
-	m.log("Cluster quorum state: %t", m.quorum())
+	m.log("%s Cluster quorum state: %t", m.name, m.quorum())
 	select {
 	case m.QuorumState <- m.quorum(): // quorum update to client application
 	default:

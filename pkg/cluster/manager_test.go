@@ -48,7 +48,7 @@ func TestOneClusterNode(t *testing.T) {
 		t.Errorf("expected log output for managerONE, but got nothing")
 	}
 
-	if DebugLog == 1 {
+	if DebugLog == 1 || t.Failed() {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
@@ -71,6 +71,7 @@ func TestTwoClusterNode(t *testing.T) {
 		log.Fatal(err)
 	}
 	managerTWO.AddNode("managerTHREE", "127.0.0.1:9503")
+	connectInterval := managerTWO.getDuration("connectinterval")
 
 	shouldBeConfigured := map[string]bool{"managerTHREE": true}
 	configured := managerTWO.NodesConfigured()
@@ -93,7 +94,7 @@ func TestTwoClusterNode(t *testing.T) {
 
 	managerTHREE.AddNode("managerTWO", "127.0.0.1:9502")
 
-	node, timeout := channelReadString(managerTWO.NodeJoin, 5)
+	node, timeout := channelReadString(managerTWO.NodeJoin, connectInterval*2)
 	if timeout {
 		t.Errorf("expected Join on managerTWO, but got timeout")
 	}
@@ -102,7 +103,7 @@ func TestTwoClusterNode(t *testing.T) {
 		t.Errorf("expected Join on managerTWO to be from managerTHREE, but got:%s", node)
 	}
 
-	node, timeout = channelReadString(managerTHREE.NodeJoin, 5)
+	node, timeout = channelReadString(managerTHREE.NodeJoin, connectInterval*2)
 	if timeout {
 		t.Errorf("expected Join on managerTHREE, but got timeout")
 	}
@@ -137,7 +138,7 @@ func TestTwoClusterNode(t *testing.T) {
 		t.Errorf("expected log output for managerTWO, but got nothing")
 	}
 
-	if DebugLog == 1 {
+	if DebugLog == 1 || t.Failed() {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
@@ -168,6 +169,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	connectInterval := managerFOUR.getDuration("connectinterval")
 
 	// Manager 4 should not have a quorum, its a single node and 2 more configured
 	quorum, timeout := channelReadBool(managerFOUR.QuorumState, 2)
@@ -191,7 +193,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	}
 
 	// Manager 4 should have a quorum now, its a 2 node cluster and 1 more configured
-	quorum, timeout = channelReadBool(managerFOUR.QuorumState, 2)
+	quorum, timeout = channelReadBool(managerFOUR.QuorumState, connectInterval*2)
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
@@ -210,7 +212,7 @@ func TestTreeNodeCluster(t *testing.T) {
 	}
 
 	// Manager 4 should have a quorum now, its a 3 node cluster
-	quorum, timeout = channelReadBool(managerFOUR.QuorumState, 2)
+	quorum, timeout = channelReadBool(managerFOUR.QuorumState, connectInterval*2)
 	if timeout {
 		t.Errorf("expected quorumstate on managerFOUR, but got timeout")
 	}
@@ -369,7 +371,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		t.Errorf("expected log output for managerFOUR, but got nothing")
 	}
 
-	if DebugLog == 1 {
+	if DebugLog == 1 || t.Failed() {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
@@ -431,7 +433,7 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 		t.Errorf("expected log output for managerNINE, but got nothing")
 	}
 
-	if DebugLog == 1 {
+	if DebugLog == 1 || t.Failed() {
 		for _, log := range logs {
 			t.Log("== LOG managerNINE: ", log)
 		}

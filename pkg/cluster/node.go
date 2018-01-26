@@ -22,6 +22,7 @@ type Node struct {
 	packets   int64
 	statusStr string
 	errorStr  string
+	incomming bool
 }
 
 const (
@@ -37,7 +38,7 @@ const (
 	StatusLeaving = "Leaving"
 )
 
-func newNode(name string, conn net.Conn) *Node {
+func newNode(name string, conn net.Conn, incomming bool) *Node {
 	newNode := &Node{
 		name:      name,
 		conn:      conn,
@@ -46,6 +47,8 @@ func newNode(name string, conn net.Conn) *Node {
 		quit:      make(chan bool),
 		quitOnce:  new(sync.Once),
 		statusStr: StatusOffline,
+		incomming: incomming,
+		joinTime:  time.Now(),
 	}
 	return newNode
 }
