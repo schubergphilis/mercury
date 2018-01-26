@@ -1,10 +1,10 @@
 # Welcome to Mercury!
 
-Mercury is a Global Loadbalancer application designed to add a dns based loadbalancing layer on top of its internal loadbalancer or 3rd pary loadbalancers such as cloud services. This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbancer solutions in place
+Mercury is a Global Load balancer application designed to add a dns based load balancing layer on top of its internal load balancer or 3rd party load balancers such as cloud services. This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancing solutions in place
 
 # What does it do?
-Traditional loadbalancers work great if you have 1 location where all your servers run in. However for redundancy purposes you will want to have your servers spread across multiple locations. So also your Loadbalancer. But how do you ensure that clients can connect to the best performing location, or keep their session sticky to a specific location? Global Loadbalancing is the answer. In short it acts as a DNS service, and based on the state of your service it will redirect you to the location best suited for your request. This can be an existing loadbalancer at your data-center or even a cloud solution such as AWS or Azure. Allowing you to balance between multiple locations based on health checks of their local services.
-Optionally you could replace your loadbalancer with the build-in loadbalancer provided by Mercury. Removing the need of additional Local loadbalancers.
+Traditional load balancers work great if you have 1 location where all your servers run in. However for redundancy purposes you will want to have your servers spread across multiple locations. This includes your Load balancer. But how do you ensure that clients can connect to the best performing location, or keep their session sticky to a specific location? Global Load balancing is the answer. In short it acts as a DNS service, and based on the state of your service it will redirect you to the location best suited for your request. This can be an existing load balancer at your datacenter or even a cloud solution such as AWS or Azure. Allowing you to balance between multiple locations based on health checks of their local services.
+Optionally you could replace your load balancer with the build-in load balancer provided by Mercury. Removing the need of additional Local load balancers.
 
 # Sources
 You can find the mercury Source code at Github:
