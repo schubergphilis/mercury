@@ -6,10 +6,10 @@ Note that these examples provide configuration for 1 out of 2+ nodes. It is reco
 ## Adding Mercury as Global Loadbalancer to existing Loadbalance solutions
 If you are using multiple cloud environment you'll notice that they have their 'internal' Global loadbalance mechanisms across their datacenter locations. But very few have the option to add nodes outside of their network. Which results in the need of a extra layer, using DNS to loadbalance across multiple providers or datacenter
 
-### Overview:
+Diagram:
 ![](images/mercury_gslb_with_existing_lb.png)
 
-### Configuration:
+Configuration:
 ```
 [settings]
   manage_network_interfaces = "yes"
@@ -61,10 +61,10 @@ Note that the IP of the webserver in this case does not have to be the Webserver
 ## Adding Mercury as Global Loadbalancer with its internal Loadbalance solution (with SSL offloading)
 If you are using multiple cloud environment you'll notice that they have their 'internal' Global loadbalance mechanisms across their datacenter locations. But very few have the option to add nodes outside of their network. Which results in the need of a extra layer, using DNS to loadbalance across multiple providers or datacenter. This option also replaces any existing loadbalancer, making Mercury your primary entry point for all traffic.
 
-### Overview:
+Diagram:
 ![](images/mercury_gslb.png)
 
-### Configuration:
+Configuration:
 ```
 [cluster]
   name = "MY_GLB_POOL"
@@ -131,10 +131,7 @@ In this example we still enable global loadbalancing using DNS, however we now a
 ## Adding Mercury as Global Loadbalancer serving multiple Hostnames
 Quite often are you loadbalancing multiple domains which point to different servers. If this is the case you can specify the hostname which the backend serves. Mercury will look at the requested host header, and forward the request to the backend which has this host header configured.
 
-### Overview:
-Same as above, only multiple servers behind the loadbalancer
-
-### Configuration:
+Configuration:
 ```
 [cluster]
   name = "MY_GLB_POOL"
@@ -201,10 +198,10 @@ In this example we have 2 domains: www.example.com and image.example.com, reques
 For Small setups where you only have 2 hosts serving a website, and where stickyness is not required, you might skip the use of a local loadbalancer all together.
 This will make Mercury do the health check, and send the client directly to one of the available servers in your pool
 
-### Overview:
+Diagram:
 ![](images/mercury_gslb_direct_app.png)
 
-### Configuration:
+Configuration:
 ```
 [cluster]
   name = "MY_GLB_POOL"
