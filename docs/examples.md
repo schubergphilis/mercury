@@ -1,10 +1,15 @@
 # Example configurations of mercury
 
 Below is a list of example configurations suiting your purpose
+Note that these examples provide configuration for 1 out of 2+ nodes. It is recommended to have at least 2 Mercury hosts that can form a cluster.
 
 ## Adding Mercury as Global Loadbalancer to existing Loadbalance solutions
 If you are using multiple cloud environment you'll notice that they have their 'internal' Global loadbalance mechanisms across their datacenter locations. But very few have the option to add nodes outside of their network. Which results in the need of a extra layer, using DNS to loadbalance across multiple providers or datacenter
 
+Diagram:
+![](images/mercury_gslb_with_existing_lb.png)
+
+Configuration:
 ```
 [settings]
   manage_network_interfaces = "yes"
@@ -56,6 +61,10 @@ Note that the IP of the webserver in this case does not have to be the Webserver
 ## Adding Mercury as Global Loadbalancer with its internal Loadbalance solution (with SSL offloading)
 If you are using multiple cloud environment you'll notice that they have their 'internal' Global loadbalance mechanisms across their datacenter locations. But very few have the option to add nodes outside of their network. Which results in the need of a extra layer, using DNS to loadbalance across multiple providers or datacenter. This option also replaces any existing loadbalancer, making Mercury your primary entry point for all traffic.
 
+Diagram:
+![](images/mercury_gslb.png)
+
+Configuration:
 ```
 [cluster]
   name = "MY_GLB_POOL"
@@ -119,9 +128,10 @@ If you are using multiple cloud environment you'll notice that they have their '
 ```
 In this example we still enable global loadbalancing using DNS, however we now add a listener IP which will accept incomming connections on HTTPS using the provided SSL certificates. This listener exists on both loadbalancers, and once a client connects to this listener on the port specified (8080) the loadbalancer will create a new connection to the local node, and forward the request.
 
-## Adding Mercury as (Global) Loadbalancer serving multiple Hostnames
+## Adding Mercury as Global Loadbalancer serving multiple Hostnames
 Quite often are you loadbalancing multiple domains which point to different servers. If this is the case you can specify the hostname which the backend serves. Mercury will look at the requested host header, and forward the request to the backend which has this host header configured.
 
+Configuration:
 ```
 [cluster]
   name = "MY_GLB_POOL"
@@ -183,3 +193,53 @@ Quite often are you loadbalancing multiple domains which point to different serv
     port = 80
 ```
 In this example we have 2 domains: www.example.com and image.example.com, requests made to www will be forwarded to webserver1+2 and requests made to images.example.com will be forwarded to webserver3+4
+
+## Adding Mercury as Global Loadbalancer without the use of a local loadbalancer (DNS only)
+For Small setups where you only have 2 hosts serving a website, and where stickyness is not required, you might skip the use of a local loadbalancer all together.
+This will make Mercury do the health check, and send the client directly to one of the available servers in your pool
+
+Diagram:
+![](images/mercury_gslb_direct_app.png)
+
+Configuration:
+```
+[cluster]
+  name = "MY_GLB_POOL"
+  [cluster.binding]
+  name = "localhost1"
+  addr = "127.0.0.1:9000"
+  authkey = "test"
+  [[cluster.nodes]]
+  name = "localhost2"
+  addr = "127.0.0.1:10000"
+  authkey = "test"
+
+[dns]
+  binding = "localhost"
+  port = 15353
+  [dns.domains."example.com"]
+    ttl = 11
+  [dns.domains."example.com".soa]
+
+[loadbalancer.settings]
+  default_balance_method = "roundrobin"
+
+[loadbalancer.pools.INTERNAL_VIP.listener]
+  [loadbalancer.pools.INTERNAL_VIP.backends.myapp]
+    hostnames = ["www.example.com"]
+    connectmode="http"
+  [loadbalancer.pools.INTERNAL_VIP.backends.myapp.dnsentry]
+    domain = "example.com"
+    hostnames = "www"
+  [loadbalancer.pools.INTERNAL_VIP.backends.myapp.healthcheck]
+    type = "tcpconnect"
+  [[loadbalancer.pools.INTERNAL_VIP.backends.myapp.nodes]]
+    hostname = "webserver1"
+    ip = "1.2.3.4"
+    port = 80
+  [[loadbalancer.pools.INTERNAL_VIP.backends.myapp.nodes]]
+    hostname = "webserver2"
+    ip = "2.3.4.5"
+    port = 80
+```
+In this example the DNS server will reply to the client using the node ip, connecting your clients directly to one of your servers, by loadbalancing the dns requests to the available servers.
