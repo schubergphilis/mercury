@@ -20,7 +20,7 @@ func (m *Manager) handleOutgoingConnections(tlsConfig *tls.Config) {
 		for _, node := range m.getConfiguredNodes() {
 			if !m.connectedNodes.nodeExists(node.name) {
 				// Connect to the remote cluster node
-				m.log("Connecting to non-connected cluster node: %s", node.name)
+				m.log("%s Connecting to non-connected cluster node: %s", m.name, node.name)
 				m.dial(node.name, node.addr, tlsConfig)
 			}
 		}
@@ -30,14 +30,13 @@ func (m *Manager) handleOutgoingConnections(tlsConfig *tls.Config) {
 }
 
 func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
-	m.log("Connecting to %s (%s)", name, addr)
 	var conn net.Conn
 	var err error
 	if len(tlsConfig.Certificates) == 0 {
-		m.log("Connecting to %s (%s) non-tls", name, addr)
+		m.log("%s Connecting to %s (%s) non-tls", m.name, name, addr)
 		conn, err = net.DialTimeout("tcp", addr, m.getDuration("connecttimeout"))
 	} else {
-		m.log("Connecting to %s (%s) with-tls", name, addr)
+		m.log("%s Connecting to %s (%s) with-tls", m.name, name, addr)
 		conn, err = tls.DialWithDialer(&net.Dialer{Timeout: m.getDuration("connecttimeout")}, "tcp", addr, tlsConfig)
 	}
 
@@ -48,7 +47,7 @@ func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
 		packet, err := m.connectedNodes.readSocket(conn)
 		if err != nil {
 			// close connection if someone is talking gibrish
-			m.log("auth request failed on dial: %s", err)
+			m.log("%s auth request failed on dial: %s", m.name, err)
 			conn.Close()
 			return
 		}
@@ -57,20 +56,19 @@ func (m *Manager) dial(name, addr string, tlsConfig *tls.Config) {
 		err = packet.Message(authResponse)
 		if err != nil {
 			// auth response unknown
-			m.log("auth response failed on dial: %s", err)
+			m.log("%s auth response failed on dial: %s", m.name, err)
 			conn.Close()
 			return
 		}
 
 		if authResponse.Status != true {
-			m.log("auth failed on dial: %s", authResponse.Error)
+			m.log("%s auth failed on dial: %s", m.name, authResponse.Error)
 			conn.Close()
 			return
 		}
 
-		m.log("Connection to %s (%s) authorized", name, addr)
-		node := newNode(packet.Name, conn)
-		node.joinTime = authResponse.Time
+		m.log("%s Connection to %s (%s) authorized", m.name, name, addr)
+		node := newNode(packet.Name, conn, false)
 
 		go m.handleAuthorizedConnection(node)
 	}

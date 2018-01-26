@@ -1,13 +1,10 @@
 package cluster
 
-import (
-	"time"
-)
-
 func (m *Manager) handleIncommingConnections() {
 	for {
 		select {
 		case conn := <-m.newSocket:
+			m.log("%s new socket from %s", m.name, conn.RemoteAddr())
 			packet, err := m.connectedNodes.readSocket(conn)
 			if err != nil {
 				m.log("%s failed while trying to read from socket: %s", conn.RemoteAddr(), err)
@@ -35,8 +32,7 @@ func (m *Manager) handleIncommingConnections() {
 				return
 			}
 
-			authTime := time.Now()
-			authResponse, _ := m.newPacket(packetAuthResponse{Status: true, Time: authTime})
+			authResponse, _ := m.newPacket(packetAuthResponse{Status: true})
 			err = m.connectedNodes.writeSocket(conn, authResponse)
 			if err != nil {
 				m.log("%s failed while trying to send an authentication response")
@@ -44,8 +40,8 @@ func (m *Manager) handleIncommingConnections() {
 				return
 			}
 
-			node := newNode(packet.Name, conn)
-			node.joinTime = authTime
+			m.log("%s incomming auth completed by %s (%s)", m.name, packet.Name, conn.RemoteAddr())
+			node := newNode(packet.Name, conn, true)
 			go m.handleAuthorizedConnection(node)
 		}
 	}

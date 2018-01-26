@@ -23,9 +23,8 @@ type packetAuthRequest struct {
 
 // AuthResponsePacket defines an authorization response
 type packetAuthResponse struct {
-	Status bool      `json:"status"`
-	Error  string    `json:"error"`
-	Time   time.Time `json:"time"`
+	Status bool   `json:"status"`
+	Error  string `json:"error"`
 }
 
 // PingPacket defines a ping
