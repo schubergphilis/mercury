@@ -6,7 +6,7 @@ Mercury is a loadbalancer with Global Loadbalance capababilities across multiple
 
 ## What is Mercury ?
 Mercury is a Global loadbalancer, designed to add a dns based loadbalancing layer on top of its internal loadbalancer or 3rd pary loadbalancers such as cloud services.
-This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbancer sollutions in place.
+This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbalancer sollutions in place.
 
 ## Resources
 
@@ -26,7 +26,7 @@ This makes mercury able to loadbalance across multiple cloud environments using 
   * TCP Data check (sends and/or expects data)
   * ICMP/UDP/TCP ping checks
   * None (always online)
-* Is a functional DNS host to give GLB based replies with
+* Is a functional DNS server which provides GLB based replies with
   * Topology based loadbalancing, with predefined networks
   * Preference based loadbalancing, for active/passive setup
   * Roundrobin based loadbalancing for the most balanced setup
