@@ -69,16 +69,11 @@ func init() {
 		Content:     string("\nfunction errorHandler(text) {\n  console.log(\"Error raised: \"+ text)\n}\n/*\nfunction getAPI(url) {\n  var jqxhr = $.getJSON( url, function(data) {\n\n    console.log( \"success\" + data );\n    //if data.success == true {\n      var jdata = JSON.parse(data.data)\n      console.log(\"getApi data: \" + jdata)\n      return jdata\n    //}\n  })\n    .done(function() {\n      console.log( \"second success\" );\n    })\n    .fail(function() {\n      console.log( \"error\" );\n    })\n    .always(function() {\n      console.log( \"complete\" );\n    });\n\n}*/\n\n/*\nfunction getAPI(url) {\n   var value= $.ajax({\n      url: url,\n      async: false\n   }).responseJson;\n   return value;\n}\n*/\n"),
 	}
 	filee := &embedded.EmbeddedFile{
-		Filename:    "oldcluster.tmpl",
-		FileModTime: time.Unix(1515419040, 0),
-		Content:     string("{{define \"cluster\"}}\n{{template \"header\" dict \"Page\" .Page}}\n\n<div id=\"proxy\">\n  <div class=\"searchbox\">\n   Search: <input type=\"text\" class=\"search\" placeholder=\"Search Cluster\" />\n  </div>\n   <table>\n     <thead>\n       <tr>\n         <th class=\"sort\" data-sort=\"node\">ClusterNode</th>\n         <th class=\"sort\" data-sort=\"remote\">Remote Address</th>\n         <th class=\"sort\" data-sort=\"local\">Local Address</th>\n         <th class=\"sort\" data-sort=\"lag\">Lag</th>\n         <th class=\"sort\" data-sort=\"packets\">Packets</th>\n         <th class=\"sort\" data-sort=\"joined\">Joined</th>\n       </tr>\n     </thead>\n     <tbody class=\"list\">\n{{ range $nodeid, $node := .ClusterNodes -}}\n  <tr>\n    <td class=\"id\" style=\"display:none;\">0</td>\n    <td class=\"node\">{{$node.Name}}</td>\n    <td class=\"remote\">{{$node.Conn.RemoteAddr}}</td>\n    <td class=\"local\">{{$node.Conn.LocalAddr}}</td>\n    <td class=\"lag\">{{$node.Statistics.Lag}}</td>\n    <td class=\"packets\">{{$node.Statistics.Packets}}</td>\n    <td class=\"joined\">{{$node.Statistics.Join.Format \"02-Jan-2006 15:04\"}}</td>\n </tr>\n{{- end }}\n\n</tbody>\n</table>\n</div>\n\n<script type=\"text/javascript\">\nvar userList = new List('backends', {\n  valueNames: [ 'node', 'lag' ]\n});\n</script>\n\n\n{{template \"footer\"}}\n{{end}}\n"),
-	}
-	filef := &embedded.EmbeddedFile{
 		Filename:    "proxy.tmpl",
 		FileModTime: time.Unix(1501682449, 0),
 		Content:     string("{{define \"proxy\"}}\n{{template \"header\" dict \"Page\" .Page}}\n\n<div id=\"proxy\">\n  <div class=\"searchbox\">\n   Search: <input type=\"text\" class=\"search\" placeholder=\"Search Proxy\" />\n  </div>\n   <table>\n     <thead>\n       <tr>\n         <th class=\"sort\" data-sort=\"vip\">Pool</th>\n         <th class=\"sort\" data-sort=\"backend\">Backend</th>\n         <th class=\"sort\" data-sort=\"balancemode\">BalanceMethod</th>\n         <th class=\"sort\" data-sort=\"listenermode\">ListenerMode</th>\n         <th class=\"sort\" data-sort=\"listener\">Local Listener</th>\n         <th class=\"sort\" data-sort=\"nodes\">Active Nodes</th>\n         <th class=\"sort\" data-sort=\"connectmode\">ConnectMode</th>\n         <th class=\"sort\" data-sort=\"clients\">Active Clients</th>\n         <th class=\"sort\" data-sort=\"connects\">Connects</th>\n         <th class=\"sort\" data-sort=\"responsetime\">ResponseTime</th>\n         <th class=\"sort\" data-sort=\"uuid\">UUID</th>\n       </tr>\n     </thead>\n     <tbody class=\"list\">\n{{ range $proxyname, $listener := .Proxies -}}\n  {{ range $backendname, $backend := $listener.Backends -}}\n  <tr>\n    <td class=\"id\" style=\"display:none;\">0</td>\n    <td class=\"vip\">{{$proxyname}}</td>\n    <td class=\"backend\">{{$backendname}}</td>\n    <td class=\"balancemode\">{{$backend.BalanceMode}}</td>\n    <td class=\"listenermode\">{{$listener.ListenerMode}}</td>\n    <td class=\"listener\">{{$listener.IP}}:{{$listener.Port}}</td>\n    <td class=\"nodes\">\n      {{ if eq $backend.ConnectMode \"internal\" }}\n        Internal\n      {{ else if eq (len $backend.Nodes) 0 }}\n        <span class=\"offline\">None</span>\n      {{ else }}\n        {{ range $backendnodeid, $backendnode := $backend.Nodes -}}\n          <div class=\"node\"><div class=\"host\">{{$backendnode.Name}}::{{$backendnode.Port}}</div><div class=\"ip\">{{$backendnode.IP}}::{{$backendnode.Port}}</div></div>\n        {{- end }}\n      {{- end }}\n    </td>\n    <td class=\"connectmode\">{{$backend.ConnectMode}}</td>\n    <td class=\"clients\">\n      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}\n        {{$backendnode.Statistics.TimeCounterGet}}<br>\n      {{- end }}\n    </td>\n    <td class=\"connects\">\n      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}\n        {{$backendnode.Statistics.ClientsConnects}}<br>\n      {{- end }}\n    </td>\n    <td class=\"responsetime\">\n      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}\n        {{$backendnode.Statistics.ResponseTimeGet}}<br>\n      {{- end }}\n    </td>\n    <td class=\"uuid\">\n      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}\n        {{$backendnode.UUID}}<br>\n      {{- end }}\n    </td>\n </tr>\n  {{- end }}\n{{- end }}\n\n</tbody>\n</table>\n</div>\n\n<script type=\"text/javascript\">\nvar userList = new List('proxy', {\n  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects', 'uuid' ]\n});\n</script>\n\n\n{{template \"footer\"}}\n{{end}}\n"),
 	}
-	fileg := &embedded.EmbeddedFile{
+	filef := &embedded.EmbeddedFile{
 		Filename:    "root.tmpl",
 		FileModTime: time.Unix(1499691007, 0),
 		Content:     string("{{define \"root\"}}\n{{template \"header\" dict \"Page\" .Page}}\n<br>\nVersion: {{ .ProcessInfo.Version }} Build: {{ .ProcessInfo.VersionBuild }} Sha: {{ .ProcessInfo.VersionSha }} <br>\n<br>\nUp since: {{ .ProcessInfo.StartTime }} (up {{ .ProcessInfo.Uptime }})<br>\n<br>\nLast successfull Reload: {{ .ProcessInfo.ReloadTime }}<br>\nLast Failed Reload: {{ .ProcessInfo.FailedReloadTime }}<br>\n{{ if .ProcessInfo.FailedReloadError }}\nLast Failed Reload Error: {{ .ProcessInfo.FailedReloadError }}<br>\n{{end}}\n\n{{template \"footer\"}}\n{{end}}\n"),
@@ -87,7 +82,7 @@ func init() {
 	// define dirs
 	dir1 := &embedded.EmbeddedDir{
 		Filename:   "",
-		DirModTime: time.Unix(1516279320, 0),
+		DirModTime: time.Unix(1517331791, 0),
 		ChildFiles: []*embedded.EmbeddedFile{
 			file2, // "backend.tmpl"
 			file3, // "backenddetails.tmpl"
@@ -101,9 +96,8 @@ func init() {
 			fileb, // "logo32.png"
 			filec, // "mercury.css"
 			filed, // "mercury.js"
-			filee, // "oldcluster.tmpl"
-			filef, // "proxy.tmpl"
-			fileg, // "root.tmpl"
+			filee, // "proxy.tmpl"
+			filef, // "root.tmpl"
 
 		},
 	}
@@ -114,7 +108,7 @@ func init() {
 	// register embeddedBox
 	embedded.RegisterEmbeddedBox(`static`, &embedded.EmbeddedBox{
 		Name: `static`,
-		Time: time.Unix(1516279320, 0),
+		Time: time.Unix(1517331791, 0),
 		Dirs: map[string]*embedded.EmbeddedDir{
 			"": dir1,
 		},
@@ -131,9 +125,8 @@ func init() {
 			"logo32.png":          fileb,
 			"mercury.css":         filec,
 			"mercury.js":          filed,
-			"oldcluster.tmpl":     filee,
-			"proxy.tmpl":          filef,
-			"root.tmpl":           fileg,
+			"proxy.tmpl":          filee,
+			"root.tmpl":           filef,
 		},
 	})
 }

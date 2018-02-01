@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"sync"
@@ -130,4 +131,22 @@ func (m *Manager) StopWorkers() {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
 	m.Workers = []*Worker{}
+}
+
+// JSON returns the healtheck status of the manager in json format
+func (m *Manager) JSON() ([]byte, error) {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	tmp := struct {
+		Workers      []Worker                // all workers that do health checks
+		WorkerHealth map[string]HealthStatus // health status for each worker
+		NodeMap      map[string]HealthPool   // map of node ID, and their healthchecks
+	}{}
+	for _, w := range m.Workers {
+		tmp.Workers = append(tmp.Workers, *w)
+	}
+	tmp.WorkerHealth = m.WorkerMap
+	tmp.NodeMap = m.PoolMap
+	result, err := json.Marshal(tmp)
+	return result, err
 }

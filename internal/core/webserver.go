@@ -15,12 +15,24 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 
 	"github.com/schubergphilis/mercury/internal/config"
+	"github.com/schubergphilis/mercury/internal/web"
 	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
-	"github.com/schubergphilis/mercury/pkg/web"
 )
+
+// processInfo contains details about the mercury process
+type processInfo struct {
+	Version           string
+	VersionBuild      string
+	VersionSha        string
+	StartTime         string
+	Uptime            string
+	ReloadTime        string
+	FailedReloadTime  string
+	FailedReloadError string
+}
 
 // FormattedDate date to readable time
 func FormattedDate(t time.Time) string {
@@ -255,17 +267,6 @@ func WebLocalDNSStatus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type processInfo struct {
-	Version           string
-	VersionBuild      string
-	VersionSha        string
-	StartTime         string
-	Uptime            string
-	ReloadTime        string
-	FailedReloadTime  string
-	FailedReloadError string
-}
-
 func uptime(t time.Duration) string {
 	if (t.Hours() / 24) > 1 {
 		return fmt.Sprintf("%.0fd", t.Hours()/24)
@@ -320,7 +321,7 @@ func newPage(title, uri string) *web.Page {
 }
 
 // NewServer sets up a new webserver
-func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) {
+func (m *Manager) NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) {
 	s = &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", ip, port),
 		ReadTimeout:    10 * time.Second,
@@ -348,10 +349,10 @@ func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) 
 }
 
 // InitializeWebserver starts the webserver
-func InitializeWebserver() {
+func (m *Manager) InitializeWebserver() {
 	log := logging.For("core/webserver").WithField("ip", config.Get().Web.Binding).WithField("port", config.Get().Web.Port).WithField("func", "web")
 	log.Info("Starting web server")
-	server, listener, err := NewServer(config.Get().Web.Binding, config.Get().Web.Port)
+	server, listener, err := m.NewServer(config.Get().Web.Binding, config.Get().Web.Port)
 
 	if config.Get().Web.TLSConfig.CertificateFile != "" {
 		log.WithField("file", config.Get().Web.TLSConfig.CertificateFile).Debug("Enabling SSL for web service")

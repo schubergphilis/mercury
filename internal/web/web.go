@@ -17,6 +17,13 @@ type Config struct {
 	Port      int                 `toml:"port" json:"port"`
 	Path      string              `toml:"path" json:"path"`
 	TLSConfig tlsconfig.TLSConfig `json:"tls" toml:"tls" yaml:"tls"`
+	Auth      AuthConfig          `json:"auth" toml:"auth" yaml:"auth"`
+}
+
+// AuthConfig contains the authentication configuration for web interface
+type AuthConfig struct {
+	Password *AuthPassword `json:"password" toml:"password" yaml:"password"`
+	LDAP     *AuthLDAP     `json:"ldap" toml:"ldap" yaml:"ldap"`
 }
 
 // Page data
