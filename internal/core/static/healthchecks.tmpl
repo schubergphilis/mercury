@@ -5,37 +5,23 @@
   <div class="searchbox">
    Search: <input type="text" class="search" placeholder="Search Backend" />
   </div>
-  <!--
-  <ul>
-    <li>
-      <div><button class="sort" data-sort="name">Sort by name</button></div>
-      <div><button class="sort" data-sort="id">Sort by id</button></div>
-    </li>
-  </ul>
-  //-->
 
   <ul class="tablegroup">
     <div class="tableheader">
-    <li class="tablerow">
-      <div><button class="sort" data-sort="id">h Sort by id</button></div>
-      <div><button class="sort" data-sort="name">h Sort by name</button></div>
-      <div><button class="sort" data-sort="type">h Sort by type</button></div>
+    <li>
+      <div class="sort" data-sort="id">Id</div>
+      <div class="sort" data-sort="name">Name</div>
+      <div class="sort" data-sort="type">Type</div>
     </li>
     </div>
     <div class="list tablebody">
-    <li class="tablerow">
-      <!--<div><button class="sort" data-sort="id">Sort by id</button></div>
-      <div><button class="sort" data-sort="name">Sort by name</button></div>
-      <div><button class="sort" data-sort="type">Sort by type</button></div>
-      //-->
+    <li>
     </li>
     </div>
   </ul>
 </div>
 
 <script type="text/javascript">
-
-//var table = document.getElementById("tablelist");
 
 var options = {
   valueNames: [
@@ -44,19 +30,6 @@ var options = {
     'type',
   ],
   item: '<li class="tablerow"><div class="id"></div><div class="name"></div><div class="type"></div></li>',
-  /*sortFunction: function(itemA, itemB, options) {
-    return List.utils.naturalSort($(itemA.values()[options.valueName]).val(), $(itemB.values()[options.valueName]).val());
-  }*/
-  /*
-  sortFunction: function(itemA, itemB, options) {
-        var sort = list.utils.naturalSort;
-        sort.alphabet = list.alphabet || options.alphabet || undefined;
-        if (!sort.alphabet && options.insensitive) {
-          sort = list.utils.naturalSort.caseInsensitive;
-        };
-        return sort(itemA.values()[options.valueName], itemB.values()[options.valueName]) * multi;
-  };
-  */
 };
 
 
@@ -86,20 +59,12 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
       }
     });
 
-    /*
-    rowData = '<tr id="'+worker.UuidStr+'">' +
-    '<td class="id">'+worker.UuidStr+'</td>' +
-    '<td class="name">'+worker.NodeName+'</td>' +
-    '</tr>'
-    */
     item = {'id':worker.UuidStr, 'name':worker.NodeName, 'type':worker.Check[0]}
 
     existing = itemList.get('id', worker.UuidStr);
       console.log("existing?:"+item)
-    //if (document.getElementById(worker.UuidStr)) {
     if (existing.length > 0) {
       // Existing element
-      //item = itemList.get('id', worker.UuidStr);
       console.log("existing update:"+item)
       existing[0].values(item);
     } else {
