@@ -375,3 +375,9 @@ func (m *Manager) InitializeWebserver() {
 		}
 	}
 }
+
+func webWriteError(w http.ResponseWriter, statusCode int, err string) {
+	w.WriteHeader(statusCode)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte("Oops... " + err))
+}

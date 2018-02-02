@@ -23,7 +23,7 @@ type Worker struct {
 	CheckResult bool
 	CheckError  error
 	update      chan CheckResult
-	uuidStr     string
+	UuidStr     string
 }
 
 // NewWorker creates a new worker for healthchecks
@@ -83,16 +83,16 @@ func (w *Worker) Description() string {
 // UUID returns a uniq ID for the worker
 func (w *Worker) UUID() string {
 	// UUID returns a uuid of a healthcheck
-	if w.uuidStr != "" {
-		return w.uuidStr
+	if w.UuidStr != "" {
+		return w.UuidStr
 	}
 
 	s := fmt.Sprintf("%s%s%s%s%s%s%d", w.Check.UUID(), w.Pool, w.Backend, w.NodeName, w.IP, w.SourceIP, w.Port)
 	t := sha256.New()
 	t.Write([]byte(s))
-	w.uuidStr = fmt.Sprintf("%x", t.Sum(nil))
+	w.UuidStr = fmt.Sprintf("%x", t.Sum(nil))
 
-	return w.uuidStr
+	return w.UuidStr
 
 }
 

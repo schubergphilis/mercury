@@ -261,3 +261,8 @@ func (m *Manager) StateDump() {
 		m.log("connected nodes: %+v", node)
 	}
 }
+
+// Name returns the name of a cluster node
+func (m *Manager) Name() string {
+	return m.name
+}

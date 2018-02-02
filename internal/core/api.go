@@ -3,8 +3,11 @@ package core
 import (
 	"crypto/rand"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/schubergphilis/mercury/internal/config"
 )
 
 var (
@@ -48,7 +51,18 @@ func apiWriteData(w http.ResponseWriter, statusCode int, message apiMessage) {
 	}
 	data = append(data, 10) // 10 = newline
 	w.Write(data)
+}
 
+func apiWriteJsonData(w http.ResponseWriter, statusCode int, message apiMessage) {
+	w.WriteHeader(statusCode)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	data, err := json.Marshal(message)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("Failed to encode json on write"))
+	}
+	data = append(data, 10) // 10 = newline
+	w.Write(data)
 }
 
 func (m *Manager) setupAPI() {
@@ -56,10 +70,16 @@ func (m *Manager) setupAPI() {
 		managers.Lock()
 		defer managers.Unlock()
 	*/
+	titleHead := fmt.Sprintf("Mercury %s - ", config.Get().Cluster.Binding)
 
 	// HealthChecks are always used
 	http.Handle("/api/v1/healthchecks/admin/", authenticate(apiHealthCheckAdminHandler{manager: m}, string(APITokenSigningKey)))
 	http.Handle("/api/v1/healthchecks/", apiHealthCheckPublicHandler{manager: m})
+	http.Handle("/healthchecks/", webHealthCheckHandler{
+		title:         titleHead + "Checks",
+		templateFiles: []string{"header.tmpl", "footer.tmpl", "healthchecks.tmpl"},
+		template:      "healthchecks",
+	})
 
 	// Enable login
 	http.Handle("/api/v1/login/", apiLoginHandler{manager: m})

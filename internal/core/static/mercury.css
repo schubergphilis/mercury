@@ -223,3 +223,125 @@ nav li a.active {
 .node:hover .ip {
     opacity: 1;
 }
+
+
+
+
+.sort {
+  padding:8px 30px;
+  border-radius: 6px;
+  border:none;
+  display:inline-block;
+  color:#fff;
+  text-decoration: none;
+  background-color: #28a8e0;
+  height:30px;
+}
+.sort:hover {
+  text-decoration: none;
+  background-color:#1b8aba;
+}
+.sort:focus {
+  outline:none;
+}
+.sort:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  content:"";
+  position: relative;
+  top:-10px;
+  right:-5px;
+}
+.sort.asc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #fff;
+  content:"";
+  position: relative;
+  top:13px;
+  right:-5px;
+}
+.sort.desc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #fff;
+  content:"";
+  position: relative;
+  top:-10px;
+  right:-5px;
+}
+
+
+
+/*
+.itemlist{background:None;}
+.itemlist ul{float:left;margin:0px;padding:0px;}
+.itemlist ul li{list-style:none;padding:4px 9px;}
+.itemlist ul li.title{font-weight:bold;background:#333;color:#fff;}
+.itemlist ul li.even{background:#fff;}
+.itemlist ul li.odd{background:#FFFFE6;}
+*/
+/*
+.itemlist{background:None;}
+.itemlist ul{display:table;margin:0px;padding:0px;}
+.itemlist ul li{display:table-row-group;list-style: none;padding:4px 9px;}
+.itemlist ul li div{display:table-cell;}
+.tableheader {
+  display: table-header-group;
+}
+*/
+
+/*
+.tablegroup { display: table; }
+
+.tableheader li{display:table-row-group;list-style: none;padding:4px 9px;}
+.tableheader li div{display:table-cell;}
+.tableheader { display: table-header-group; }
+
+.tablebody li{display:table-row-group;list-style: none;padding:4px 9px;}
+.tablebody li div{display:table-cell;}
+.tablebody { display: table-row-group; }
+*/
+
+
+/* ul */
+.tablegroup {
+  display: table;
+  margin: 0px;
+  padding: 0px;
+}
+
+.tablerow {
+  display: table-row;
+}
+
+.tablerow > div {
+  list-style:none;
+  display: table-cell;
+  border: 0px solid #000;
+  padding: 2px 6px;
+}
+
+.tableheader {
+  display: table-header-group;
+}
+
+.tableheader div {
+  background-color: #ccc;
+}
+
+.tablebody {
+  display: table-row-group;
+}
+
+.tablebody li:nth-child(odd)		{ background-color:#eee; }
+.tablebody li:nth-child(even)		{ background-color:#fff; }
+.tablebody li:nth-child(odd):hover		{ background-color:#ccc; }
+.tablebody li:nth-child(even):hover		{ background-color:#ccc; }
