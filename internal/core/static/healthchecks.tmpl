@@ -9,9 +9,14 @@
   <ul class="tablegroup">
     <div class="tableheader">
     <li>
-      <div class="sort" data-sort="id">Id</div>
-      <div class="sort" data-sort="name">Name</div>
-      <div class="sort" data-sort="type">Type</div>
+      <div class="unselectable hidden" data-sort="id" unselectable="on">Id</div>
+      <div class="sort unselectable" data-sort="status" unselectable="on">Status</div>
+      <div class="sort unselectable" data-sort="node" unselectable="on">Node</div>
+      <div class="sort unselectable" data-sort="nodeip" unselectable="on">Ip</div>
+      <div class="sort unselectable" data-sort="port" unselectable="on">Port</div>
+      <div class="sort unselectable" data-sort="type" unselectable="on">Type</div>
+      <div class="sort unselectable" data-sort="request" unselectable="on">Request</div>
+      <div class="sort unselectable" data-sort="error" unselectable="on">Error</div>
     </li>
     </div>
     <div class="list tablebody">
@@ -26,10 +31,15 @@
 var options = {
   valueNames: [
     'id',
-    'name',
+    'status',
     'type',
+    'node',
+    'nodeip',
+    'port',
+    'request',
+    'error',
   ],
-  item: '<li class="tablerow"><div class="id"></div><div class="name"></div><div class="type"></div></li>',
+  item: '<li class="tablerow"><div class="id hidden"></div><div class="status"></div><div class="node"></div><div class="nodeip"></div><div class="port"></div><div class="type"></div><div class="request"></div><div class="error"></div></li>',
 };
 
 
@@ -49,40 +59,96 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
   var jsonData = JSON.parse(data.data)
 
   // go thtough all workers
-  $.each(jsonData.Workers, function (i, worker) {
+  $.each(jsonData.workers, function (i, worker) {
 
     var health
     // find related worker health
-    $.each(jsonData.WorkerHealth, function (h, workerHealth) {
-      if (h == worker.UuidStr) {
+    $.each(jsonData.workerhealth, function (h, workerHealth) {
+      if (h == worker.uuid) {
         health = workerHealth
       }
     });
 
-    item = {'id':worker.UuidStr, 'name':worker.NodeName, 'type':worker.Check[0]}
 
-    existing = itemList.get('id', worker.UuidStr);
-      console.log("existing?:"+item)
+    checkStatus = (worker.checkresult == true ? "online" : "offline")
+    checkError = ""
+    if (jsonData.workerhealth[worker.uuid] != null) {
+      if (jsonData.workerhealth[worker.uuid].admindown) {
+        checkStatus = "admindown"
+      }
+      if (jsonData.workerhealth[worker.uuid].adminup) {
+        checkStatus = "adminup"
+      }
+      if (jsonData.workerhealth[worker.uuid].errormsg != null) {
+        checkError = jsonData.workerhealth[worker.uuid].errormsg.join();
+      }
+    }
+    switch (checkStatus)
+    {
+       case "online":
+         checkStatus='<p class="online">online</p>';
+         break;
+       case "offline":
+         checkStatus='<p class="offline">offline</p>';
+         break;
+       case "admindown":
+         checkStatus='<p class="admindown">admindown</p>';
+         break;
+       case "adminup":
+         checkStatus='<p class="adminup">adminup</p>';
+         break;
+    }
+
+    checkId = worker.uuid
+    checkType = worker.check.type
+    checkSource = worker.check.sourceip == "" ? worker.sourceip : worker.check.sourceip
+    checkTarget = worker.nodename.replace(/_\d*$/, "");
+    checkTargetIP = worker.check.ip == "" ? worker.ip : worker.check.ip
+    if (checkTarget == "") {
+      checkTarget = checkTargetIP
+    }
+    if (checkTargetIP.replace(/\./g, "_") == checkTarget) {
+      checkTarget = checkTargetIP
+    }
+    checkPort = worker.check.port == "" ? worker.port : worker.check.port
+    switch (checkType)
+    {
+       case "httpget":
+       case "httppost":
+         checkRequest = worker.check.httprequest.split('?')[0]
+       break;
+       case "tcpconnect":
+         checkRequest = ""
+       break;
+       case "tcpdata":
+         checkRequest = worker.check.tcprequest
+       break;
+       case "icmpping":
+       case "udpping":
+       case "tcpping":
+         checkRequest = ""
+       break;
+    }
+    item = {'id': checkId, 'status':checkStatus, 'type':checkType, 'source':checkSource, 'node':checkTarget, 'nodeip':checkTargetIP, 'port':checkPort, 'request':checkRequest, 'error':checkError }
+
+    existing = itemList.get('id', worker.uuid);
     if (existing.length > 0) {
       // Existing element
-      console.log("existing update:"+item)
       existing[0].values(item);
     } else {
       // New element
-      console.log("new:"+item)
       itemList.add(item);
     }
   });
-  window.setTimeout(refreshPage, 30000);
+  window.setTimeout(refreshPage, 10000);
 
 })
   .fail(function(jqXHR, textStatus, errorThrown) {
-    console.log("error ");
-    console.log("error " + textStatus);
+    errorHandler("error reading api for status update"+errorThrown)
   })
 }
 refreshPage()
-window.setTimeout(refreshPage, 30000);
+window.setTimeout(refreshPage, 10000);
 
 </script>
 

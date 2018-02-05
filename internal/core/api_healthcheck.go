@@ -15,7 +15,7 @@ func (h apiHealthCheckPublicHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		apiWriteData(w, 501, apiMessage{Success: false, Data: err.Error()})
 		return
 	}
-	apiWriteJsonData(w, http.StatusOK, apiMessage{Success: true, Data: string(data)})
+	apiWriteJSONData(w, http.StatusOK, apiMessage{Success: true, Data: string(data)})
 }
 
 // Authorized personel only
@@ -29,6 +29,6 @@ func (h apiHealthCheckAdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 		apiWriteData(w, 501, apiMessage{Success: false, Data: err.Error()})
 		return
 	}
-	apiWriteJsonData(w, http.StatusOK, apiMessage{Success: true, Data: string(data)})
+	apiWriteJSONData(w, http.StatusOK, apiMessage{Success: true, Data: string(data)})
 
 }

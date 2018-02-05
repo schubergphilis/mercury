@@ -53,7 +53,7 @@ func apiWriteData(w http.ResponseWriter, statusCode int, message apiMessage) {
 	w.Write(data)
 }
 
-func apiWriteJsonData(w http.ResponseWriter, statusCode int, message apiMessage) {
+func apiWriteJSONData(w http.ResponseWriter, statusCode int, message apiMessage) {
 	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	data, err := json.Marshal(message)
@@ -70,7 +70,7 @@ func (m *Manager) setupAPI() {
 		managers.Lock()
 		defer managers.Unlock()
 	*/
-	titleHead := fmt.Sprintf("Mercury %s - ", config.Get().Cluster.Binding)
+	titleHead := fmt.Sprintf("Mercury %s - ", config.Get().Cluster.Binding.Name)
 
 	// HealthChecks are always used
 	http.Handle("/api/v1/healthchecks/admin/", authenticate(apiHealthCheckAdminHandler{manager: m}, string(APITokenSigningKey)))

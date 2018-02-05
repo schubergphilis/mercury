@@ -11,19 +11,19 @@ import (
 
 // Worker type executes a healthcheck on a single node
 type Worker struct {
-	Pool        string
-	Backend     string
-	NodeName    string
-	NodeUUID    string
-	IP          string // IP used for check
-	SourceIP    string
-	Port        int // Port used for check
-	Check       HealthCheck
-	stop        chan bool
-	CheckResult bool
-	CheckError  error
+	Pool        string      `json:"pool" toml:"pool"`
+	Backend     string      `json:"backend" toml:"backend"`
+	NodeName    string      `json:"nodename" toml:"nodename"`
+	NodeUUID    string      `json:"nodeuuid" toml:"nodeuuid"`
+	IP          string      `json:"ip" toml:"ip"` // IP used for check
+	SourceIP    string      `json:"sourceip" toml:"sourceip"`
+	Port        int         `json:"port" toml:"port"` // Port used for check
+	Check       HealthCheck `json:"check" toml:"check"`
+	CheckResult bool        `json:"checkresult" toml:"checkresult"`
+	CheckError  error       `json:"checkerror" toml:"checkerror"`
+	UuidStr     string      `json:"uuid" toml:"uuid"`
 	update      chan CheckResult
-	UuidStr     string
+	stop        chan bool
 }
 
 // NewWorker creates a new worker for healthchecks

@@ -5,20 +5,16 @@ body {
     background-color:#FFFFFF;
     color:#000000;
     margin-left:10px;
-    /*margin-top:220px;*/
     margin-top:50px;
     margin-bottom:20px;
     padding:0px;
-    /*background-image: url(/static/images/background.png);*/
-    /*width:100%;*/
 }
 img {border-style:none;}
-form,ul,li {margin:0px; padding:0px;}
+form,ul,li,p {margin:0px; padding:0px;}
 a {text-decoration: none;}
 a:hover {text-decoration: none;}
 h1 { }
 h3 { color: #ddd; }
-
 a { color:#000; }
 td { vertical-align: top }
 
@@ -28,16 +24,16 @@ td { vertical-align: top }
 }
 
 nav {
-  position: absolute;
-  top:50px;
+  /*position: absolute;*/
+  /*top:50px;*/
   z-index: 1;
   width:100%;
   background-color: rgba(255,255,255,0.9);
 }
 
 main {
-  position: absolute;
-  top:100px;
+  /*position: absolute;
+  top:100px;*/
 }
 
 div {
@@ -67,13 +63,10 @@ header {
   font-family: Verdana;
   position: absolute;
   top: 10px;
-  /*width: 100%;*/
   height: 40px;
   text-align: left;
   vertical-align: middle;
   letter-spacing: 1px;
-  /* line-height: 10px;*/
-  /* background-color: rgba(0,0,0,0.70);*/
   clear: both;
   z-index: 50;
 }
@@ -105,6 +98,14 @@ table td, table th {
 
 .checking {
   color: #d08000
+}
+
+.adminup {
+  color: #d08000
+}
+
+.admindown {
+  color: #000
 }
 
 .gray {
@@ -279,7 +280,13 @@ li .sort.desc:after {
   right:-5px;
 }
 
-
+.unselectable {
+   -moz-user-select: none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
 
 
 
@@ -288,7 +295,7 @@ li .sort.desc:after {
 .tablegroup li { display: table-row; }
 .tablegroup li div { list-style:none; display: table-cell; padding: 2px 6px; }
 /* div */
-.tableheader { display: table-header-group;}
+.tableheader { display: table-header-group;user-select: none;}
 .tableheader li div { background-color: #bbb; border: 0 solid #000; border-width: 0px 1px 1px 0px; }
 .tableheader li div:hover { background-color: #8fd2ef; }
 /*.tableheader li div:hover { background-color: #28a8e0; } *?
@@ -298,3 +305,29 @@ li .sort.desc:after {
 .tablebody li:nth-child(even)		{ background-color:#fff; }
 .tablebody li:nth-child(odd):hover		{ background-color:#8fd2ef }
 .tablebody li:nth-child(even):hover		{ background-color:#8fd2ef }
+
+/*.errormsg { position:fixed; left:0px; bottom:15px; height:15px; background-color: #FF8080; border: 1px solid: #F00}*/
+
+.errormsg {
+  width: 98%;
+  height: 25px;
+  color: #000;
+  font-size:15px;
+  text-align: center;
+  background-color: rgba(255,80,80,0.8);
+  border:1px #F00 solid;
+  clear: both;
+  border-radius: 5px;
+  position:fixed;
+  bottom:1px;
+  left:1%;
+  display:none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.login {
+  
+}

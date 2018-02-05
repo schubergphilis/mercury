@@ -14,24 +14,24 @@ import (
 // Manager manages Health of Node
 type Manager struct {
 	Incoming  chan CheckResult
-	Workers   []*Worker
-	WorkerMap map[string]HealthStatus // keeps the health of all items
-	PoolMap   map[string]HealthPool   // keeps a list of uuids and what checks apply to them
+	Workers   []*Worker               `json:"workers" toml:"workers"`
+	WorkerMap map[string]HealthStatus `json:"workermap" toml:"workermap"` // keeps the health of all items
+	PoolMap   map[string]HealthPool   `json:"poolmap" toml:"poolmap"`     // keeps a list of uuids and what checks apply to them
 
 	Worker sync.RWMutex
 }
 
 // CheckResult holds the check result output
 type CheckResult struct {
-	PoolName    string
-	BackendName string
-	NodeName    string
-	NodeUUID    string
-	WorkerUUID  string
-	Description string
-	Online      bool
-	ErrorMsg    []string
-	SingleCheck bool
+	PoolName    string   `json:"poolname" toml:"poolname"`
+	BackendName string   `json:"backendname" toml:"backendname"`
+	NodeName    string   `json:"nodename" toml:"nodename"`
+	NodeUUID    string   `json:"nodeuuid" toml:"nodeuuid"`
+	WorkerUUID  string   `json:"workeruuid" toml:"workeruuid"`
+	Description string   `json:"description" toml:"description"`
+	Online      bool     `json:"online" toml:"online"`
+	ErrorMsg    []string `json:"errormsg" toml:"errormsg"`
+	SingleCheck bool     `json:"singlecheck" toml:"singlecheck"`
 }
 
 // HealthCheck custom HealthCheck
@@ -138,9 +138,9 @@ func (m *Manager) JSON() ([]byte, error) {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
 	tmp := struct {
-		Workers      []Worker                // all workers that do health checks
-		WorkerHealth map[string]HealthStatus // health status for each worker
-		NodeMap      map[string]HealthPool   // map of node ID, and their healthchecks
+		Workers      []Worker                `json:"workers" toml:"workers"`           // all workers that do health checks
+		WorkerHealth map[string]HealthStatus `json:"workerhealth" toml:"workerhealth"` // health status for each worker
+		NodeMap      map[string]HealthPool   `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
 	}{}
 	for _, w := range m.Workers {
 		tmp.Workers = append(tmp.Workers, *w)
