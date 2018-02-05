@@ -56,7 +56,8 @@ func WebBackendDetails(w http.ResponseWriter, r *http.Request) {
 	backendDetails := config.Get().Loadbalancer.Pools[pool].Backends[backend]
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Backend Details %s", clusternode, backend)
-	page := newPage(title, r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"backenddetails.tmpl", "header.tmpl", "footer.tmpl"}
 	backenddetailsTemplate, err := web.LoadTemplates("static", templateNames)
@@ -84,7 +85,8 @@ func WebClusterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Cluster Status", clusternode)
-	page := newPage(title, r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"cluster.tmpl", "header.tmpl", "footer.tmpl"}
 	clusterTemplate, err := web.LoadTemplates("static", templateNames)
@@ -134,7 +136,8 @@ func WebProxyStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Proxy Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"proxy.tmpl", "header.tmpl", "footer.tmpl"}
 		proxyTemplate, err := web.LoadTemplates("static", templateNames)
@@ -171,7 +174,8 @@ func WebBackendStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Backend Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"backend.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -209,7 +213,8 @@ func WebGLBStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - GLB Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"glb.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -246,7 +251,8 @@ func WebLocalDNSStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - LocalDNS Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"localdns.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -283,7 +289,8 @@ func uptime(t time.Duration) string {
 // WebRoot serves Webserver's root folder
 func WebRoot(w http.ResponseWriter, r *http.Request) {
 	log := logging.For("core/webroot").WithField("func", "web")
-	page := newPage("Mercury Global Loadbalancer", r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage("Mercury Global Loadbalancer", r.RequestURI, username)
 
 	templateNames := []string{"root.tmpl", "header.tmpl", "footer.tmpl"}
 	template, err := web.LoadTemplates("static", templateNames)
@@ -311,12 +318,13 @@ func WebRoot(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newPage(title, uri string) *web.Page {
+func newPage(title, uri, username string) *web.Page {
 	return &web.Page{
 		Title:    title,
 		URI:      uri,
 		Hostname: config.Get().Cluster.Binding.Name,
 		Time:     time.Now(),
+		Username: username,
 	}
 }
 

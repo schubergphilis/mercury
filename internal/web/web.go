@@ -32,6 +32,7 @@ type Page struct {
 	URI      string
 	Hostname string
 	Time     time.Time
+	Username string
 }
 
 // LoadTemplates a template from the rice box

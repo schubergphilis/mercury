@@ -83,7 +83,11 @@ func (m *Manager) setupAPI() {
 
 	// Enable login
 	http.Handle("/api/v1/login/", apiLoginHandler{manager: m})
-
+	http.Handle("/login/", webLoginHandler{
+		title:         titleHead + "Login",
+		templateFiles: []string{"header.tmpl", "footer.tmpl", "login.tmpl"},
+		template:      "login",
+	})
 	/*
 		http.Handle("/api/v1/cluster/"+m.name+"/admin/", authenticate(apiClusterAdminHandler{manager: m}, m.authKey))
 		http.Handle("/api/v1/cluster/"+m.name, apiClusterPublicHandler{manager: m})
