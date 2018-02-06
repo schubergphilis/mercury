@@ -25,23 +25,31 @@ func (h apiAuthentication) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return APITokenSigningKey, nil
 		})
 
+		// More user friendly message
 		if err != nil {
+			if err.Error() == jwt.ErrSignatureInvalid.Error() {
+				fmt.Printf("Error1:%+v\n", err)
+				fmt.Printf("Error2:%+v\n", jwt.ErrSignatureInvalid)
+				apiWriteData(w, 403, apiMessage{Success: false, Error: "Login token expired"})
+				return
+			}
 			apiWriteData(w, 403, apiMessage{Success: false, Error: err.Error()})
 			return
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			if time.Now().Unix() > int64(claims["expire"].(float64)) {
-				apiWriteData(w, 403, apiMessage{Success: false, Error: "Token expired"})
+				apiWriteData(w, 403, apiMessage{Success: false, Error: "Login token expired"})
 				return
 			}
 
 			h.wrappedHandler.ServeHTTP(w, r)
-		} else {
-			apiWriteData(w, 403, apiMessage{Success: false, Error: err.Error()})
 			return
 		}
+		apiWriteData(w, 403, apiMessage{Success: false, Error: err.Error()})
+		return
 	}
+	apiWriteData(w, 403, apiMessage{Success: false, Error: "Login required"})
 }
 
 // Authenticate user

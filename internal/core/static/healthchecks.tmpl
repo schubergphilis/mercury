@@ -1,7 +1,9 @@
 {{define "healthchecks"}}
 {{template "header" dict "Page" .Page}}
 
-<div id="itemlist" class="itemlist">
+<div id="loading" class="loading"></div>
+
+<div id="itemlist" class="itemlist hidden">
   <div class="searchbox">
    Search: <input type="text" class="search" placeholder="Search Backend" />
   </div>
@@ -19,15 +21,25 @@
       <div class="sort unselectable" data-sort="error" unselectable="on">Error</div>
     </li>
     </div>
-    <div class="list tablebody">
+    <div class="list tablebody" id="tablebody">
     <li>
     </li>
     </div>
   </ul>
 </div>
+<div id="details" class="details"><div>
+<div id="popup" class="overlay">
+	<div class="popup">
+		<h2 class="popupheader">Header2</h2>
+		<input type=button class="close" value="&times;">
+		<div id="popupcontent" class="popupcontent">
+		</div>
+	</div>
+</div>
 
 <script type="text/javascript">
 
+// listjs parameters and init
 var options = {
   valueNames: [
     'id',
@@ -41,10 +53,10 @@ var options = {
   ],
   item: '<li class="tablerow"><div class="id hidden"></div><div class="status"></div><div class="node"></div><div class="nodeip"></div><div class="port"></div><div class="type"></div><div class="request"></div><div class="error"></div></li>',
 };
-
-
 var    itemList = new List('itemlist', options);
 
+
+// API caller for main list
 function refreshPage() {
 var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
   if (data == null) {
@@ -58,7 +70,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
 
   var jsonData = JSON.parse(data.data)
 
-  // go thtough all workers
+  // go through all workers
   $.each(jsonData.workers, function (i, worker) {
 
     var health
@@ -71,7 +83,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
 
 
     checkStatus = (worker.checkresult == true ? "online" : "offline")
-    checkError = ""
+    checkError = worker.checkerror
     if (jsonData.workerhealth[worker.uuid] != null) {
       if (jsonData.workerhealth[worker.uuid].admindown) {
         checkStatus = "admindown"
@@ -79,9 +91,9 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
       if (jsonData.workerhealth[worker.uuid].adminup) {
         checkStatus = "adminup"
       }
-      if (jsonData.workerhealth[worker.uuid].errormsg != null) {
+      /*if (jsonData.workerhealth[worker.uuid].errormsg != null) {
         checkError = jsonData.workerhealth[worker.uuid].errormsg.join();
-      }
+      }*/
     }
     switch (checkStatus)
     {
@@ -115,7 +127,8 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     {
        case "httpget":
        case "httppost":
-         checkRequest = worker.check.httprequest.split('?')[0]
+         //checkRequest = worker.check.httprequest.split('?')[0]
+         checkRequest = worker.check.httprequest
        break;
        case "tcpconnect":
          checkRequest = ""
@@ -141,14 +154,142 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     }
   });
   window.setTimeout(refreshPage, 10000);
+  // Show Page
+   $( '#itemlist' ).removeClass('hidden')
+   $( '#loading' ).addClass('hidden')
 
+   // API caller for details windows
+   $("#tablebody li").unbind("click")
+   $("#tablebody li").on("click", function() {
+     id = $(this).find('.id:first')[0]
+     showDetails(id.innerText)
+   });
 })
   .fail(function(jqXHR, textStatus, errorThrown) {
     errorHandler("error reading api for status update"+errorThrown)
   })
 }
 refreshPage()
-window.setTimeout(refreshPage, 10000);
+//window.setTimeout(refreshPage, 10000);
+
+// Delayed loading screen, incase things take a while
+function loadingText(){
+   $("#loading").text('Gathering data...')
+ }
+setTimeout(loadingText, 1000);
+
+function showDetails(id) {
+  console.log("Showing details of "+id)
+  // Load details
+var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
+  if (data == null) {
+    errorHandler("unable to read data from healthcheck API (no data)")
+    return
+  }
+  if (data.success != true) {
+    errorHandler("unable to read data from healthcheck API (success=false)")
+    return
+  }
+
+  var jsonData = JSON.parse(data.data)
+  console.dir(jsonData)
+  worker = jsonData.worker
+  checkSource = worker.check.sourceip == "" ? worker.sourceip : worker.check.sourceip
+  checkTarget = worker.nodename.replace(/_\d*$/, "");
+  checkTargetIP = worker.check.ip == "" ? worker.ip : worker.check.ip
+  if (checkTarget == "") {
+    checkTarget = checkTargetIP
+  }
+  if (checkTargetIP.replace(/\./g, "_") == checkTarget) {
+    checkTarget = checkTargetIP
+  }
+  checkPort = worker.check.port == "" ? worker.port : worker.check.port
+
+   $("#popup h2").html(checkTarget)
+   $("#popupcontent").html('<ul class="tablegroupdetails"></ul>')
+   $("#popupcontent ul").append('<li><div>Check Type</div><div>'+worker.check.type+'</div></li>')
+   $("#popupcontent ul").append('<li><div>SourceIP</div><div>'+checkSource+'</div></li>')
+   $("#popupcontent ul").append('<li><div>TargetIP</div><div>'+checkTargetIP+'</div></li>')
+   $("#popupcontent ul").append('<li><div>Port</div><div>'+checkPort+'</div></li>')
+
+    switch (worker.check.type)
+    {
+       case "httpget":
+         $("#popupcontent ul").append('<li><div>HTTP Headers</div><div>'+worker.check.httpheaders+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Reply</div><div>'+worker.check.httpreply+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Status</div><div>'+worker.check.httpstatus+'</div></li>')
+       break;
+       case "httppost":
+         $("#popupcontent ul").append('<li><div>HTTP Headers</div><div>'+worker.check.httpheaders+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httppostdata+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Reply</div><div>'+worker.check.httpreply+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Status</div><div>'+worker.check.httpstatus+'</div></li>')
+         //checkRequest = worker.check.httprequest.split('?')[0]
+       break;
+       case "tcpconnect":
+       break;
+       case "tcpdata":
+         $("#popupcontent ul").append('<li><div>TCP Request</div><div>'+worker.check.tcprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>TCP Reply</div><div>'+worker.check.tcpreply+'</div></li>')
+       break;
+       case "icmpping":
+       case "udpping":
+       case "tcpping":
+       break;
+    }
+
+    var checkStatusDetail=''
+         $("#popupcontent ul").append('<li><div>Used by</div><div>'+jsonData.nodemap.join(', ')+'</div></li>')
+    /*
+    (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
+    */
+    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='online'; } else { checkStatusDetail='offline'; }
+    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='admindown'; }
+    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='adminup'; }
+
+         $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
+
+   $("#popup").css('visibility', 'visible');
+})
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    /*errorHandler("error reading details of node"+errorThrown)*/
+    if (jqXHR == null) {
+      errorHandler("failed: unable to read data from healthcheck API (no data)")
+      return
+    }
+    if (jqXHR.responseText == null) {
+      errorHandler("failed: unable to read response from healthcheck API (no data)")
+      return
+    }
+
+    var data = JSON.parse(jqXHR.responseText)
+
+    if (data == null) {
+      errorHandler("failed: unable to read data from healthcheck API (no data)")
+      return
+    }
+    if (data.success != true) {
+      // Auto-redirect to login page if login expired oor required
+      if ((data.error == "Login token expired") || (data.error == "Login required")) {
+        window.location = '/login'
+        return
+      }
+      errorHandler("failed: "+data.error)
+      return
+    }
+
+    errorHandler("error reading healthcheck api"+errorThrown)
+
+  });
+
+}
+
+
+   $("#popup .close").on("click", function() {
+     $("#popup").css('visibility', 'hidden');
+   });
 
 </script>
 

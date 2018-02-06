@@ -143,10 +143,39 @@ func (m *Manager) JSON() ([]byte, error) {
 		NodeMap      map[string]HealthPool   `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
 	}{}
 	for _, w := range m.Workers {
-		tmp.Workers = append(tmp.Workers, *w)
+		tmp.Workers = append(tmp.Workers, w.filterWorker())
 	}
 	tmp.WorkerHealth = m.WorkerMap
 	tmp.NodeMap = m.PoolMap
+	result, err := json.Marshal(tmp)
+	return result, err
+}
+
+// JSONAuthorized returns unfiltered the healtheck status of the manager in json format
+func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	tmp := struct {
+		Workers      Worker       `json:"worker" toml:"worker"`             // all workers that do health checks
+		WorkerHealth HealthStatus `json:"workerhealth" toml:"workerhealth"` // health status for each worker
+		NodeMap      []string     `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
+	}{}
+	for _, w := range m.Workers {
+		if w.UuidStr == uuid {
+			tmp.Workers = *w
+		}
+	}
+	if _, ok := m.WorkerMap[uuid]; ok {
+		tmp.WorkerHealth = m.WorkerMap[uuid]
+	}
+	for _, node := range m.PoolMap {
+		fmt.Printf("NodeMap: %+v\n", node)
+		for _, p := range node.Checks {
+			if p == uuid {
+				tmp.NodeMap = append(tmp.NodeMap, node.NodeName)
+			}
+		}
+	}
 	result, err := json.Marshal(tmp)
 	return result, err
 }

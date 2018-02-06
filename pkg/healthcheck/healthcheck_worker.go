@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/logging"
@@ -20,7 +21,7 @@ type Worker struct {
 	Port        int         `json:"port" toml:"port"` // Port used for check
 	Check       HealthCheck `json:"check" toml:"check"`
 	CheckResult bool        `json:"checkresult" toml:"checkresult"`
-	CheckError  error       `json:"checkerror" toml:"checkerror"`
+	CheckError  string      `json:"checkerror" toml:"checkerror"`
 	UuidStr     string      `json:"uuid" toml:"uuid"`
 	update      chan CheckResult
 	stop        chan bool
@@ -99,7 +100,7 @@ func (w *Worker) UUID() string {
 // Debug shows debug information for all workers
 func (w *Worker) Debug() {
 	log := logging.For("healthcheck/worker/debug")
-	log.WithField("node", w.NodeName).WithField("result", w.CheckResult).WithError(w.CheckError).WithField("pool", w.Pool).WithField("backend", w.Backend).WithField("ip", w.IP).WithField("port", w.Port).WithField("type", w.Check.Type).Info("Active Healthchecks")
+	log.WithField("node", w.NodeName).WithField("result", w.CheckResult).WithField("error", w.CheckError).WithField("pool", w.Pool).WithField("backend", w.Backend).WithField("ip", w.IP).WithField("port", w.Port).WithField("type", w.Check.Type).Info("Active Healthchecks")
 }
 
 // SingleCheck executes and reports a single health check and then exits
@@ -143,8 +144,8 @@ func (w *Worker) Start() {
 					checkerror = err.Error()
 				}
 
-				if w.CheckError != nil {
-					previouserror = w.CheckError.Error()
+				if w.CheckError != "" {
+					previouserror = w.CheckError
 				}
 
 				if result != w.CheckResult || checkerror != previouserror {
@@ -161,8 +162,9 @@ func (w *Worker) Start() {
 					}
 
 					w.CheckResult = result
-					w.CheckError = err
+					w.CheckError = ""
 					if err != nil {
+						w.CheckError = err.Error()
 						checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
 					}
 
@@ -180,7 +182,7 @@ func (w *Worker) Start() {
 					WorkerUUID:  w.UUID(),
 				}
 
-				w.CheckError = fmt.Errorf("healthcheck worker is exiting")
+				w.CheckError = "healthcheck worker is exiting"
 				checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
 				w.update <- checkresult
 				timer.Stop()
@@ -226,4 +228,12 @@ func (w *Worker) executeCheck() (bool, error) {
 		result = true
 	}
 	return result, err
+}
+
+func (w *Worker) filterWorker() (n Worker) {
+	n = *w
+	n.Check.HTTPHeaders = []string{}
+	n.Check.HTTPPostData = ""
+	n.Check.HTTPRequest = strings.Split(n.Check.HTTPRequest, "?")[0]
+	return
 }

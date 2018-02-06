@@ -267,3 +267,35 @@ li .sort.desc:after {
 }
 .login li { display: table-row; }
 .login li div { display: table-cell; text-align: left; }
+
+/* Loading */
+.loading { text-align: center; width:100% ;margin-top:20px;color:#808080}
+
+/* popup */
+.overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.7); visibility: hidden; }
+.popup { margin: 70px auto; padding: 20px; background: #fff; border-radius: 5px; width: 50%; position: relative; }
+.popup h2 { margin-top: 0; color: #333; font-family: Tahoma, Arial, sans-serif; }
+
+.popup .close { position: absolute; top: 20px; right: 30px; font-size: 30px; font-weight: bold; text-decoration: none; color: #333; border: 0px;background-color: #FFF;}
+.popup .close:hover { color: #06D85F; }
+/*.popup .content { max-height: 30%; overflow: auto; }*/
+
+@media screen and (max-width: 800px){
+  .box{
+    width: 90%;
+  }
+  .popup{
+    width: 90%;
+  }
+}
+
+/* ul */
+.tablegroupdetails { display: table; border-spacing: 1px 1px; table-layout: fixed; width:100%}
+.tablegroupdetails li { display: table-row; }
+.tablegroupdetails li div { list-style:none; display: table-cell; padding: 2px 6px; overflow: hidden; width:30%;}
+.tablegroupdetails li div:first-child { white-space: nowrap;}
+.tablegroupdetails li div:first-child:after { content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ." }
+.tablegroupdetails li div:nth-child(2) { word-wrap: break-word; }
+
+.tablegroupdetails li:nth-child(odd)		{ background-color:#eee; }
+.tablegroupdetails li:nth-child(even)		{ background-color:#fff; }

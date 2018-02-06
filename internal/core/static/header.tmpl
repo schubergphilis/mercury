@@ -29,7 +29,7 @@ $(window).on("scroll", function () {
   <header>
   <ul class="topheader">
    <li class="title"><a class="home" href="/" alt="Home"><img class="left" src="/static/logo32.png">ercury</a></li>
-   <li class="hostname">host:{{$.Page.Hostname}}<br>time:{{$.Page.Time.Format "02-Jan-2006 15:04"}}</li>
+   <li class="hostname">Running on {{$.Page.Hostname}}<br>{{$.Page.Time.Format "02-Jan-2006 15:04"}}</li>
    <li class="loginlink">
        {{if .Page.Username}}
        Welcome {{.Page.Username}}<br>
@@ -46,7 +46,7 @@ $(window).on("scroll", function () {
     <li><a class="{{ if eq .Page.URI "/glb" -}}active{{- end }}" href="/glb">GLB</a></li>
     <li><a class="{{ if eq .Page.URI "/proxy" -}}active{{- end }}" href="/proxy">Proxy</a></li>
     <li><a class="{{ if eq .Page.URI "/backend" -}}active{{- end }}" href="/backend">Backend</a></li>
-    <li><a class="{{ if eq .Page.URI "/healthchecks/" -}}active{{- end }}" href="/healthchecks">Checks</a></li>
+    <li><a class="{{ if eq .Page.URI "/healthchecks/" -}}active{{- end }}" href="/healthchecks">Healthchecks</a></li>
     <li><a class="{{ if eq .Page.URI "/cluster" -}}active{{- end }}" href="/cluster">Cluster</a></li>
     <li><a class="{{ if eq .Page.URI "/localdns" -}}active{{- end }}" href="/localdns">Local DNS</a></li>
   </ul>
