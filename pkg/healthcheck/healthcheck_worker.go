@@ -62,10 +62,10 @@ func (w *Worker) Description() string {
 		return fmt.Sprintf("tcpdata:%s:%d:%s", w.IP, w.Port, w.Check.TCPRequest)
 
 	case "httpget":
-		return fmt.Sprintf("httpget:%s:%d:%s", w.IP, w.Port, w.Check.HTTPRequest)
+		return fmt.Sprintf("httpget:%s:%d:%s", w.IP, w.Port, strings.Split(w.Check.HTTPRequest, "?")[0])
 
 	case "httppost":
-		return fmt.Sprintf("httppost:%s:%d:%s", w.IP, w.Port, w.Check.HTTPRequest)
+		return fmt.Sprintf("httppost:%s:%d:%s", w.IP, w.Port, strings.Split(w.Check.HTTPRequest, "?")[0])
 
 	case "icmpping":
 		return fmt.Sprintf("icmpping:%s", w.IP)
