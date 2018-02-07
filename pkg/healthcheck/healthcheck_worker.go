@@ -237,3 +237,16 @@ func (w *Worker) filterWorker() (n Worker) {
 	n.Check.HTTPRequest = strings.Split(n.Check.HTTPRequest, "?")[0]
 	return
 }
+
+func (w *Worker) sendUpdate(result bool) {
+	checkresult := CheckResult{
+		PoolName:    w.Pool,
+		BackendName: w.Backend,
+		Online:      result,
+		NodeName:    w.NodeName,
+		WorkerUUID:  w.UUID(),
+		Description: w.Description(),
+		SingleCheck: false,
+	}
+	w.update <- checkresult
+}

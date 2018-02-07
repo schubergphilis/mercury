@@ -57,7 +57,7 @@ var    itemList = new List('itemlist', options);
 
 
 // API caller for main list
-function refreshPage() {
+function refreshPage(addtimer) {
 var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
   if (data == null) {
     errorHandler("unable to read data from healthcheck API (no data)")
@@ -91,9 +91,6 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
       if (jsonData.workerhealth[worker.uuid].adminup) {
         checkStatus = "adminup"
       }
-      /*if (jsonData.workerhealth[worker.uuid].errormsg != null) {
-        checkError = jsonData.workerhealth[worker.uuid].errormsg.join();
-      }*/
     }
     switch (checkStatus)
     {
@@ -153,7 +150,9 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
       itemList.add(item);
     }
   });
-  window.setTimeout(refreshPage, 10000);
+  if (addtimer == 1) {
+    window.setTimeout(refreshPage, 10000);
+  }
   // Show Page
    $( '#itemlist' ).removeClass('hidden')
    $( '#loading' ).addClass('hidden')
@@ -169,7 +168,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     errorHandler("error reading api for status update"+errorThrown)
   })
 }
-refreshPage()
+refreshPage(1)
 //window.setTimeout(refreshPage, 10000);
 
 // Delayed loading screen, incase things take a while
@@ -245,11 +244,56 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
     /*
     (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
     */
-    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='online'; } else { checkStatusDetail='offline'; }
-    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='admindown'; }
-    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='adminup'; }
+    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; } else { checkStatusDetail='<p class="offline">offline</p>'; }
+    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; }
+    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>'; }
 
          $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
+         $("#popupcontent ul").append('<li><div>Status Detection</div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
+            '<select id="statusselect">'+
+            '<option value="autodetect">autodetect</option>'+
+            '<option value="adminup">force up</option>'+
+            '<option value="admindown">force down</option>'+
+            '</select><input id="sssubmit" type="button" value="save"></form></div></li>')
+
+            // activate save button
+            $('#sssubmit').on('click', function () {
+                var uuid = document.getElementById('detailuuid').value
+                var status = document.getElementById('statusselect').value
+                  console.log("submit "+uuid+" status:"+status)
+
+                var jqxhr = $.post( "/api/v1/healthchecks/admin/"+uuid+"/status/"+status,
+                function(data) {
+                  noticeHandler("State change successful")
+                  $("#popup").css('visibility', 'hidden');
+                  refreshPage(0)
+                })
+                .fail(function(xData, textStatus, errorThrown) {
+                  if (xData == null) {
+                    errorHandler("unable to read data from healthcheck API (no data)")
+                    return
+                  }
+                  if (xData.responseText == null) {
+                    errorHandler("unable to read response from healthcheck API (no data)")
+                    return
+                  }
+
+                  var data = JSON.parse(xData.responseText)
+                  console.dir(data)
+                  if (data == null) {
+                    errorHandler("unable to read data from healthcheck API (no data)")
+                    return
+                  }
+                  if (data.success != true) {
+                    errorHandler("failed to change state: "+data.error)
+                    return
+                  }
+
+                  errorHandler("failed to change state: "+errorThrown)
+                })
+                return false;
+
+            });
 
    $("#popup").css('visibility', 'visible');
 })
@@ -290,6 +334,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
    $("#popup .close").on("click", function() {
      $("#popup").css('visibility', 'hidden');
    });
+
 
 </script>
 

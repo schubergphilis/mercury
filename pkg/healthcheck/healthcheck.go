@@ -179,3 +179,43 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 	result, err := json.Marshal(tmp)
 	return result, err
 }
+
+// SetStatus sets the status of a uuid to status
+func (m *Manager) SetStatus(uuid string, status string) error {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	fmt.Printf("Checking uuid: %s to %s\n", status)
+	if node, ok := m.WorkerMap[uuid]; ok {
+		fmt.Printf("Setting uuid: %s to %s\n", status)
+		switch status {
+		case "autodetect":
+			node.AdminDown = false
+			node.AdminUp = false
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			return nil
+		case "admindown":
+			node.AdminDown = true
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			fmt.Printf("Set uuid: %v\n", m.WorkerMap[uuid])
+			return nil
+		case "adminup":
+			node.AdminUp = true
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			return nil
+		default:
+			return fmt.Errorf("unknown status to set: %s", status)
+		}
+	}
+	return fmt.Errorf("unkown uuid: %s", uuid)
+}
+
+func (m *Manager) sendWorkerUpdate(uuid string) {
+	for _, worker := range m.Workers {
+		if worker.UuidStr == uuid {
+			worker.sendUpdate(worker.CheckResult) // send update with no change
+		}
+	}
+}

@@ -149,6 +149,22 @@ li .sort.desc:after {
   display:none;
 }
 
+.noticemsg {
+  width: 98%;
+  height: 25px;
+  color: #000;
+  font-size:15px;
+  text-align: center;
+  background-color: rgba(80,255,80,0.8);
+  border:1px #0F0 solid;
+  clear: both;
+  border-radius: 5px;
+  position:fixed;
+  bottom:1px;
+  left:1%;
+  display:none;
+}
+
 .hidden {
   display: none !important;
 }
