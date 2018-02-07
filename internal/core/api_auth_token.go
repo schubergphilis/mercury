@@ -28,8 +28,6 @@ func (h apiAuthentication) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// More user friendly message
 		if err != nil {
 			if err.Error() == jwt.ErrSignatureInvalid.Error() {
-				fmt.Printf("Error1:%+v\n", err)
-				fmt.Printf("Error2:%+v\n", jwt.ErrSignatureInvalid)
 				apiWriteData(w, 403, apiMessage{Success: false, Error: "Login token expired"})
 				return
 			}

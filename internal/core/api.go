@@ -84,6 +84,7 @@ func (m *Manager) setupAPI() {
 	// Enable login
 	http.Handle("/api/v1/login/", apiLoginHandler{manager: m})
 	http.Handle("/login/", webLoginHandler{
+		manager:       m,
 		title:         titleHead + "Login",
 		templateFiles: []string{"header.tmpl", "footer.tmpl", "login.tmpl"},
 		template:      "login",

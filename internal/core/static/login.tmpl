@@ -2,7 +2,7 @@
 {{template "header" dict "Page" .Page}}
 <form class="loginform">
 <div class="login">
-Please login to Mercury
+Please login to Mercury ({{.AuthType}})
   <ul>
     <li><div>Login:</div><div><input id="lgn" type="text" name="login" autofocus></div></li>
     <li><div>Password:</div><div><input id="pwd" type="password" name="password"></div></li>

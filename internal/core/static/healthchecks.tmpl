@@ -244,16 +244,19 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
     /*
     (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
     */
-    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; } else { checkStatusDetail='<p class="offline">offline</p>'; }
-    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; }
-    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>'; }
+    selectautodetect=""
+    selectadmindown=""
+    selectadminup=""
+    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; selectautodetect='selected';} else { checkStatusDetail='<p class="offline">offline</p>'; selectautodetect='selected';}
+    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; selectadmindown='selected';}
+    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>';selectadminup='selected'; }
 
          $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
          $("#popupcontent ul").append('<li><div>Status Detection</div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
             '<select id="statusselect">'+
-            '<option value="autodetect">autodetect</option>'+
-            '<option value="adminup">force up</option>'+
-            '<option value="admindown">force down</option>'+
+            '<option '+selectautodetect+' value="autodetect">autodetect</option>'+
+            '<option '+selectadminup+' value="adminup">force up</option>'+
+            '<option '+selectadmindown+' value="admindown">force down</option>'+
             '</select><input id="sssubmit" type="button" value="save"></form></div></li>')
 
             // activate save button

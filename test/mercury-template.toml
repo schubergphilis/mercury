@@ -13,6 +13,12 @@ ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
 [web.auth.password.users]
 test = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+#[web.auth.ldap]
+#host = "localhost"
+#port = 389
+#method = "tls"
+#[web.auth.ldap.tls]
+#insecureskipverify = true
 [cluster.binding]
 name = "localhost1"
 addr = "127.0.0.1:9000"

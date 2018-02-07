@@ -65,6 +65,7 @@ func Initialize(reload <-chan bool) {
 	go manager.HealthHandler(manager.healthManager)
 	go manager.InitializeHealthChecks(manager.healthManager)
 
+	//log.Fatalf("web auth: %+v", config.Get().Web.Auth)
 	if config.Get().Web.Auth.LDAP != nil {
 		manager.webAuthenticator = config.Get().Web.Auth.LDAP
 	} else {

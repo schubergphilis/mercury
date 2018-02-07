@@ -3,6 +3,7 @@ package web
 // Auth provides a interface for Authentication
 type Auth interface {
 	VerifyLogin(username, password string) (bool, error)
+	Type() string
 }
 
 /*

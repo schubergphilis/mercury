@@ -196,12 +196,14 @@ func (m *Manager) SetStatus(uuid string, status string) error {
 			return nil
 		case "admindown":
 			node.AdminDown = true
+			node.AdminUp = false
 			m.WorkerMap[uuid] = node
 			m.sendWorkerUpdate(uuid)
 			fmt.Printf("Set uuid: %v\n", m.WorkerMap[uuid])
 			return nil
 		case "adminup":
 			node.AdminUp = true
+			node.AdminDown = false
 			m.WorkerMap[uuid] = node
 			m.sendWorkerUpdate(uuid)
 			return nil

@@ -50,7 +50,7 @@ header, main {
 }
 
 table td, table th {
-  padding:5px;
+  /*padding:5px;*/
   text-align: left;
 }
 
@@ -118,7 +118,7 @@ li .sort.desc:after {
 
 
 /* ul */
-.tablegroup { display: table; border-spacing: 1px 1px}
+.tablegroup { display: table; border-spacing: 1px 1px; width: 100%;}
 .tablegroup li { display: table-row; }
 .tablegroup li div { list-style:none; display: table-cell; padding: 2px 6px; }
 /* div */
@@ -276,7 +276,7 @@ li .sort.desc:after {
 .login { margin-top: 10px ; width: 100%; text-align: center; }
 .login ul {
   display: table;
-  margin: 2px auto;
+  margin: 15px auto;
   border: 1px solid black;
   padding:10px;
 
@@ -315,3 +315,13 @@ li .sort.desc:after {
 
 .tablegroupdetails li:nth-child(odd)		{ background-color:#eee; }
 .tablegroupdetails li:nth-child(even)		{ background-color:#fff; }
+
+
+/* TEMP to get old gui in line, will be replaced once other gui's are converted to proper API calls */
+table { border-spacing: 1px 1px; width: 100%; }
+th { background-color: #bbb; border: 0 solid #000; border-width: 0px 1px 1px 0px; border-radius: 6px;padding: 2px 6px;font-weight:normal; }
+th:hover { background-color: #8fd2ef; }
+tr:nth-child(odd)		{ background-color:#eee; }
+tr:nth-child(even)		{ background-color:#fff; }
+tr:nth-child(odd):hover		{ background-color:#8fd2ef }
+tr:nth-child(even):hover		{ background-color:#8fd2ef }

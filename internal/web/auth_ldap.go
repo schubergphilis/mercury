@@ -3,6 +3,7 @@ package web
 import (
 	"crypto/tls"
 	"fmt"
+	"strings"
 
 	ldap "gopkg.in/ldap.v2"
 )
@@ -16,11 +17,19 @@ type AuthLDAP struct {
 	TLSConfig *tls.Config
 }
 
+// Type is the authentication type
+func (a *AuthLDAP) Type() string {
+	return "LDAP"
+}
+
 // VerifyLogin validates a user/password combination and returns true or false accordingly
 func (a *AuthLDAP) VerifyLogin(username, password string) (bool, error) {
 	var l *ldap.Conn
 	var err error
-	switch a.Method {
+	if a.addr == "" {
+		a.addr = fmt.Sprintf("%s:%d", a.Host, a.Port)
+	}
+	switch strings.ToUpper(a.Method) {
 	case "TLS":
 		l, err = ldap.Dial("tcp", a.addr)
 		if err != nil {

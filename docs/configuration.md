@@ -31,7 +31,14 @@ Key | Option | Default | Values | Description
 [web] | binding | "0.0.0.0" | string | ip for the web interface to listen on
 [web] | port | 9001 | int | port for the web interface to listen on
 [web.tls] | tls | none | see TLS Attributes | TLS certificate information required for SSL
+[web.auth.password] | username | none | sha256 password | username/password for admin rights in the gui (replace username with the username, and password with the sha256 of a password)
+[web.auth.ldap] | host | none | "hostname/ip" | host of your ldap server
+[web.auth.ldap] | port | 389 | int | port of your ldap server
+[web.auth.ldap] | method | "tls" | "tls/ssl" | how to connect to your ldap server, ssl or tls
+[web.auth.ldap] | host | none | "hostname/ip" | host of your ldap server
+[web.auth.ldap.tls] | tls | none | see TLS Attributes | set insecureskipverify = true if required
 
+* note that when enabling LDAP, that local authentication no longer works and that an LDAP authenticated account is required.
 
 ## Cluster
 Cluster settings are defined in the `[cluster]` block.

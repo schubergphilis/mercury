@@ -9,6 +9,7 @@ import (
 
 // web interface for healtheck
 type webLoginHandler struct {
+	manager       *Manager
 	title         string
 	templateFiles []string
 	template      string
@@ -27,9 +28,9 @@ func (h webLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		Page web.Page
-	}{*page}
-	fmt.Printf("data: %+v", data)
+		Page     web.Page
+		AuthType string
+	}{*page, h.manager.webAuthenticator.Type()}
 	err = webTemplate.ExecuteTemplate(w, h.template, data)
 	if err != nil {
 		webWriteError(w, 500, fmt.Sprintf("unable to execute template: %s", err.Error()))

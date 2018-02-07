@@ -10,6 +10,11 @@ type AuthPassword struct {
 	Users map[string]string `json:"users" toml:"users" yaml:"users"`
 }
 
+// Type is the authentication type
+func (a *AuthPassword) Type() string {
+	return "Local authentication"
+}
+
 // VerifyLogin validates a user/password combination and returns true or false accordingly
 func (a *AuthPassword) VerifyLogin(username, password string) (bool, error) {
 	if _, ok := a.Users[username]; !ok {
