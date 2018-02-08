@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"sync"
@@ -13,24 +14,24 @@ import (
 // Manager manages Health of Node
 type Manager struct {
 	Incoming  chan CheckResult
-	Workers   []*Worker
-	WorkerMap map[string]HealthStatus // keeps the health of all items
-	PoolMap   map[string]HealthPool   // keeps a list of uuids and what checks apply to them
+	Workers   []*Worker               `json:"workers" toml:"workers"`
+	WorkerMap map[string]HealthStatus `json:"workermap" toml:"workermap"` // keeps the health of all items
+	PoolMap   map[string]HealthPool   `json:"poolmap" toml:"poolmap"`     // keeps a list of uuids and what checks apply to them
 
 	Worker sync.RWMutex
 }
 
 // CheckResult holds the check result output
 type CheckResult struct {
-	PoolName    string
-	BackendName string
-	NodeName    string
-	NodeUUID    string
-	WorkerUUID  string
-	Description string
-	Online      bool
-	ErrorMsg    []string
-	SingleCheck bool
+	PoolName    string   `json:"poolname" toml:"poolname"`
+	BackendName string   `json:"backendname" toml:"backendname"`
+	NodeName    string   `json:"nodename" toml:"nodename"`
+	NodeUUID    string   `json:"nodeuuid" toml:"nodeuuid"`
+	WorkerUUID  string   `json:"workeruuid" toml:"workeruuid"`
+	Description string   `json:"description" toml:"description"`
+	Online      bool     `json:"online" toml:"online"`
+	ErrorMsg    []string `json:"errormsg" toml:"errormsg"`
+	SingleCheck bool     `json:"singlecheck" toml:"singlecheck"`
 }
 
 // HealthCheck custom HealthCheck
@@ -130,4 +131,90 @@ func (m *Manager) StopWorkers() {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
 	m.Workers = []*Worker{}
+}
+
+// JSON returns the healtheck status of the manager in json format
+func (m *Manager) JSON() ([]byte, error) {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	tmp := struct {
+		Workers      []Worker                `json:"workers" toml:"workers"`           // all workers that do health checks
+		WorkerHealth map[string]HealthStatus `json:"workerhealth" toml:"workerhealth"` // health status for each worker
+		NodeMap      map[string]HealthPool   `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
+	}{}
+	for _, w := range m.Workers {
+		tmp.Workers = append(tmp.Workers, w.filterWorker())
+	}
+	tmp.WorkerHealth = m.WorkerMap
+	tmp.NodeMap = m.PoolMap
+	result, err := json.Marshal(tmp)
+	return result, err
+}
+
+// JSONAuthorized returns unfiltered the healtheck status of the manager in json format
+func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	tmp := struct {
+		Workers      Worker       `json:"worker" toml:"worker"`             // all workers that do health checks
+		WorkerHealth HealthStatus `json:"workerhealth" toml:"workerhealth"` // health status for each worker
+		NodeMap      []string     `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
+	}{}
+	for _, w := range m.Workers {
+		if w.UuidStr == uuid {
+			tmp.Workers = *w
+		}
+	}
+	if _, ok := m.WorkerMap[uuid]; ok {
+		tmp.WorkerHealth = m.WorkerMap[uuid]
+	}
+	for _, node := range m.PoolMap {
+		fmt.Printf("NodeMap: %+v\n", node)
+		for _, p := range node.Checks {
+			if p == uuid {
+				tmp.NodeMap = append(tmp.NodeMap, node.NodeName)
+			}
+		}
+	}
+	result, err := json.Marshal(tmp)
+	return result, err
+}
+
+// SetStatus sets the status of a uuid to status
+func (m *Manager) SetStatus(uuid string, status string) error {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	if node, ok := m.WorkerMap[uuid]; ok {
+		switch status {
+		case "autodetect":
+			node.AdminDown = false
+			node.AdminUp = false
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			return nil
+		case "admindown":
+			node.AdminDown = true
+			node.AdminUp = false
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			return nil
+		case "adminup":
+			node.AdminUp = true
+			node.AdminDown = false
+			m.WorkerMap[uuid] = node
+			m.sendWorkerUpdate(uuid)
+			return nil
+		default:
+			return fmt.Errorf("unknown status to set: %s", status)
+		}
+	}
+	return fmt.Errorf("unkown uuid: %s", uuid)
+}
+
+func (m *Manager) sendWorkerUpdate(uuid string) {
+	for _, worker := range m.Workers {
+		if worker.UuidStr == uuid {
+			worker.sendUpdate(worker.CheckResult) // send update with no change
+		}
+	}
 }

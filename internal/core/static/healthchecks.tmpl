@@ -1,0 +1,346 @@
+{{define "healthchecks"}}
+{{template "header" dict "Page" .Page}}
+
+<div id="loading" class="loading"></div>
+
+<div id="itemlist" class="itemlist hidden">
+  <div class="searchbox">
+   Search: <input type="text" class="search" placeholder="Search Backend" />
+  </div>
+
+  <ul class="tablegroup">
+    <div class="tableheader">
+    <li>
+      <div class="unselectable hidden" data-sort="id" unselectable="on">Id</div>
+      <div class="sort unselectable" data-sort="status" unselectable="on">Status</div>
+      <div class="sort unselectable" data-sort="node" unselectable="on">Node</div>
+      <div class="sort unselectable" data-sort="nodeip" unselectable="on">Ip</div>
+      <div class="sort unselectable" data-sort="port" unselectable="on">Port</div>
+      <div class="sort unselectable" data-sort="type" unselectable="on">Type</div>
+      <div class="sort unselectable" data-sort="request" unselectable="on">Request</div>
+      <div class="sort unselectable" data-sort="error" unselectable="on">Error</div>
+    </li>
+    </div>
+    <div class="list tablebody" id="tablebody">
+    <li>
+    </li>
+    </div>
+  </ul>
+</div>
+<div id="details" class="details"><div>
+<div id="popup" class="overlay">
+	<div class="popup">
+		<h2 class="popupheader">Header2</h2>
+		<input type=button class="close" value="&times;">
+		<div id="popupcontent" class="popupcontent">
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+// listjs parameters and init
+var options = {
+  valueNames: [
+    'id',
+    'status',
+    'type',
+    'node',
+    'nodeip',
+    'port',
+    'request',
+    'error',
+  ],
+  item: '<li class="tablerow"><div class="id"></div><div class="status"></div><div class="node"></div><div class="nodeip"></div><div class="port"></div><div class="type"></div><div class="request"></div><div class="error"></div></li>',
+};
+var    itemList = new List('itemlist', options);
+
+
+// API caller for main list
+function refreshPage(addtimer) {
+var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
+  if (data == null) {
+    errorHandler("unable to read data from healthcheck API (no data)")
+    return
+  }
+  if (data.success != true) {
+    errorHandler("unable to read data from healthcheck API (success=false)")
+    return
+  }
+
+  var jsonData = JSON.parse(data.data)
+
+  // go through all workers
+  $.each(jsonData.workers, function (i, worker) {
+
+    var health
+    // find related worker health
+    $.each(jsonData.workerhealth, function (h, workerHealth) {
+      if (h == worker.uuid) {
+        health = workerHealth
+      }
+    });
+
+
+    checkStatus = (worker.checkresult == true ? "online" : "offline")
+    checkError = worker.checkerror
+    if (jsonData.workerhealth[worker.uuid] != null) {
+      if (jsonData.workerhealth[worker.uuid].admindown) {
+        checkStatus = "admindown"
+      }
+      if (jsonData.workerhealth[worker.uuid].adminup) {
+        checkStatus = "adminup"
+      }
+    }
+    switch (checkStatus)
+    {
+       case "online":
+         checkStatus='<p class="online">online</p>';
+         break;
+       case "offline":
+         checkStatus='<p class="offline">offline</p>';
+         break;
+       case "admindown":
+         checkStatus='<p class="admindown">admindown</p>';
+         break;
+       case "adminup":
+         checkStatus='<p class="adminup">adminup</p>';
+         break;
+    }
+
+    checkId = worker.uuid
+    checkType = worker.check.type
+    checkSource = worker.check.sourceip == "" ? worker.sourceip : worker.check.sourceip
+    checkTarget = worker.nodename.replace(/_\d*$/, "");
+    checkTargetIP = worker.check.ip == "" ? worker.ip : worker.check.ip
+    if (checkTarget == "") {
+      checkTarget = checkTargetIP
+    }
+    if (checkTargetIP.replace(/\./g, "_") == checkTarget) {
+      checkTarget = checkTargetIP
+    }
+    checkPort = worker.check.port == "" ? worker.port : worker.check.port
+    switch (checkType)
+    {
+       case "httpget":
+       case "httppost":
+         //checkRequest = worker.check.httprequest.split('?')[0]
+         checkRequest = worker.check.httprequest
+       break;
+       case "tcpconnect":
+         checkRequest = ""
+       break;
+       case "tcpdata":
+         checkRequest = worker.check.tcprequest
+       break;
+       case "icmpping":
+       case "udpping":
+       case "tcpping":
+         checkRequest = ""
+       break;
+    }
+    item = {'id': checkId, 'status':checkStatus, 'type':checkType, 'source':checkSource, 'node':checkTarget, 'nodeip':checkTargetIP, 'port':checkPort, 'request':checkRequest, 'error':checkError }
+
+    existing = itemList.get('id', worker.uuid);
+    if (existing.length > 0) {
+      // Existing element
+      existing[0].values(item);
+    } else {
+      // New element
+      itemList.add(item);
+    }
+  });
+  if (addtimer == 1) {
+    window.setTimeout(refreshPage, 10000);
+  }
+  // Show Page
+   $( '#itemlist' ).removeClass('hidden')
+   $( '#loading' ).addClass('hidden')
+
+   // API caller for details windows
+   $("#tablebody li").unbind("click")
+   $("#tablebody li").on("click", function() {
+     id = $(this).find('.id:first')[0]
+     showDetails(id.innerText)
+   });
+})
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    errorHandler("error reading api for status update"+errorThrown)
+  })
+}
+refreshPage(1)
+//window.setTimeout(refreshPage, 10000);
+
+// Delayed loading screen, incase things take a while
+function loadingText(){
+   $("#loading").text('Gathering data...')
+ }
+setTimeout(loadingText, 1000);
+
+function showDetails(id) {
+  //console.log("Showing details of "+id)
+  // Load details
+var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
+  if (data == null) {
+    errorHandler("unable to read data from healthcheck API (no data)")
+    return
+  }
+  if (data.success != true) {
+    errorHandler("unable to read data from healthcheck API (success=false)")
+    return
+  }
+
+  var jsonData = JSON.parse(data.data)
+  console.dir(jsonData)
+  worker = jsonData.worker
+  checkSource = worker.check.sourceip == "" ? worker.sourceip : worker.check.sourceip
+  checkTarget = worker.nodename.replace(/_\d*$/, "");
+  checkTargetIP = worker.check.ip == "" ? worker.ip : worker.check.ip
+  if (checkTarget == "") {
+    checkTarget = checkTargetIP
+  }
+  if (checkTargetIP.replace(/\./g, "_") == checkTarget) {
+    checkTarget = checkTargetIP
+  }
+  checkPort = worker.check.port == "" ? worker.port : worker.check.port
+
+   $("#popup h2").html(checkTarget)
+   $("#popupcontent").html('<ul class="tablegroupdetails"></ul>')
+   $("#popupcontent ul").append('<li><div>Check Type</div><div>'+worker.check.type+'</div></li>')
+   $("#popupcontent ul").append('<li><div>SourceIP</div><div>'+checkSource+'</div></li>')
+   $("#popupcontent ul").append('<li><div>TargetIP</div><div>'+checkTargetIP+'</div></li>')
+   $("#popupcontent ul").append('<li><div>Port</div><div>'+checkPort+'</div></li>')
+
+    switch (worker.check.type)
+    {
+       case "httpget":
+         $("#popupcontent ul").append('<li><div>HTTP Headers</div><div>'+worker.check.httpheaders+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Reply</div><div>'+worker.check.httpreply+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Status</div><div>'+worker.check.httpstatus+'</div></li>')
+       break;
+       case "httppost":
+         $("#popupcontent ul").append('<li><div>HTTP Headers</div><div>'+worker.check.httpheaders+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httppostdata+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Reply</div><div>'+worker.check.httpreply+'</div></li>')
+         $("#popupcontent ul").append('<li><div>HTTP Status</div><div>'+worker.check.httpstatus+'</div></li>')
+         //checkRequest = worker.check.httprequest.split('?')[0]
+       break;
+       case "tcpconnect":
+       break;
+       case "tcpdata":
+         $("#popupcontent ul").append('<li><div>TCP Request</div><div>'+worker.check.tcprequest+'</div></li>')
+         $("#popupcontent ul").append('<li><div>TCP Reply</div><div>'+worker.check.tcpreply+'</div></li>')
+       break;
+       case "icmpping":
+       case "udpping":
+       case "tcpping":
+       break;
+    }
+
+    var checkStatusDetail=''
+         $("#popupcontent ul").append('<li><div>Used by</div><div>'+jsonData.nodemap.join(', ')+'</div></li>')
+    /*
+    (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
+    */
+    selectautodetect=""
+    selectadmindown=""
+    selectadminup=""
+    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; selectautodetect='selected';} else { checkStatusDetail='<p class="offline">offline</p>'; selectautodetect='selected';}
+    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; selectadmindown='selected';}
+    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>';selectadminup='selected'; }
+
+         $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
+         $("#popupcontent ul").append('<li><div>Status Detection</div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
+            '<select id="statusselect">'+
+            '<option '+selectautodetect+' value="autodetect">autodetect</option>'+
+            '<option '+selectadminup+' value="adminup">force up</option>'+
+            '<option '+selectadmindown+' value="admindown">force down</option>'+
+            '</select><input id="sssubmit" type="button" value="save"></form></div></li>')
+
+            // activate save button
+            $('#sssubmit').on('click', function () {
+                var uuid = document.getElementById('detailuuid').value
+                var status = document.getElementById('statusselect').value
+                  //console.log("submit "+uuid+" status:"+status)
+
+                var jqxhr = $.post( "/api/v1/healthchecks/admin/"+uuid+"/status/"+status,
+                function(data) {
+                  noticeHandler("State change successful")
+                  $("#popup").css('visibility', 'hidden');
+                  refreshPage(0)
+                })
+                .fail(function(xData, textStatus, errorThrown) {
+                  if (xData == null) {
+                    errorHandler("unable to read data from healthcheck API (no data)")
+                    return
+                  }
+                  if (xData.responseText == null) {
+                    errorHandler("unable to read response from healthcheck API (no data)")
+                    return
+                  }
+
+                  var data = JSON.parse(xData.responseText)
+                  console.dir(data)
+                  if (data == null) {
+                    errorHandler("unable to read data from healthcheck API (no data)")
+                    return
+                  }
+                  if (data.success != true) {
+                    errorHandler("failed to change state: "+data.error)
+                    return
+                  }
+
+                  errorHandler("failed to change state: "+errorThrown)
+                })
+                return false;
+
+            });
+
+   $("#popup").css('visibility', 'visible');
+})
+  .fail(function(jqXHR, textStatus, errorThrown) {
+    /*errorHandler("error reading details of node"+errorThrown)*/
+    if (jqXHR == null) {
+      errorHandler("failed: unable to read data from healthcheck API (no data)")
+      return
+    }
+    if (jqXHR.responseText == null) {
+      errorHandler("failed: unable to read response from healthcheck API (no data)")
+      return
+    }
+
+    var data = JSON.parse(jqXHR.responseText)
+
+    if (data == null) {
+      errorHandler("failed: unable to read data from healthcheck API (no data)")
+      return
+    }
+    if (data.success != true) {
+      // Auto-redirect to login page if login expired oor required
+      if ((data.error == "Login token expired") || (data.error == "Login required")) {
+        window.location = '/login'
+        return
+      }
+      errorHandler("failed: "+data.error)
+      return
+    }
+
+    errorHandler("error reading healthcheck api"+errorThrown)
+
+  });
+
+}
+
+
+   $("#popup .close").on("click", function() {
+     $("#popup").css('visibility', 'hidden');
+   });
+
+
+</script>
+
+
+{{template "footer"}}
+{{end}}

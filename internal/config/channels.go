@@ -53,5 +53,5 @@ type ClusterPacketClearProxyStatistics struct {
 	BackendName string `json:"backendname"`
 }
 
-// PacketConfigRequest is the packet type sent for configuration requests
+// ClusterPacketConfigRequest is the packet type sent for configuration requests
 type ClusterPacketConfigRequest struct{}

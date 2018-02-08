@@ -11,6 +11,15 @@ certificatefile = "test/ssl/self_signed_certificate.crt"
 minversion = "VersionTLS12"
 ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA"]
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
+[web.auth.password.users]
+test = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+#[web.auth.ldap]
+#host = "localhost"
+#port = 389
+#method = "tls"
+#binddn = "dc=example,dc=org"
+#[web.auth.ldap.tls]
+#insecureskipverify = true
 [cluster.binding]
 name = "localhost1"
 addr = "127.0.0.1:9000"
@@ -139,7 +148,7 @@ port = 9001
 interval = 10
 httpreply = "login"
 httpstatus = 200
-httprequest = "http://www.example.com"
+httprequest = "http://www.example.com?password=hello"
 retries = 2
 timeout = 10
 type = "httpget"
@@ -398,10 +407,6 @@ hostname = "preference"
 # type = "httppost"
 # httpheaders = ["Content-Type: application/soap+xml; charset=utf-8"]
 
-[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.nodes]]
-ip = "95.142.102.176"
-port = 80
-preference = 0
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.nodes]]
 ip = "95.142.102.175"
 port = 80

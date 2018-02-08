@@ -12,6 +12,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/schubergphilis/mercury/internal/web"
 	"github.com/schubergphilis/mercury/pkg/balancer"
 	"github.com/schubergphilis/mercury/pkg/cluster"
 	"github.com/schubergphilis/mercury/pkg/dns"
@@ -19,7 +20,6 @@ import (
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/param"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
-	"github.com/schubergphilis/mercury/pkg/web"
 
 	"github.com/BurntSushi/toml"
 )
@@ -543,6 +543,21 @@ func LoadConfig(file string) error {
 		temp.DNS = d
 	}
 
+	// ensure this is valid even if not used
+	if temp.Web.Auth.Password == nil {
+		temp.Web.Auth.Password = &web.AuthPassword{
+			Users: make(map[string]string),
+		}
+	}
+
+	if temp.Web.Auth.LDAP != nil {
+		if temp.Web.Auth.LDAP.Method == "" {
+			temp.Web.Auth.LDAP.Method = "TLS"
+		}
+		if temp.Web.Auth.LDAP.Port == 0 {
+			temp.Web.Auth.LDAP.Port = 389
+		}
+	}
 	log.Debug("Activating new config")
 	configLock.Lock()
 	config = temp

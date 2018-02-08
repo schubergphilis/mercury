@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/schubergphilis/mercury/internal/config"
+	"github.com/schubergphilis/mercury/internal/web"
 	"github.com/schubergphilis/mercury/pkg/cluster"
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
@@ -26,6 +27,8 @@ type Manager struct {
 	addProxyBackend                 chan *config.ProxyBackendNodeUpdate
 	removeProxyBackend              chan *config.ProxyBackendNodeUpdate
 	proxyBackendStatisticsUpdate    chan *config.ProxyBackendStatisticsUpdate
+	healthManager                   *healthcheck.Manager
+	webAuthenticator                web.Auth
 }
 
 // NewManager creates a new manager
@@ -58,9 +61,17 @@ func Initialize(reload <-chan bool) {
 	go manager.InitializeCluster()
 
 	// HealthCheck's
-	healthManager := healthcheck.NewManager()
-	go manager.HealthHandler(healthManager)
-	go manager.InitializeHealthChecks(healthManager)
+	manager.healthManager = healthcheck.NewManager()
+	go manager.HealthHandler(manager.healthManager)
+	go manager.InitializeHealthChecks(manager.healthManager)
+
+	//log.Fatalf("web auth: %+v", config.Get().Web.Auth)
+	if config.Get().Web.Auth.LDAP != nil {
+		manager.webAuthenticator = config.Get().Web.Auth.LDAP
+	} else {
+		manager.webAuthenticator = config.Get().Web.Auth.Password
+	}
+	manager.setupAPI()
 
 	// Create Listeners for Loadbalancer
 	if config.Get().Settings.EnableProxy == YES {
@@ -73,7 +84,7 @@ func Initialize(reload <-chan bool) {
 	go manager.StartDNSServer()
 
 	// Webserver
-	go InitializeWebserver()
+	go manager.InitializeWebserver()
 
 	for {
 		select {
@@ -88,7 +99,7 @@ func Initialize(reload <-chan bool) {
 			go UpdateDNSConfig()
 
 			// Start new healthchecks, and send exits to no longer used ones
-			go manager.InitializeHealthChecks(healthManager)
+			go manager.InitializeHealthChecks(manager.healthManager)
 			// Re-read proxies, and update where needed
 			// This needs to be after the healthchecks have been evacuated
 			go manager.InitializeProxies()

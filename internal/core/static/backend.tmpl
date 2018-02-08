@@ -68,13 +68,11 @@
          {{ if eq $backend.BalanceMode.ActivePassive "yes" }}
             {{ if $node.Online }}
             <td class="status gray"><span class="online">Active</span>/Passive</td>
-            {{ else if eq $length 0 }}
-            <td class="status checking">Checking</td>
             {{ else }}
             <td class="status gray">Active/<span class="offline">Passive</span></td>
             {{ end }}
          {{ else }}
-            <td class="status {{if $node.Online}}online{{ else }}{{ if eq $length 0}}checking{{else}}offline{{end}}{{end}}">{{if $node.Online}}Online{{ else }}{{ if eq $length 0}}Checking{{else}}Offline{{end}}{{end}}</td>
+            <td class="status {{if $node.Online}}online{{ else }}offline{{end}}">{{if $node.Online}}Online{{ else }}Offline{{end}}</td>
          {{ end }}
          <td class="node">{{range $err := $node.Errors}}{{$err}}<br>{{- end}}</td>
       </tr>

@@ -1,0 +1,53 @@
+{{define "login"}}
+{{template "header" dict "Page" .Page}}
+<form class="loginform">
+<div class="login">
+Please login to Mercury ({{.AuthType}})
+  <ul>
+    <li><div>Login:</div><div><input id="lgn" type="text" name="login" autofocus></div></li>
+    <li><div>Password:</div><div><input id="pwd" type="password" name="password"></div></li>
+    <li><div></div><div><input type="submit" value="Submit"></div></li>
+  </ul>
+</div>
+</form>
+
+<script>
+$('.loginform').on('submit', function () {
+    var jqxhr = $.post( "/api/v1/login/", {
+        username: document.getElementById('lgn').value,
+        password: document.getElementById('pwd').value,
+    }, function(data) {
+      if (!document.referrer.match(/\/login\//g)) {
+        window.location = document.referrer;
+      } else {
+        window.location= '/';
+      }
+    })
+    .fail(function(xData, textStatus, errorThrown) {
+      if (xData == null) {
+        errorHandler("unable to read data from login API (no data)")
+        return
+      }
+      if (xData.responseText == null) {
+        errorHandler("unable to read response from login API (no data)")
+        return
+      }
+
+      var data = JSON.parse(xData.responseText)
+      if (data == null) {
+        errorHandler("unable to read data from login API (no data)")
+        return
+      }
+      if (data.success != true) {
+        errorHandler("login failed: "+data.error)
+        return
+      }
+
+      errorHandler("error reading login api"+errorThrown)
+    })
+    return false;
+
+});
+</script>
+{{template "footer"}}
+{{end}}

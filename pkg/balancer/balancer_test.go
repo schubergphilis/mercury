@@ -72,19 +72,6 @@ func TestBalancer(t *testing.T) {
 	}
 
 	records = getBalanceTests()
-	records, _ = MultiSort(records, "127.0.0.1", "sticky", "random")
-	id1 := records[0].UUID
-	records, _ = MultiSort(records, "127.0.0.1", "sticky", "random")
-	id2 := records[0].UUID
-	records, _ = MultiSort(records, "127.0.0.1", "sticky", "random")
-	id3 := records[0].UUID
-	records, _ = MultiSort(records, "127.0.0.1", "sticky", "random")
-	id4 := records[0].UUID
-	if (id1 == id2) && (id2 == id3) && (id3 == id4) {
-		t.Errorf("random Result: %s Expected: [random]", id1)
-	}
-
-	records = getBalanceTests()
 	newrecords, _ = MultiSort(records, "127.0.0.1", "sticky", "topology")
 	if newrecords[0].UUID != "ID1" {
 		t.Errorf("Topology Result: %s Expected: ID1", newrecords[0].UUID)

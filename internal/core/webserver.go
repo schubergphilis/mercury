@@ -15,12 +15,24 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 
 	"github.com/schubergphilis/mercury/internal/config"
+	"github.com/schubergphilis/mercury/internal/web"
 	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
-	"github.com/schubergphilis/mercury/pkg/web"
 )
+
+// processInfo contains details about the mercury process
+type processInfo struct {
+	Version           string
+	VersionBuild      string
+	VersionSha        string
+	StartTime         string
+	Uptime            string
+	ReloadTime        string
+	FailedReloadTime  string
+	FailedReloadError string
+}
 
 // FormattedDate date to readable time
 func FormattedDate(t time.Time) string {
@@ -44,7 +56,8 @@ func WebBackendDetails(w http.ResponseWriter, r *http.Request) {
 	backendDetails := config.Get().Loadbalancer.Pools[pool].Backends[backend]
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Backend Details %s", clusternode, backend)
-	page := newPage(title, r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"backenddetails.tmpl", "header.tmpl", "footer.tmpl"}
 	backenddetailsTemplate, err := web.LoadTemplates("static", templateNames)
@@ -72,7 +85,8 @@ func WebClusterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=0, no-cache, must-revalidate, proxy-revalidate")
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Cluster Status", clusternode)
-	page := newPage(title, r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"cluster.tmpl", "header.tmpl", "footer.tmpl"}
 	clusterTemplate, err := web.LoadTemplates("static", templateNames)
@@ -122,7 +136,8 @@ func WebProxyStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Proxy Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"proxy.tmpl", "header.tmpl", "footer.tmpl"}
 		proxyTemplate, err := web.LoadTemplates("static", templateNames)
@@ -159,7 +174,8 @@ func WebBackendStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Backend Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"backend.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -197,7 +213,8 @@ func WebGLBStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - GLB Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"glb.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -234,7 +251,8 @@ func WebLocalDNSStatus(w http.ResponseWriter, r *http.Request) {
 	default:
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - LocalDNS Status", clusternode)
-		page := newPage(title, r.RequestURI)
+		_, username, err := authenticateUser(r)
+		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"localdns.tmpl", "header.tmpl", "footer.tmpl"}
 		backendTemplate, err := web.LoadTemplates("static", templateNames)
@@ -255,17 +273,6 @@ func WebLocalDNSStatus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type processInfo struct {
-	Version           string
-	VersionBuild      string
-	VersionSha        string
-	StartTime         string
-	Uptime            string
-	ReloadTime        string
-	FailedReloadTime  string
-	FailedReloadError string
-}
-
 func uptime(t time.Duration) string {
 	if (t.Hours() / 24) > 1 {
 		return fmt.Sprintf("%.0fd", t.Hours()/24)
@@ -282,7 +289,8 @@ func uptime(t time.Duration) string {
 // WebRoot serves Webserver's root folder
 func WebRoot(w http.ResponseWriter, r *http.Request) {
 	log := logging.For("core/webroot").WithField("func", "web")
-	page := newPage("Mercury Global Loadbalancer", r.RequestURI)
+	_, username, err := authenticateUser(r)
+	page := newPage("Mercury Global Loadbalancer", r.RequestURI, username)
 
 	templateNames := []string{"root.tmpl", "header.tmpl", "footer.tmpl"}
 	template, err := web.LoadTemplates("static", templateNames)
@@ -310,17 +318,18 @@ func WebRoot(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newPage(title, uri string) *web.Page {
+func newPage(title, uri, username string) *web.Page {
 	return &web.Page{
 		Title:    title,
 		URI:      uri,
 		Hostname: config.Get().Cluster.Binding.Name,
 		Time:     time.Now(),
+		Username: username,
 	}
 }
 
 // NewServer sets up a new webserver
-func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) {
+func (m *Manager) NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) {
 	s = &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", ip, port),
 		ReadTimeout:    10 * time.Second,
@@ -348,10 +357,10 @@ func NewServer(ip string, port int) (s *http.Server, l net.Listener, err error) 
 }
 
 // InitializeWebserver starts the webserver
-func InitializeWebserver() {
+func (m *Manager) InitializeWebserver() {
 	log := logging.For("core/webserver").WithField("ip", config.Get().Web.Binding).WithField("port", config.Get().Web.Port).WithField("func", "web")
 	log.Info("Starting web server")
-	server, listener, err := NewServer(config.Get().Web.Binding, config.Get().Web.Port)
+	server, listener, err := m.NewServer(config.Get().Web.Binding, config.Get().Web.Port)
 
 	if config.Get().Web.TLSConfig.CertificateFile != "" {
 		log.WithField("file", config.Get().Web.TLSConfig.CertificateFile).Debug("Enabling SSL for web service")
@@ -373,4 +382,10 @@ func InitializeWebserver() {
 			log.Fatalf("Error Starting Webservice: %s", err)
 		}
 	}
+}
+
+func webWriteError(w http.ResponseWriter, statusCode int, err string) {
+	w.WriteHeader(statusCode)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte("Oops... " + err))
 }

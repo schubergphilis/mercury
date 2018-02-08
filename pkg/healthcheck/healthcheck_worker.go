@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/logging"
@@ -11,19 +12,19 @@ import (
 
 // Worker type executes a healthcheck on a single node
 type Worker struct {
-	Pool        string
-	Backend     string
-	NodeName    string
-	NodeUUID    string
-	IP          string // IP used for check
-	SourceIP    string
-	Port        int // Port used for check
-	Check       HealthCheck
-	stop        chan bool
-	CheckResult bool
-	CheckError  error
+	Pool        string      `json:"pool" toml:"pool"`
+	Backend     string      `json:"backend" toml:"backend"`
+	NodeName    string      `json:"nodename" toml:"nodename"`
+	NodeUUID    string      `json:"nodeuuid" toml:"nodeuuid"`
+	IP          string      `json:"ip" toml:"ip"` // IP used for check
+	SourceIP    string      `json:"sourceip" toml:"sourceip"`
+	Port        int         `json:"port" toml:"port"` // Port used for check
+	Check       HealthCheck `json:"check" toml:"check"`
+	CheckResult bool        `json:"checkresult" toml:"checkresult"`
+	CheckError  string      `json:"checkerror" toml:"checkerror"`
+	UuidStr     string      `json:"uuid" toml:"uuid"`
 	update      chan CheckResult
-	uuidStr     string
+	stop        chan bool
 }
 
 // NewWorker creates a new worker for healthchecks
@@ -61,10 +62,10 @@ func (w *Worker) Description() string {
 		return fmt.Sprintf("tcpdata:%s:%d:%s", w.IP, w.Port, w.Check.TCPRequest)
 
 	case "httpget":
-		return fmt.Sprintf("httpget:%s:%d:%s", w.IP, w.Port, w.Check.HTTPRequest)
+		return fmt.Sprintf("httpget:%s:%d:%s", w.IP, w.Port, strings.Split(w.Check.HTTPRequest, "?")[0])
 
 	case "httppost":
-		return fmt.Sprintf("httppost:%s:%d:%s", w.IP, w.Port, w.Check.HTTPRequest)
+		return fmt.Sprintf("httppost:%s:%d:%s", w.IP, w.Port, strings.Split(w.Check.HTTPRequest, "?")[0])
 
 	case "icmpping":
 		return fmt.Sprintf("icmpping:%s", w.IP)
@@ -83,23 +84,23 @@ func (w *Worker) Description() string {
 // UUID returns a uniq ID for the worker
 func (w *Worker) UUID() string {
 	// UUID returns a uuid of a healthcheck
-	if w.uuidStr != "" {
-		return w.uuidStr
+	if w.UuidStr != "" {
+		return w.UuidStr
 	}
 
 	s := fmt.Sprintf("%s%s%s%s%s%s%d", w.Check.UUID(), w.Pool, w.Backend, w.NodeName, w.IP, w.SourceIP, w.Port)
 	t := sha256.New()
 	t.Write([]byte(s))
-	w.uuidStr = fmt.Sprintf("%x", t.Sum(nil))
+	w.UuidStr = fmt.Sprintf("%x", t.Sum(nil))
 
-	return w.uuidStr
+	return w.UuidStr
 
 }
 
 // Debug shows debug information for all workers
 func (w *Worker) Debug() {
 	log := logging.For("healthcheck/worker/debug")
-	log.WithField("node", w.NodeName).WithField("result", w.CheckResult).WithError(w.CheckError).WithField("pool", w.Pool).WithField("backend", w.Backend).WithField("ip", w.IP).WithField("port", w.Port).WithField("type", w.Check.Type).Info("Active Healthchecks")
+	log.WithField("node", w.NodeName).WithField("result", w.CheckResult).WithField("error", w.CheckError).WithField("pool", w.Pool).WithField("backend", w.Backend).WithField("ip", w.IP).WithField("port", w.Port).WithField("type", w.Check.Type).Info("Active Healthchecks")
 }
 
 // SingleCheck executes and reports a single health check and then exits
@@ -143,8 +144,8 @@ func (w *Worker) Start() {
 					checkerror = err.Error()
 				}
 
-				if w.CheckError != nil {
-					previouserror = w.CheckError.Error()
+				if w.CheckError != "" {
+					previouserror = w.CheckError
 				}
 
 				if result != w.CheckResult || checkerror != previouserror {
@@ -161,8 +162,9 @@ func (w *Worker) Start() {
 					}
 
 					w.CheckResult = result
-					w.CheckError = err
+					w.CheckError = ""
 					if err != nil {
+						w.CheckError = err.Error()
 						checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
 					}
 
@@ -180,7 +182,7 @@ func (w *Worker) Start() {
 					WorkerUUID:  w.UUID(),
 				}
 
-				w.CheckError = fmt.Errorf("healthcheck worker is exiting")
+				w.CheckError = "healthcheck worker is exiting"
 				checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
 				w.update <- checkresult
 				timer.Stop()
@@ -226,4 +228,25 @@ func (w *Worker) executeCheck() (bool, error) {
 		result = true
 	}
 	return result, err
+}
+
+func (w *Worker) filterWorker() (n Worker) {
+	n = *w
+	n.Check.HTTPHeaders = []string{}
+	n.Check.HTTPPostData = ""
+	n.Check.HTTPRequest = strings.Split(n.Check.HTTPRequest, "?")[0]
+	return
+}
+
+func (w *Worker) sendUpdate(result bool) {
+	checkresult := CheckResult{
+		PoolName:    w.Pool,
+		BackendName: w.Backend,
+		Online:      result,
+		NodeName:    w.NodeName,
+		WorkerUUID:  w.UUID(),
+		Description: w.Description(),
+		SingleCheck: false,
+	}
+	w.update <- checkresult
 }

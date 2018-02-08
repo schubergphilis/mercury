@@ -8,19 +8,19 @@ import (
 
 // HealthStatus keeps track of the status of each workers health check
 type HealthStatus struct {
-	CheckStatus bool     // map[checkuuid]status - status returned by worker
-	AdminDown   bool     // manual override
-	AdminUp     bool     // manual override
-	ErrorMsg    []string // error message
+	CheckStatus bool     `json:"checkstatus" toml:"checkstatus"` // map[checkuuid]status - status returned by worker
+	AdminDown   bool     `json:"admindown" toml:"admindown"`     // manual override
+	AdminUp     bool     `json:"adminup" toml:"adminup"`         // manual override
+	ErrorMsg    []string `json:"errormsg" toml:"errormsg"`       // error message
 }
 
 // HealthPool contains a per nodeuuid information about all checks that apply to this node
 type HealthPool struct {
-	PoolName    string   // name of the vip pool
-	BackendName string   // name of the backend
-	NodeName    string   // name of the node
-	Match       string   // all/any
-	Checks      []string // []checkuuid
+	PoolName    string   `json:"poolname" toml:"poolname"`       // name of the vip pool
+	BackendName string   `json:"backendname" toml:"backendname"` // name of the backend
+	NodeName    string   `json:"nodename" toml:"nodename"`       // name of the node
+	Match       string   `json:"match" toml:"match"`             // all/any
+	Checks      []string `json:"checks" toml:"checks"`           // []checkuuid
 }
 
 // SetCheckStatus sets the status of a worker check based on the health check result
