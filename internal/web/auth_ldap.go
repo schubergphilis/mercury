@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/schubergphilis/mercury/pkg/tlsconfig"
 	ldap "gopkg.in/ldap.v2"
 )
 
 // AuthLDAP is the provider for LDAP based authentication for the web service
 type AuthLDAP struct {
-	Host      string // address to connect to
-	Port      int    // port to connect to
+	Host      string              `json:"host" toml:"host" yaml:"host"`       // address to connect to
+	Port      int                 `json:"port" toml:"port" yaml:"port"`       // port to connect to
+	Method    string              `json:"method" toml:"method" yaml:"method"` // connect method (SSL/TLS)
+	BindDN    string              `json:"binddn" toml:"binddn" yaml:"binddn"` // binddn
+	TLSConfig tlsconfig.TLSConfig `json:"tls" toml:"tls" yaml:"tls"`
 	addr      string
-	Method    string // connect method (SSL/TLS)
-	TLSConfig *tls.Config
+	tlsConfig *tls.Config
 }
 
 // Type is the authentication type
@@ -24,8 +27,12 @@ func (a *AuthLDAP) Type() string {
 
 // VerifyLogin validates a user/password combination and returns true or false accordingly
 func (a *AuthLDAP) VerifyLogin(username, password string) (bool, error) {
+	if a.tlsConfig == nil {
+		a.tlsConfig = &tls.Config{InsecureSkipVerify: a.TLSConfig.InsecureSkipVerify}
+	}
 	var l *ldap.Conn
 	var err error
+	fmt.Printf("TLS: %+v", a.tlsConfig)
 	if a.addr == "" {
 		a.addr = fmt.Sprintf("%s:%d", a.Host, a.Port)
 	}
@@ -35,34 +42,20 @@ func (a *AuthLDAP) VerifyLogin(username, password string) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		fmt.Println("StartTLS")
-		err = l.StartTLS(a.TLSConfig)
+		err = l.StartTLS(a.tlsConfig)
 		if err != nil {
 			return false, err
 		}
 	case "SSL":
-		fmt.Println("DialTLS")
-		l, err = ldap.DialTLS("tcp", a.addr, a.TLSConfig)
+		l, err = ldap.DialTLS("tcp", a.addr, a.tlsConfig)
 		if err != nil {
 			return false, err
 		}
 	}
 
-	err = l.Bind(username, password)
+	err = l.Bind(fmt.Sprintf("cn=%s,%s", username, a.BindDN), password)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
-}
-
-// NewAuthLDAP provides a authentication provider for LDAP
-func NewAuthLDAP(host string, port int, method string, tlsconfig *tls.Config) *AuthLDAP {
-	a := &AuthLDAP{
-		Host:      host,
-		Port:      port,
-		addr:      fmt.Sprintf("%s:%d", host, port),
-		Method:    method,
-		TLSConfig: tlsconfig,
-	}
-	return a
 }

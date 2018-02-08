@@ -550,6 +550,14 @@ func LoadConfig(file string) error {
 		}
 	}
 
+	if temp.Web.Auth.LDAP != nil {
+		if temp.Web.Auth.LDAP.Method == "" {
+			temp.Web.Auth.LDAP.Method = "TLS"
+		}
+		if temp.Web.Auth.LDAP.Port == 0 {
+			temp.Web.Auth.LDAP.Port = 389
+		}
+	}
 	log.Debug("Activating new config")
 	configLock.Lock()
 	config = temp

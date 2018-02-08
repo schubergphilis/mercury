@@ -17,8 +17,9 @@ test = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 #host = "localhost"
 #port = 389
 #method = "tls"
-#[web.auth.ldap.tls]
-#insecureskipverify = true
+#binddn = "dc=example,dc=org"
+[web.auth.ldap.tls]
+insecureskipverify = true
 [cluster.binding]
 name = "localhost1"
 addr = "127.0.0.1:9000"
@@ -406,10 +407,6 @@ hostname = "preference"
 # type = "httppost"
 # httpheaders = ["Content-Type: application/soap+xml; charset=utf-8"]
 
-[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.nodes]]
-ip = "95.142.102.176"
-port = 80
-preference = 0
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.nodes]]
 ip = "95.142.102.175"
 port = 80

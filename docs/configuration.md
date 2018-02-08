@@ -35,7 +35,7 @@ Key | Option | Default | Values | Description
 [web.auth.ldap] | host | none | "hostname/ip" | host of your ldap server
 [web.auth.ldap] | port | 389 | int | port of your ldap server
 [web.auth.ldap] | method | "tls" | "tls/ssl" | how to connect to your ldap server, ssl or tls
-[web.auth.ldap] | host | none | "hostname/ip" | host of your ldap server
+[web.auth.ldap] | binddn | none | string | the path to your CN for authentication (e.g. "dc=example,dc=org")
 [web.auth.ldap.tls] | tls | none | see TLS Attributes | set insecureskipverify = true if required
 
 * note that when enabling LDAP, that local authentication no longer works and that an LDAP authenticated account is required.
