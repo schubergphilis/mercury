@@ -3,6 +3,8 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+
+## 0.11.0:
 Features:
   * Added HealthChecks tab for showing specific health Checks and added API calls (#12)
   * Add ability to force the health of a healthcheck using the admin GUI (#18)
