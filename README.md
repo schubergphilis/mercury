@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 
@@ -6,7 +7,7 @@ Mercury is a loadbalancer with Global Loadbalance capababilities across multiple
 
 ## What is Mercury ?
 Mercury is a Global loadbalancer, designed to add a dns based loadbalancing layer on top of its internal loadbalancer or 3rd pary loadbalancers such as cloud services.
-This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbancer sollutions in place.
+This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbalancer sollutions in place.
 
 ## Resources
 
@@ -26,7 +27,7 @@ This makes mercury able to loadbalance across multiple cloud environments using 
   * TCP Data check (sends and/or expects data)
   * ICMP/UDP/TCP ping checks
   * None (always online)
-* Is a functional DNS host to give GLB based replies with
+* Is a functional DNS server which provides GLB based replies with
   * Topology based loadbalancing, with predefined networks
   * Preference based loadbalancing, for active/passive setup
   * Roundrobin based loadbalancing for the most balanced setup
