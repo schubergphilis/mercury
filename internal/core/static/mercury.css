@@ -124,6 +124,7 @@ li .sort.desc:after {
 .tablegroup { display: table; border-spacing: 1px 1px; width: 100%;}
 .tablegroup li { display: table-row; }
 .tablegroup li div { list-style:none; display: table-cell; padding: 2px 6px; }
+.tablegroup li div:first-child { display: none;}
 /* div */
 .tableheader { display: table-header-group;user-select: none;}
 .tableheader li div { background-color: #bbb; border: 0 solid #000; border-width: 0px 1px 1px 0px; }
@@ -169,7 +170,7 @@ li .sort.desc:after {
 }
 
 .hidden {
-  display: none !important;
+  display: none;
 }
 
 
