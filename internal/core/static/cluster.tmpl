@@ -15,10 +15,6 @@
         return
       }
 
-      //{"nodes":{"localhost2":{"name":"localhost2","addr":"127.0.0.1:9002","status":"","error":"","jointime":"0001-01-01T00:00:00Z","lag":0,"packets":0}}}
-
-      //console.log( "got data: " + data.data );
-      //if data.success == true {
         var json = JSON.parse(data.data)
 
         $i = '<table><thead><tr><td>Name</td><td>Address</td><td>Status</td><td>Lag</td><td>Packets</td><td>Join Time</td><td>Error</td></tr></tbody>'
@@ -27,24 +23,11 @@
         });
         $i += '</tbody></table>'
         $('#cluster').html($i)
-        //console.log($i)
-
-      //}
     })
-      //.done(function() {
-        //console.log( "second success" );
-      //})
       .fail(function(jqXHR, textStatus, errorThrown) {
-        console.log("error ");
-        console.log("error " + textStatus);
-      //console.log("incoming Text " + jqXHR.responseText);
-      //console.log("incoming status " + jqXHR.status);
+        //console.log("error ");
+        //console.log("error " + textStatus);
       })
-      //.always(function() {
-        //console.log( "complete" );
-      //});
-
-
 
 </script>
 

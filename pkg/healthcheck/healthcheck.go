@@ -184,9 +184,7 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 func (m *Manager) SetStatus(uuid string, status string) error {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	fmt.Printf("Checking uuid: %s to %s\n", status)
 	if node, ok := m.WorkerMap[uuid]; ok {
-		fmt.Printf("Setting uuid: %s to %s\n", status)
 		switch status {
 		case "autodetect":
 			node.AdminDown = false
@@ -199,7 +197,6 @@ func (m *Manager) SetStatus(uuid string, status string) error {
 			node.AdminUp = false
 			m.WorkerMap[uuid] = node
 			m.sendWorkerUpdate(uuid)
-			fmt.Printf("Set uuid: %v\n", m.WorkerMap[uuid])
 			return nil
 		case "adminup":
 			node.AdminUp = true

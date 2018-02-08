@@ -1,3 +1,6 @@
+/* import for flex */
+@import "compass/css3";
+
 /* Default Sizes and Fonts */
 body {
     font-family: Verdana, Geneva, sans-serif;
@@ -171,7 +174,6 @@ li .sort.desc:after {
 
 
 /* FLEX Navigation */
-@import "compass/css3";
 
 .navigation {
   list-style: none;

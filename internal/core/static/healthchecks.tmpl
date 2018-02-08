@@ -178,7 +178,7 @@ function loadingText(){
 setTimeout(loadingText, 1000);
 
 function showDetails(id) {
-  console.log("Showing details of "+id)
+  //console.log("Showing details of "+id)
   // Load details
 var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
   if (data == null) {
@@ -263,7 +263,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
             $('#sssubmit').on('click', function () {
                 var uuid = document.getElementById('detailuuid').value
                 var status = document.getElementById('statusselect').value
-                  console.log("submit "+uuid+" status:"+status)
+                  //console.log("submit "+uuid+" status:"+status)
 
                 var jqxhr = $.post( "/api/v1/healthchecks/admin/"+uuid+"/status/"+status,
                 function(data) {

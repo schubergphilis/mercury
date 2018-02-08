@@ -12,8 +12,6 @@ Please login to Mercury ({{.AuthType}})
 </form>
 
 <script>
-console.log(document.referrer)
-console.log(document.referrer.match(/\/login\//g))
 $('.loginform').on('submit', function () {
     var jqxhr = $.post( "/api/v1/login/", {
         username: document.getElementById('lgn').value,
