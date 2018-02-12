@@ -131,26 +131,42 @@ func LoadConfig(file string) error {
 	}
 
 	log.Debug("Check config")
+	if err = temp.ParseConfig(); err != nil {
+		return err
+	}
 
+	log.Debug("Activating new config")
+	configLock.Lock()
+	config = temp
+
+	log.Info("Config loaded succesfully")
+	configLock.Unlock()
+
+	return nil
+}
+
+// ParseConfig parses the config and returns an error if failed
+func (c *Config) ParseConfig() error {
+	log := logging.For("config/parse")
 	// Check SSL Certificates
-	err = temp.ValidateCertificates()
+	err := c.ValidateCertificates()
 	if err != nil {
 		return err
 	}
 
 	// Loadbalance defaults
-	if temp.Loadbalancer.Settings.DefaultLoadBalanceMethod == "" {
-		temp.Loadbalancer.Settings.DefaultLoadBalanceMethod = "roundrobin"
+	if c.Loadbalancer.Settings.DefaultLoadBalanceMethod == "" {
+		c.Loadbalancer.Settings.DefaultLoadBalanceMethod = "roundrobin"
 	}
 	// Ensure a default in all backends
-	for poolName, pool := range temp.Loadbalancer.Pools {
+	for poolName, pool := range c.Loadbalancer.Pools {
 		if pool.ErrorPage.File != "" {
 			if _, err := os.Stat(pool.ErrorPage.File); err != nil {
 				return fmt.Errorf("Cannot access error page for pool:%s file:%s error:%s", poolName, pool.ErrorPage.File, err)
 			}
 		}
 
-		p := temp.Loadbalancer.Pools[poolName]
+		p := c.Loadbalancer.Pools[poolName]
 		if p.ErrorPage.TriggerThreshold == 0 {
 			p.ErrorPage.TriggerThreshold = 500
 		}
@@ -177,10 +193,10 @@ func LoadConfig(file string) error {
 			p.Listener.ReadTimeout = 10
 		}
 
-		temp.Loadbalancer.Pools[poolName] = p
+		c.Loadbalancer.Pools[poolName] = p
 
-		for hid, healthcheck := range temp.Loadbalancer.Pools[poolName].HealthChecks {
-			p := temp.Loadbalancer.Pools[poolName]
+		for hid, healthcheck := range c.Loadbalancer.Pools[poolName].HealthChecks {
+			p := c.Loadbalancer.Pools[poolName]
 			if healthcheck.Interval < 1 {
 				p.HealthChecks[hid].Interval = 11
 			}
@@ -201,30 +217,29 @@ func LoadConfig(file string) error {
 				p.HealthChecks[hid].Type = "tcpconnect"
 			}
 
-			temp.Loadbalancer.Pools[poolName] = p
+			c.Loadbalancer.Pools[poolName] = p
 		}
 
-		//log.Debugf("Pool: %s", poolName)
-		for backendName, backend := range temp.Loadbalancer.Pools[poolName].Backends {
+		for backendName, backend := range c.Loadbalancer.Pools[poolName].Backends {
 			h := backend
 
 			if backend.UUID == "" {
 				// generate hash uniq to cluster - pool - backend
 				hash := sha256.New()
-				hash.Write([]byte(fmt.Sprintf("%s-%s-%s", temp.Cluster.Binding.Addr, poolName, backendName)))
+				hash.Write([]byte(fmt.Sprintf("%s-%s-%s", c.Cluster.Binding.Addr, poolName, backendName)))
 				h.UUID = fmt.Sprintf("%x", hash.Sum(nil))
 			}
 
 			if backend.ConnectMode == "" {
-				h.ConnectMode = temp.Loadbalancer.Pools[poolName].Listener.Mode
+				h.ConnectMode = c.Loadbalancer.Pools[poolName].Listener.Mode
 			}
 
-			if backend.DNSEntry.IP == "" && temp.Loadbalancer.Pools[poolName].Listener.IP == "" {
+			if backend.DNSEntry.IP == "" && c.Loadbalancer.Pools[poolName].Listener.IP == "" {
 				return fmt.Errorf("No IP defined in either the pool's listener IP or the DNSentry IP for backend:%s", backendName)
 			}
 			// If not DNS Entry IP is set, set the ip to the listener
 			if backend.DNSEntry.IP == "" {
-				h.DNSEntry.IP = temp.Loadbalancer.Pools[poolName].Listener.IP
+				h.DNSEntry.IP = c.Loadbalancer.Pools[poolName].Listener.IP
 			}
 
 			if backend.ErrorPage.File != "" {
@@ -233,7 +248,7 @@ func LoadConfig(file string) error {
 				}
 			}
 
-			for hid, healthcheck := range temp.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
+			for hid, healthcheck := range c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
 
 				if healthcheck.Interval < 1 {
 					h.HealthChecks[hid].Interval = 11
@@ -264,7 +279,7 @@ func LoadConfig(file string) error {
 			}
 
 			// Always have atleast 1 check: tcpconnect
-			if len(temp.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks) == 0 {
+			if len(c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks) == 0 {
 				tcpconnect := healthcheck.HealthCheck{
 					Type:     "tcpconnect",
 					Interval: 11,
@@ -278,11 +293,11 @@ func LoadConfig(file string) error {
 			}
 
 			if backend.BalanceMode.ClusterNodes == 0 {
-				h.BalanceMode.ClusterNodes = len(temp.Cluster.Nodes)
+				h.BalanceMode.ClusterNodes = len(c.Cluster.Nodes)
 			}
 
 			if backend.BalanceMode.LocalTopology != "" {
-				if val, ok := temp.Loadbalancer.Networks[backend.BalanceMode.LocalTopology]; ok {
+				if val, ok := c.Loadbalancer.Networks[backend.BalanceMode.LocalTopology]; ok {
 					for _, network := range val.CIDRs {
 						h.BalanceMode.LocalNetwork = append(h.BalanceMode.LocalNetwork, network)
 					}
@@ -290,41 +305,36 @@ func LoadConfig(file string) error {
 					return fmt.Errorf("Could not find topology name:%s in the defined loadbalancer networks in the config for backend:%s", backend.BalanceMode.LocalTopology, backendName)
 				}
 			}
+
 			// Default node settings
-			for nodeID, node := range temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
+			for nodeID, node := range c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 				if node.UUID == "" {
 					// generate hash uniq to pool - backend - node + port (cluster pool removed for stickyness across clusters)
 					hash := sha256.New()
 					hash.Write([]byte(fmt.Sprintf("%s-%s-%s-%s", poolName, backendName, node.SafeName(), node.Hostname)))
 
-					//u, _ := uuid.NewV4() // replaced by sha256
 					n := node
-					//n.UUID = u.String()
 					n.UUID = fmt.Sprintf("%x", hash.Sum(nil))
-					n.ClusterName = temp.Cluster.Binding.Name
+					n.ClusterName = c.Cluster.Binding.Name
 					if n.MaxConnections == 0 {
 						n.MaxConnections = pool.Listener.MaxConnections
 					}
 					h.Nodes[nodeID] = n
 					log.Infof("Node:%s UUID:%s", h.Nodes[nodeID].Name(), h.Nodes[nodeID].UUID)
 				}
-			}
-
-			// Save Backend changes
-			temp.Loadbalancer.Pools[poolName].Backends[backendName] = h
-
-			for nodeID, node := range temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
-				// load localnetworks based on topology
 				if node.LocalTopology != "" {
-					if val, ok := temp.Loadbalancer.Networks[node.LocalTopology]; ok {
+					if val, ok := c.Loadbalancer.Networks[node.LocalTopology]; ok {
 						for _, network := range val.CIDRs {
-							temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].LocalNetwork = append(temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].LocalNetwork, network)
+							c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].LocalNetwork = append(c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].LocalNetwork, network)
 						}
 					} else {
 						return fmt.Errorf("Could not find topology name:%s in the defined loadbalancer networks in the config for backend:%s node:%s", backend.BalanceMode.LocalTopology, backendName, node.Name())
 					}
 				}
 			}
+
+			// Save Backend changes
+			c.Loadbalancer.Pools[poolName].Backends[backendName] = h
 
 			// Copy node Status if exists
 			if Get() != nil {
@@ -334,10 +344,10 @@ func LoadConfig(file string) error {
 					if _, ok := Get().Loadbalancer.Pools[poolName].Backends[backendName]; ok {
 						log.WithField("poolname", poolName).WithField("backendname", backendName).Debug("Existing backend")
 						for _, oldnode := range Get().Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
-							for nid, newnode := range temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
+							for nid, newnode := range c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 								if oldnode.UUID == newnode.UUID {
-									temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Online = oldnode.Online
-									temp.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Errors = oldnode.Errors
+									c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Online = oldnode.Online
+									c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Errors = oldnode.Errors
 									log.Debugf("Old node:%s uuid:%s copied to New node:%s uuid:%s", oldnode.Name(), oldnode.UUID, newnode.Name(), newnode.UUID)
 								}
 							}
@@ -349,118 +359,103 @@ func LoadConfig(file string) error {
 		}
 	}
 
-	if temp.Web.Binding == "" {
-		temp.Web.Binding = "localhost"
+	SetDefaultSettingsConfig(&c.Settings)
+	SetDefaultClusterConfig(&c.Cluster.Settings)
+	SetDefaultDNSConfig(&c.DNS)
+	SetDefaultWebConfig(&c.Web)
+	return nil
+}
+
+// SetDefaultSettingsConfig sets the default config for generic settings
+func SetDefaultSettingsConfig(s *Settings) {
+	if s.ManageNetworkInterfaces == "" {
+		s.ManageNetworkInterfaces = YES
 	}
 
-	if temp.Web.Port == 0 {
-		temp.Web.Port = 9001
+	if s.EnableProxy == "" {
+		s.EnableProxy = YES
+	}
+}
+
+// SetDefaultClusterConfig sets the default config for ClusterService
+func SetDefaultClusterConfig(d *cluster.Settings) {
+	if d.ConnectInterval < 1*time.Second {
+		d.ConnectInterval = 10
 	}
 
-	if temp.Settings.ManageNetworkInterfaces == "" {
-		temp.Settings.ManageNetworkInterfaces = YES
+	if d.ConnectTimeout < 1*time.Second {
+		d.ConnectTimeout = 10
 	}
 
-	if temp.Settings.EnableProxy == "" {
-		temp.Settings.EnableProxy = YES
+	if d.PingInterval < 1*time.Second {
+		d.PingInterval = 5
 	}
 
-	// Ensure a default in all cluster settings
-	saveconfig := false
-	s := temp.Cluster.Settings
-	if s.ConnectInterval < 1*time.Second {
-		s.ConnectInterval = 10
-		saveconfig = true
+	if d.ReadTimeout < 1*time.Second {
+		d.ReadTimeout = 11
 	}
 
-	if s.ConnectTimeout < 1*time.Second {
-		s.ConnectTimeout = 10
-		saveconfig = true
+	if d.JoinDelay < 1 {
+		d.JoinDelay = 500 * time.Microsecond
 	}
+}
 
-	if s.PingInterval < 1*time.Second {
-		s.PingInterval = 5
-		saveconfig = true
-	}
-
-	if s.ReadTimeout < 1*time.Second {
-		s.ReadTimeout = 11
-		saveconfig = true
-	}
-
-	if s.JoinDelay < 1 {
-		s.JoinDelay = 500 * time.Microsecond
-		saveconfig = true
-	}
-
-	if saveconfig == true {
-		//log.Debugf("Set defaults for cluster settings: (config:%+v new:%+v)", temp.Cluster.Settings, s)
-		temp.Cluster.Settings = s
-	}
-
-	// Ensure a default in all dns settings
-	save := false
-	d := temp.DNS
+// SetDefaultDNSConfig sets the default config for DNSService
+func SetDefaultDNSConfig(d *dns.Config) {
 	if d.Binding == "" {
 		d.Binding = "localhost"
-		save = true
 	}
 
 	if d.Port < 1 {
 		d.Port = 53
-		save = true
 	}
 
 	if len(d.AllowedRequests) == 0 {
 		// Allow the most common DNS request types
 		d.AllowedRequests = []string{"A", "AAAA", "NS", "MX", "SOA", "TXT", "CAA", "ANY", "CNAME", "MB", "MG", "MR", "WKS", "PTR", "HINFO", "MINFO", "SPF"}
-		save = true
 	}
 
 	for domainName, localDomain := range d.Domains {
 		for rid, record := range localDomain.Records {
-			if record.Statistics == nil {
-				//uid, _ := uuid.NewV4() // replaced by sha256
-				//d.Domains[did].Records[rid].UUID = uid.String()
-				//d.Domains[did].Records[rid].Statistics = balancer.NewStatistics(uid.String(), 0)
 
+			// Add UUID to static records, dynamic ones are auto-generated
+			if record.Statistics == nil {
 				hash := sha256.New()
 				hash.Write([]byte(fmt.Sprintf("%s-%s-%x-%s", domainName, record.Name, record.Type, record.Target)))
 				uuid := fmt.Sprintf("%x", hash.Sum(nil))
 				d.Domains[domainName].Records[rid].UUID = uuid
 				d.Domains[domainName].Records[rid].Statistics = balancer.NewStatistics(uuid, 0)
-
 			}
 		}
 	}
+}
 
-	if save == true {
-		temp.DNS = d
-	}
-
-	// ensure this is valid even if not used
-	if temp.Web.Auth.Password == nil {
-		temp.Web.Auth.Password = &web.AuthPassword{
+// SetDefaultWebConfig sets the default config for Webservice
+func SetDefaultWebConfig(w *web.Config) {
+	// Create empty user hash if not defined
+	if w.Auth.Password == nil {
+		w.Auth.Password = &web.AuthPassword{
 			Users: make(map[string]string),
 		}
 	}
 
-	if temp.Web.Auth.LDAP != nil {
-		if temp.Web.Auth.LDAP.Method == "" {
-			temp.Web.Auth.LDAP.Method = "TLS"
+	if w.Binding == "" {
+		w.Binding = "localhost"
+	}
+
+	if w.Port == 0 {
+		w.Port = 9001
+	}
+
+	// Set default LDAP settings
+	if w.Auth.LDAP != nil {
+		if w.Auth.LDAP.Method == "" {
+			w.Auth.LDAP.Method = "TLS"
 		}
-		if temp.Web.Auth.LDAP.Port == 0 {
-			temp.Web.Auth.LDAP.Port = 389
+		if w.Auth.LDAP.Port == 0 {
+			w.Auth.LDAP.Port = 389
 		}
 	}
-	log.Debug("Activating new config")
-	configLock.Lock()
-	config = temp
-
-	log.Info("Config loaded succesfully")
-	configLock.Unlock()
-
-	return nil
 }
 
 // ValidateCertificates checks if all provided SSL certificates are correct
