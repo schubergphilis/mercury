@@ -58,7 +58,7 @@
          <td class="clusternode">{{$node.ClusterName}}</td>
          <td class="vip">{{$poolname}}</td>
          <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
-         <td class="node"><div class="node"><div class="host">{{$node.ServerName}}::{{$node.Port}}</div><div class="ip">{{$node.IP}}::{{$node.Port}}</div></div></td>
+         <td class="node"><div class="nodebox"><div class="host">{{$node.ServerName}}::{{$node.Port}}</div><div class="ip">{{$node.IP}}::{{$node.Port}}</div></div></td>
          <td class="hostnames">
            {{ range $hostid, $hostname := $backend.HostNames -}}
              {{$hostname}}<br>

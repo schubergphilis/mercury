@@ -3,6 +3,8 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+Bug:
+  * Fix CSS for node/ip fader in backend
 
 ## 0.11.0:
 Features:

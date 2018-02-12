@@ -65,10 +65,18 @@ table td, table th {
 .gray { color: #808080 }
 .searchbox { padding: 10px; width:50%; }
 
+.nodebox {
+  position: relative;
+}
+.ip {
+    opacity: 0;
+    position: absolute;
+    top: 0px;
+}
 
 .host, .ip { width: 100%; transition: opacity 0.5s linear; }
-.node:hover .host { opacity: 0; }
-.node:hover .ip { opacity: 1; }
+.nodebox:hover .host { opacity: 0; }
+.nodebox:hover .ip { opacity: 1; }
 
 
 
