@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -178,4 +179,23 @@ func differenceArr(a, b []string) []string {
 	}
 
 	return ab
+}
+
+// CertificateProvided returns true or there is a certificate configured in the tls config
+func (t TLSConfig) CertificateProvided() bool {
+	return t.CertificateFile != ""
+}
+
+// Valid returns if given files and certificates are valid or not
+func (t TLSConfig) Valid() error {
+	if _, err := os.Stat(t.CertificateFile); err != nil {
+		return fmt.Errorf("Cannot access certificate file:%s error:%s", t.CertificateFile, err)
+	}
+	if _, err := os.Stat(t.CertificateKey); err != nil {
+		return fmt.Errorf("Cannot access certificate key:%s error:%s", t.CertificateKey, err)
+	}
+	if _, err := LoadCertificate(t); err != nil {
+		return fmt.Errorf("Cannot load TLS configutation: error:%s", err)
+	}
+	return nil
 }
