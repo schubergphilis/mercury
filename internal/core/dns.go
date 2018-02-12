@@ -24,9 +24,14 @@ func (manager *Manager) DNSHandler() {
 				RWMutex:    new(sync.RWMutex),
 			}
 
+			ttl := 10 // default
+			if domain, ok := config.Get().DNS.Domains[dnsupdate.DNSEntry.Domain]; ok {
+				ttl = domain.TTL
+			}
+
 			record := dns.Record{
 				Name:          dnsupdate.DNSEntry.HostName,
-				TTL:           config.Get().DNS.Domains[dnsupdate.DNSEntry.Domain].TTL,
+				TTL:           ttl,
 				BalanceMode:   dnsupdate.BalanceMode.Method,
 				ActivePassive: dnsupdate.BalanceMode.ActivePassive,
 				ClusterNodes:  dnsupdate.BalanceMode.ClusterNodes,

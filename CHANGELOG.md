@@ -5,6 +5,7 @@
 ## unreleased
 Bug:
   * Fix CSS for node/ip fader in backend
+  * Fix default TTL at source so all interfaces show correct TTL
 
 ## 0.11.0:
 Features:
