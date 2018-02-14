@@ -154,7 +154,8 @@ func AddCertificate(t TLSConfig, c *tls.Config) error {
 		}
 
 		if len(differenceArr(names, existing)) == 0 {
-			fmt.Printf("Already loaded all the certificates in the new one, skipping load")
+			// fmt.Printf("Already loaded all the certificates in the new one, skipping load")
+			return nil
 		}
 
 		c.Certificates = append(c.Certificates, cert)

@@ -22,7 +22,7 @@ type Worker struct {
 	Check       HealthCheck `json:"check" toml:"check"`
 	CheckResult bool        `json:"checkresult" toml:"checkresult"`
 	CheckError  string      `json:"checkerror" toml:"checkerror"`
-	UuidStr     string      `json:"uuid" toml:"uuid"`
+	UUIDStr     string      `json:"uuid" toml:"uuid"`
 	update      chan CheckResult
 	stop        chan bool
 }
@@ -84,16 +84,16 @@ func (w *Worker) Description() string {
 // UUID returns a uniq ID for the worker
 func (w *Worker) UUID() string {
 	// UUID returns a uuid of a healthcheck
-	if w.UuidStr != "" {
-		return w.UuidStr
+	if w.UUIDStr != "" {
+		return w.UUIDStr
 	}
 
 	s := fmt.Sprintf("%s%s%s%s%s%s%d", w.Check.UUID(), w.Pool, w.Backend, w.NodeName, w.IP, w.SourceIP, w.Port)
 	t := sha256.New()
 	t.Write([]byte(s))
-	w.UuidStr = fmt.Sprintf("%x", t.Sum(nil))
+	w.UUIDStr = fmt.Sprintf("%x", t.Sum(nil))
 
-	return w.UuidStr
+	return w.UUIDStr
 
 }
 

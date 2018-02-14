@@ -32,7 +32,6 @@ func (a *AuthLDAP) VerifyLogin(username, password string) (bool, error) {
 	}
 	var l *ldap.Conn
 	var err error
-	fmt.Printf("TLS: %+v", a.tlsConfig)
 	if a.addr == "" {
 		a.addr = fmt.Sprintf("%s:%d", a.Host, a.Port)
 	}

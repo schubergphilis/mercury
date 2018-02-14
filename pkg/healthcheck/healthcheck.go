@@ -161,7 +161,7 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 		NodeMap      []string     `json:"nodemap" toml:"nodemap"`           // map of node ID, and their healthchecks
 	}{}
 	for _, w := range m.Workers {
-		if w.UuidStr == uuid {
+		if w.UUIDStr == uuid {
 			tmp.Workers = *w
 		}
 	}
@@ -169,7 +169,6 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 		tmp.WorkerHealth = m.WorkerMap[uuid]
 	}
 	for _, node := range m.PoolMap {
-		fmt.Printf("NodeMap: %+v\n", node)
 		for _, p := range node.Checks {
 			if p == uuid {
 				tmp.NodeMap = append(tmp.NodeMap, node.NodeName)
@@ -213,7 +212,7 @@ func (m *Manager) SetStatus(uuid string, status string) error {
 
 func (m *Manager) sendWorkerUpdate(uuid string) {
 	for _, worker := range m.Workers {
-		if worker.UuidStr == uuid {
+		if worker.UUIDStr == uuid {
 			worker.sendUpdate(worker.CheckResult) // send update with no change
 		}
 	}
