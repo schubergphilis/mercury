@@ -307,7 +307,6 @@ func (manager *Manager) ProxyHandler() {
 				plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
 				backend.AddBackendNode(backendNode)
 			}
-			log.Debug("addProxyBackend OK")
 
 		case update := <-manager.removeProxyBackend:
 			log.Debug("removeProxyBackend")
@@ -321,7 +320,6 @@ func (manager *Manager) ProxyHandler() {
 				continue
 			}
 
-			plog.Debugf("proxyGetBackend OK")
 			plog.Debugf("proxyGetNodeByUUID")
 			nodeid, err := proxyGetNodeByUUID(backend, update.BackendNodeUUID)
 			if err != nil {
@@ -329,15 +327,11 @@ func (manager *Manager) ProxyHandler() {
 				continue
 			}
 
-			plog.Debugf("proxyGetNodeByUUID OK")
-
 			// Remove proxy backend
 			if nodeid >= 0 {
 				plog.WithField("node", update.BackendNode.Name()).WithField("ip", update.BackendNode.IP).WithField("port", update.BackendNode.Port).Debug("Remove proxy node")
 				backend.RemoveBackendNode(nodeid)
 			}
-
-			log.Debug("removeProxyBackend OK")
 
 		case update := <-manager.clearStatsProxyBackend:
 			// Check if packet is for a proxy we have
@@ -350,8 +344,6 @@ func (manager *Manager) ProxyHandler() {
 			}
 
 			backend.ClearStats()
-			log.Debug("clearStatsProxyBackend OK")
-
 		}
 	}
 }

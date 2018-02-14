@@ -78,11 +78,10 @@ func (manager *Manager) DNSHandler() {
 // InitializeDNSUpdates manages DNS records
 func (manager Manager) InitializeDNSUpdates() {
 	log := logging.For("core/dnsinit").WithField("func", "dns")
-	log.Debug("Initializing DNS Updates")
+	log.Debugf("Starting DNS handler")
 	go manager.DNSHandler()
 	UpdateDNSConfig()
 	dns.EnableProxyStats(config.Get().Settings.EnableProxy == YES)
-	log.Debug("Initializing DNS Updates OK")
 }
 
 // StartDNSServer starts the dns server
@@ -139,5 +138,4 @@ func UpdateDNSConfig() {
 		}
 
 	}
-	log.Info("Initializing DNS Config Updates OK")
 }

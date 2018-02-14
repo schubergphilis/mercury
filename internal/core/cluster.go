@@ -33,10 +33,8 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 			log.WithField("func", "core").Debug("Join - sending channel")
 			// If a node (re)-joins remove its old entries, since uuid's might have changed or uuids might be gone
 			manager.dnsdiscard <- node
-			log.WithField("func", "core").Debug("Join - sending channel OK")
 
 			go clusterDNSUpdateSingleBroadcastAll(cl, node)
-			log.WithField("func", "core").Debug("Join OK")
 
 		case node := <-cl.NodeLeave:
 			log.WithField("func", "core").Debug("Leave")
@@ -46,7 +44,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 			// If a node goes offline, mark all entries as offline
 			manager.dnsoffline <- node
-			log.WithField("func", "core").Debug("Leave OK")
 
 		case packet := <-cl.FromCluster:
 			log.WithField("func", "core").Debug("FromCluster")
@@ -58,7 +55,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				// Ignore config requests from self
 				log.WithField("client", packet.Name).WithField("request", packet.DataType).Info("Sending config")
 				go clusterDNSUpdateSingleBroadcastAll(cl, packet.Name)
-				log.WithField("func", "core").Debug("RequestConfig OK")
 
 			case "config.ClusterPacketGlobalDNSUpdate":
 				log.WithField("func", "core").Debug("globalDNSUpdate")
@@ -71,7 +67,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("online", dnsupdate.Online).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
-				log.WithField("func", "core").Debug("globalDNSUpdate OK")
 
 			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
 				log.WithField("func", "core").Debug("globalDNSStatistics")
@@ -92,7 +87,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 				su.DNSEntry = dnsEntry
 				manager.clusterGlbalDNSStatisticsUpdate <- su
-				log.WithField("func", "core").Debug("globalDNSStatistics OK")
 
 			case "config.ClusterPacketClearProxyStatistics":
 				log.WithField("func", "core").Debug("clearProxyStatistics")
@@ -108,7 +102,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				log.Debug("Clear proxy status update to clearStatsProxyBackend")
 				manager.clearStatsProxyBackend <- su
 				log.Debug("Clear proxy stats done")
-				log.WithField("func", "core").Debug("clearProxyStatistics OK")
 
 			default:
 				log.WithField("client", packet.Name).WithField("request", packet.DataType).WithField("data", packet.DataMessage).Warn("Recieved unknown cluster request")
@@ -130,7 +123,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				ResponseTimeValue: proxyBackendStatistics.Statistics.ResponseTimeValue,
 			}
 			go clusterProxyStatsBroadcast(cl, cgstats)
-			log.WithField("func", "core").Debug("proxyBackendStatisticsUpdate OK")
 
 		case healthcheck := <-manager.healthchecks:
 			log.WithField("func", "core").Debug("healthcheck")
@@ -183,7 +175,6 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 			manager.dnsupdates <- dnsupdate
 			// - send DNS update to cluster nodes
 			go clusterDNSUpdateBroadcast(cl, config.Get().Cluster.Binding.Name, healthcheck.PoolName, healthcheck.BackendName, backend.DNSEntry, backend.BalanceMode, backend.UUID)
-			clog.WithField("func", "core").WithField("foundnode", node.Name()).Debug("healthcheck OK")
 		}
 	}
 }
@@ -213,12 +204,10 @@ func (manager *Manager) updateProxyBackendNode(poolName string, backendName stri
 		if node.Online == true {
 			clog.Warnf("Adding backend to proxy")
 			manager.addProxyBackend <- proxyupdate
-			clog.Warnf("Adding backend to proxy OK")
 
 		} else {
 			clog.Warnf("Removing backend from proxy")
 			manager.removeProxyBackend <- proxyupdate
-			clog.Warnf("Removing backend from proxy OK")
 		}
 	}
 }

@@ -3,6 +3,9 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+Change:
+  * Improved logging messages
+
 Bug:
   * Fix CSS for node/ip fader in backend
   * Fix default TTL at source so all interfaces show correct TTL
