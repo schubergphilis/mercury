@@ -4,7 +4,7 @@
 
 ## unreleased
 Change:
-  * Clean up logging messages
+  * Improved logging messages
 
 Bug:
   * Fix CSS for node/ip fader in backend
