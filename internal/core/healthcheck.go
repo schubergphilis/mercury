@@ -24,7 +24,6 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 			log.Debug("HealthHandler Debug triggered")
 			healthCheck.Debug()
 		case checkresult := <-healthCheck.Incoming:
-			log.Debug("healthCheck.Incoming")
 			// Status change entity
 			// pool + backend + node = node check Changed
 			// pool + backend = backend check changed - applies to nodes
@@ -60,7 +59,6 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 				manager.healthchecks <- checkresult // do not send pointers, since pointer will change data
 			}
 
-			log.Debug("healthCheck.Incoming OK")
 		}
 	}
 }
