@@ -31,7 +31,9 @@ func (m *Manager) SetCheckStatus(workerUUID string, status Status, errorMsg []st
 	}
 	s := m.HealthStatusMap[workerUUID]
 	s.CheckStatus = status
-	s.ErrorMsg = errorMsg
+	if s.CheckStatus != Online {
+		s.ErrorMsg = errorMsg
+	}
 	m.HealthStatusMap[workerUUID] = s
 }
 

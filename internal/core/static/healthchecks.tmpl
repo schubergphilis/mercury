@@ -83,6 +83,15 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
 
 
     checkStatus=worker.checkresult
+    switch (checkStatus)
+    {
+      case 1:
+        checkStatus = worker.check.online_state.status
+        break;
+      case 2:
+        checkStatus = worker.check.offline_state.status
+        break;
+    }
     checkError = worker.checkerror
     forced = ""
     forcedcss = ""
@@ -98,6 +107,8 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     {
        case 1:
          checkStatus='<p class="'+forcedcss+'online">online'+forced+'</p>';
+         // don't show errors if we are online and its was automaticly determained
+         if (forcedcss != 'forced') { checkError=''; }
          break;
        case 2:
          checkStatus='<p class="'+forcedcss+'offline">offline'+forced+'</p>';
@@ -207,7 +218,6 @@ function loadingText(){
 setTimeout(loadingText, 1000);
 
 function showDetails(id) {
-  //console.log("Showing details of "+id)
   // Load details
 var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
   if (data == null) {
@@ -220,7 +230,6 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
   }
 
   var jsonData = JSON.parse(data.data)
-  console.dir(jsonData)
   worker = jsonData.worker
   checkSource = worker.check.sourceip == "" ? worker.sourceip : worker.check.sourceip
   checkTarget = worker.nodename.replace(/_\d*$/, "");
@@ -278,6 +287,23 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
     selectoffline=''
     selectonline=''
 
+    checkStatusActual=worker.checkresult
+    switch (checkStatusActual)
+    {
+       case 1:
+         checkStatusDetailActual='<p class="online">online'+forced+'</p>';
+         break;
+       case 2:
+         checkStatusDetailActual='<p class="offline">offline'+forced+'</p>';
+         break;
+       case 3:
+         checkStatusDetailActual='<p class="maintenance">maintenance'+forced+'</p>';
+         break;
+       default:
+         checkStatusDetailActual='<p class="unknown">'+checkStatus+'</p>';
+         break;
+    }
+
     checkStatus=jsonData.workerhealth.checkstatus
     forced = ""
     if  (jsonData.workerhealth.manualstatus != 0) {
@@ -310,6 +336,32 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
       selectoffline=''
       selectonline=''
     }
+    online_state = 'unknown'
+    switch (worker.check.online_state.status)
+    {
+       case 1:
+         online_state='online'
+         break;
+       case 2:
+         online_state='offline'
+         break;
+       case 3:
+         online_state='maintenance'
+         break;
+    }
+    offline_state = 'unknown'
+    switch (worker.check.offline_state.status)
+    {
+       case 1:
+         offline_state='online'
+         break;
+       case 2:
+         offline_state='offline'
+         break;
+       case 3:
+         offline_state='maintenance'
+         break;
+    }
 
     /*
     if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; selectautodetect='selected';} else { checkStatusDetail='<p class="offline">offline</p>'; selectautodetect='selected';}
@@ -317,8 +369,18 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
     if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>';selectadminup='selected'; }
     */
 
-         $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
-         $("#popupcontent ul").append('<li><div>Status Detection</div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
+         $("#popupcontent ul").append('<li><div>Check Status</div><div>'+checkStatusDetailActual+'</div></li>')
+         $("#popupcontent ul").append('<li><div>Check Output</div><div>'+worker.checkerror+'</div></li>')
+         if (online_state != 'online') {
+           $("#popupcontent ul").append('<li><div>Alternative online status</div><div>'+online_state+'</div></li>')
+         }
+         if (offline_state != 'offline') {
+           $("#popupcontent ul").append('<li><div>Alternative offline status</div><div>'+offline_state+'</div></li>')
+         }
+         if ((online_state != 'online') && (offline_state != 'offline')) {
+           $("#popupcontent ul").append('<li><div>Reported Status</div><div>'+checkStatusDetail+'</div></li>')
+         }
+         $("#popupcontent ul").append('<li><div>Status Detection <small>(ignores alternative state)</small></div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
             '<select id="statusselect">'+
             '<option '+selectautomatic+' value="automatic">automatic</option>'+
             '<option '+selectonline+' value="online">force online</option>'+
@@ -330,7 +392,6 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
             $('#sssubmit').on('click', function () {
                 var uuid = document.getElementById('detailuuid').value
                 var status = document.getElementById('statusselect').value
-                  //console.log("submit "+uuid+" status:"+status)
 
                 var jqxhr = $.post( "/api/v1/healthchecks/admin/"+uuid+"/status/"+status,
                 function(data) {
@@ -349,7 +410,6 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
                   }
 
                   var data = JSON.parse(xData.responseText)
-                  console.dir(data)
                   if (data == null) {
                     errorHandler("unable to read data from healthcheck API (no data)")
                     return

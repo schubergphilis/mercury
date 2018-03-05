@@ -136,7 +136,7 @@ func (w *Worker) Start() {
 						PoolName:       w.Pool,
 						BackendName:    w.Backend,
 						ActualStatus:   result,
-						ReportedStatus: result,
+						ReportedStatus: w.reportState(result),
 						NodeName:       w.NodeName,
 						WorkerUUID:     w.UUID(),
 						Description:    w.Description(),
@@ -224,11 +224,21 @@ func (w *Worker) sendUpdate(result Status) {
 	checkresult := CheckResult{
 		PoolName:       w.Pool,
 		BackendName:    w.Backend,
-		ActualStatus:   result, // TODO: fixme
+		ActualStatus:   result,
 		ReportedStatus: result,
 		NodeName:       w.NodeName,
 		WorkerUUID:     w.UUID(),
 		Description:    w.Description(),
 	}
 	w.update <- checkresult
+}
+
+func (w *Worker) reportState(result Status) Status {
+	switch result {
+	case Online:
+		return w.Check.OnlineState.Status
+	case Offline:
+		return w.Check.OfflineState.Status
+	}
+	return result
 }

@@ -16,6 +16,10 @@ const (
 	Maintenance
 )
 
+type status struct {
+	Status `json:"status" toml:"status"` // status container for toml conversion
+}
+
 func (s Status) String() string {
 	if _, ok := StatusTypeToString[s]; !ok {
 		return strconv.Itoa(int(s))
@@ -23,13 +27,13 @@ func (s Status) String() string {
 	return StatusTypeToString[s]
 }
 
-func (s *Status) UnmarshalText(text []byte) error {
+// UnmarshalText converts json Status to Status uint8
+func (s *status) UnmarshalText(text []byte) error {
 	var err error
 	if _, ok := StringToStatusType[string(text)]; !ok {
-		return fmt.Errorf("unknown status type: %s", text)
+		return fmt.Errorf("unknown status type: %s (allowed are: automatic, online, offline and maintenance)", text)
 	}
-	t := StringToStatusType[string(text)]
-	s = &t
+	s.Status = StringToStatusType[string(text)]
 	return err
 }
 

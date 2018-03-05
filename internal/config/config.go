@@ -195,28 +195,9 @@ func (c *Config) ParseConfig() error {
 
 		c.Loadbalancer.Pools[poolName] = p
 
-		for hid, healthcheck := range c.Loadbalancer.Pools[poolName].HealthChecks {
+		for hid, check := range c.Loadbalancer.Pools[poolName].HealthChecks {
 			p := c.Loadbalancer.Pools[poolName]
-			if healthcheck.Interval < 1 {
-				p.HealthChecks[hid].Interval = 11
-			}
-
-			if healthcheck.Timeout < 1 {
-				p.HealthChecks[hid].Timeout = 10
-			}
-
-			if healthcheck.PINGpackets == 0 {
-				p.HealthChecks[hid].PINGpackets = 4
-			}
-
-			if healthcheck.PINGtimeout == 0 {
-				p.HealthChecks[hid].PINGtimeout = 1
-			}
-
-			if healthcheck.Type == "" {
-				p.HealthChecks[hid].Type = "tcpconnect"
-			}
-
+			p.HealthChecks[hid] = SetHealthCheckDefault(check)
 			c.Loadbalancer.Pools[poolName] = p
 		}
 
@@ -248,43 +229,21 @@ func (c *Config) ParseConfig() error {
 				}
 			}
 
-			for hid, healthcheck := range c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
+			for hid, check := range c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
+				fmt.Printf("HealthCheck Details: %+v\n", check)
 
-				if healthcheck.Interval < 1 {
-					h.HealthChecks[hid].Interval = 11
-				}
-
-				if healthcheck.Timeout < 1 {
-					h.HealthChecks[hid].Timeout = 10
-				}
-
-				if healthcheck.PINGpackets == 0 {
-					h.HealthChecks[hid].PINGpackets = 4
-				}
-
-				if healthcheck.PINGtimeout == 0 {
-					h.HealthChecks[hid].PINGtimeout = 1
-				}
-
+				h.HealthChecks[hid] = SetHealthCheckDefault(check)
 				if backend.BalanceMode.ActivePassive == YES {
 					h.HealthChecks[hid].ActivePassiveID = backend.UUID
 				} else {
 					h.BalanceMode.ActivePassive = "no"
 					h.HealthChecks[hid].ActivePassiveID = ""
 				}
-
-				if healthcheck.Type == "" {
-					h.HealthChecks[hid].Type = "tcpconnect"
-				}
 			}
 
 			// Always have atleast 1 check: tcpconnect
 			if len(c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks) == 0 {
-				tcpconnect := healthcheck.HealthCheck{
-					Type:     "tcpconnect",
-					Interval: 11,
-					Timeout:  10,
-				}
+				tcpconnect := SetHealthCheckDefault(healthcheck.HealthCheck{})
 				h.HealthChecks = append(h.HealthChecks, tcpconnect)
 			}
 
@@ -364,6 +323,41 @@ func (c *Config) ParseConfig() error {
 	SetDefaultDNSConfig(&c.DNS)
 	SetDefaultWebConfig(&c.Web)
 	return nil
+}
+
+// SetHealthCheckDefault sets the default config for generic settings
+func SetHealthCheckDefault(check healthcheck.HealthCheck) healthcheck.HealthCheck {
+	if check.Interval < 1 {
+		check.Interval = 11
+	}
+
+	if check.Timeout < 1 {
+		check.Timeout = 10
+	}
+
+	if check.PINGpackets == 0 {
+		check.PINGpackets = 4
+	}
+
+	if check.PINGtimeout == 0 {
+		check.PINGtimeout = 1
+	}
+
+	if check.Type == "" {
+		check.Type = "tcpconnect"
+	}
+
+	switch check.OnlineState.Status {
+	case healthcheck.Automatic:
+		check.OnlineState.Status = healthcheck.Online
+	}
+
+	switch check.OfflineState.Status {
+	case healthcheck.Automatic:
+		check.OfflineState.Status = healthcheck.Offline
+	}
+
+	return check
 }
 
 // SetDefaultSettingsConfig sets the default config for generic settings

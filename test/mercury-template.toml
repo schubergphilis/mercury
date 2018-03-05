@@ -152,6 +152,8 @@ httprequest = "http://www.example.com?password=hello"
 retries = 2
 timeout = 10
 type = "httpget"
+online_state = "offline"
+offline_state = "online"
 [[loadbalancer.pools.INTERNAL_VIP.backends.example.nodes]]
 ip = "95.142.102.176"
 port = 80
