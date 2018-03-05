@@ -57,9 +57,9 @@ type LoadbalancerListener struct {
 // BackendNode an cluster node to talk to
 type BackendNode struct {
 	*proxy.BackendNode
-	Online      bool     `json:"online" toml:"online" yaml:"-"`
-	Errors      []string `json:"error" toml:"error" yaml:"-"`
-	ClusterName string   `json:"clustername" toml:"clustername" yaml:"-"`
+	Status      healthcheck.Status `json:"status" toml:"status" yaml:"-"`
+	Errors      []string           `json:"error" toml:"error" yaml:"-"`
+	ClusterName string             `json:"clustername" toml:"clustername" yaml:"-"`
 }
 
 // DNSEntry for GLB
@@ -125,14 +125,14 @@ func (n BackendNode) SafeName() string {
 }
 
 // UpdateStatus updates node status
-func UpdateNodeStatus(poolName string, backendName string, nodeUUID string, online bool, err []string) {
+func UpdateNodeStatus(poolName string, backendName string, nodeUUID string, status healthcheck.Status, err []string) {
 	configLock.Lock()
 	defer configLock.Unlock()
 	if _, ok := config.Loadbalancer.Pools[poolName]; ok {
 		if _, ok := config.Loadbalancer.Pools[poolName].Backends[backendName]; ok {
 			for nid, node := range config.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 				if node.UUID == nodeUUID {
-					config.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Online = online
+					config.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Status = status
 					config.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Errors = err
 				}
 			}
@@ -197,11 +197,11 @@ func AddBackendNode(poolName string, backendName string, node *BackendNode) {
 }
 
 // UpdateBackendNode updates status of online and error of backend node
-func UpdateBackendNode(poolName string, backendName string, nodeID int, online bool, err []string) {
+func UpdateBackendNode(poolName string, backendName string, nodeID int, status healthcheck.Status, err []string) {
 	Lock()
 	defer Unlock()
 	if _, ok := GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName]; ok {
-		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].Online = online
+		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].Status = status
 		GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nodeID].Errors = err
 	}
 }

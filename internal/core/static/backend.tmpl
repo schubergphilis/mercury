@@ -66,13 +66,24 @@
          </td>
          {{ $length := len $node.Errors }}
          {{ if eq $backend.BalanceMode.ActivePassive "yes" }}
-            {{ if $node.Online }}
+            {{ if eq $node.Status 1 }}
             <td class="status gray"><span class="online">Active</span>/Passive</td>
             {{ else }}
             <td class="status gray">Active/<span class="offline">Passive</span></td>
             {{ end }}
          {{ else }}
-            <td class="status {{if $node.Online}}online{{ else }}offline{{end}}">{{if $node.Online}}Online{{ else }}Offline{{end}}</td>
+            {{ if eq $node.Status 0 }}
+              <td class="status unknown">Unknown</td>
+            {{ end }}
+            {{ if eq $node.Status 1 }}
+              <td class="status online">Online</td>
+            {{ end }}
+            {{ if eq $node.Status 2 }}
+              <td class="status offline">Offline</td>
+            {{ end }}
+            {{ if eq $node.Status 3 }}
+              <td class="status maintenance">Maintenance</td>
+            {{ end }}
          {{ end }}
          <td class="node">{{range $err := $node.Errors}}{{$err}}<br>{{- end}}</td>
       </tr>

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 )
 
 // Public API
@@ -54,7 +56,11 @@ func (h apiHealthCheckAdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 		switch path[6] {
 		case "status":
-			err := h.manager.healthManager.SetStatus(path[5], path[7])
+			if _, ok := healthcheck.StringToStatusType[path[7]]; !ok {
+				apiWriteData(w, 501, apiMessage{Success: false, Error: fmt.Sprintf("unknown status: %s", path[7])})
+				return
+			}
+			err := h.manager.healthManager.SetStatus(path[5], healthcheck.StringToStatusType[path[7]])
 			if err != nil {
 				apiWriteData(w, 501, apiMessage{Success: false, Error: err.Error()})
 				return

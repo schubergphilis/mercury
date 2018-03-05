@@ -58,10 +58,17 @@ table td, table th {
 }
 
 .online { color: #00d000 }
+.maintenance { color: #408000 }
+.forcedmaintenance { color: #808000 }
+.forcedonline { color: #d08000 }
 .offline { color: #d00000 }
+.forcedoffline { color: #000 }
+.unknown { color: #808 }
+
 .checking { color: #d08000 }
 .adminup { color: #d08000 }
 .admindown { color: #000 }
+
 .gray { color: #808080 }
 .searchbox { padding: 10px; width:50%; }
 

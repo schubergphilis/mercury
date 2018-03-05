@@ -346,7 +346,7 @@ func (c *Config) ParseConfig() error {
 						for _, oldnode := range Get().Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 							for nid, newnode := range c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 								if oldnode.UUID == newnode.UUID {
-									c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Online = oldnode.Online
+									c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Status = oldnode.Status
 									c.Loadbalancer.Pools[poolName].Backends[backendName].Nodes[nid].Errors = oldnode.Errors
 									log.Debugf("Old node:%s uuid:%s copied to New node:%s uuid:%s", oldnode.Name(), oldnode.UUID, newnode.Name(), newnode.UUID)
 								}

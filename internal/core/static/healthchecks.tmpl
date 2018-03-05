@@ -82,6 +82,34 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     });
 
 
+    checkStatus=worker.checkresult
+    checkError = worker.checkerror
+    forced = ""
+    forcedcss = ""
+    if (jsonData.workerhealth[worker.uuid] != null) {
+      if ((jsonData.workerhealth[worker.uuid].manualstatus) && (jsonData.workerhealth[worker.uuid].manualstatus != 0)) {
+        checkStatus = jsonData.workerhealth[worker.uuid].manualstatus
+        forced = ' (forced)'
+        forcedcss = 'forced'
+
+      }
+    }
+    switch (checkStatus)
+    {
+       case 1:
+         checkStatus='<p class="'+forcedcss+'online">online'+forced+'</p>';
+         break;
+       case 2:
+         checkStatus='<p class="'+forcedcss+'offline">offline'+forced+'</p>';
+         break;
+       case 3:
+         checkStatus='<p class="'+forcedcss+'maintenance">maintenance'+forced+'</p>';
+         break;
+       default:
+         checkStatus='<p class="unknown">unknown</p>';
+         break;
+    }
+    /*
     checkStatus = (worker.checkresult == true ? "online" : "offline")
     checkError = worker.checkerror
     if (jsonData.workerhealth[worker.uuid] != null) {
@@ -107,6 +135,7 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
          checkStatus='<p class="adminup">adminup</p>';
          break;
     }
+    */
 
     checkId = worker.uuid
     checkType = worker.check.type
@@ -244,19 +273,57 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
     /*
     (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
     */
-    selectautodetect=""
-    selectadmindown=""
-    selectadminup=""
+    selectautomatic='selected'
+    selectmaintenance=''
+    selectoffline=''
+    selectonline=''
+
+    checkStatus=jsonData.workerhealth.checkstatus
+    forced = ""
+    if  (jsonData.workerhealth.manualstatus != 0) {
+      checkStatus = jsonData.workerhealth.manualstatus
+      forced = ' (forced)'
+      selectautomatic=''
+    }
+    switch (checkStatus)
+    {
+       case 1:
+         checkStatusDetail='<p class="online">online'+forced+'</p>';
+         selectonline='selected'
+         break;
+       case 2:
+         checkStatusDetail='<p class="offline">offline'+forced+'</p>';
+         selectoffline='selected'
+         break;
+       case 3:
+         checkStatusDetail='<p class="maintenance">maintenance'+forced+'</p>';
+         selectmaintenance='selected'
+         break;
+       default:
+         checkStatusDetail='<p class="unknown">'+checkStatus+'</p>';
+         break;
+    }
+    // if automatic, ensure we do not select any other
+    if (jsonData.workerhealth.manualstatus == 0) {
+      selectautomatic='selected'
+      selectmaintenance=''
+      selectoffline=''
+      selectonline=''
+    }
+
+    /*
     if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; selectautodetect='selected';} else { checkStatusDetail='<p class="offline">offline</p>'; selectautodetect='selected';}
     if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; selectadmindown='selected';}
     if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>';selectadminup='selected'; }
+    */
 
          $("#popupcontent ul").append('<li><div>Status</div><div>'+checkStatusDetail+'</div></li>')
          $("#popupcontent ul").append('<li><div>Status Detection</div><div><form ><input id="detailuuid" type="hidden" name="uuid" value="'+worker.uuid+'">'+
             '<select id="statusselect">'+
-            '<option '+selectautodetect+' value="autodetect">autodetect</option>'+
-            '<option '+selectadminup+' value="adminup">force up</option>'+
-            '<option '+selectadmindown+' value="admindown">force down</option>'+
+            '<option '+selectautomatic+' value="automatic">automatic</option>'+
+            '<option '+selectonline+' value="online">force online</option>'+
+            '<option '+selectoffline+' value="offline">force offline</option>'+
+            '<option '+selectmaintenance+' value="maintenance">force maintenance</option>'+
             '</select><input id="sssubmit" type="button" value="save"></form></div></li>')
 
             // activate save button

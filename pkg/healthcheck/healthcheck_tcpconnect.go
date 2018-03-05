@@ -7,10 +7,10 @@ import (
 )
 
 // tcpConnect only does a tcp connection check
-func tcpConnect(host string, port int, sourceIP string, healthCheck HealthCheck) (bool, error) {
+func tcpConnect(host string, port int, sourceIP string, healthCheck HealthCheck) (Status, error) {
 	localAddr, errl := net.ResolveIPAddr("ip", sourceIP)
 	if errl != nil {
-		return false, errl
+		return Offline, errl
 	}
 
 	localTCPAddr := net.TCPAddr{
@@ -26,9 +26,9 @@ func tcpConnect(host string, port int, sourceIP string, healthCheck HealthCheck)
 
 	conn, err := dialer.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
-		return false, err
+		return Offline, err
 	}
 
 	conn.Close()
-	return true, nil
+	return Online, nil
 }

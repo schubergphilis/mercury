@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 )
 
@@ -19,7 +20,7 @@ func TestLoadbalancerConfig(t *testing.T) {
 	proxy := proxy.NewBackendNode("UUID1", "192.168.1.1", "server1", 22, 10, []string{}, 0)
 	addr := &BackendNode{
 		BackendNode: proxy,
-		Online:      false,
+		Status:      healthcheck.Offline,
 	}
 	if Get().Loadbalancer.Pools["INTERNAL_VIP"].Backends["myapp"].Nodes[0].Name() != addr.Name() {
 		t.Errorf("Expected pool:INTERNAL_VIP backend:myapp node:0 to be %+v (got:%+v)", addr, Get().Loadbalancer.Pools["INTERNAL_VIP"].Backends["myapp"].Nodes[0])
