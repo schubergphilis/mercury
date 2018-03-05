@@ -1,6 +1,9 @@
 package healthcheck
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Status holds the status of a check
 type Status uint8
@@ -14,14 +17,20 @@ const (
 )
 
 func (s Status) String() string {
-	name := []string{"online", "offline", "maintenance", "automatic"}
-	i := uint8(s)
-	switch {
-	case i <= uint8(Automatic):
-		return name[i]
-	default:
-		return strconv.Itoa(int(i))
+	if _, ok := StatusTypeToString[s]; !ok {
+		return strconv.Itoa(int(s))
 	}
+	return StatusTypeToString[s]
+}
+
+func (s *Status) UnmarshalText(text []byte) error {
+	var err error
+	if _, ok := StringToStatusType[string(text)]; !ok {
+		return fmt.Errorf("unknown status type: %s", text)
+	}
+	t := StringToStatusType[string(text)]
+	s = &t
+	return err
 }
 
 // StatusTypeToString converts status to string

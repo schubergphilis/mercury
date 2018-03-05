@@ -127,7 +127,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 		case healthcheck := <-manager.healthchecks:
 			log.WithField("func", "core").Debug("healthcheck")
-			clog := log.WithField("pool", healthcheck.PoolName).WithField("backend", healthcheck.BackendName).WithField("nodeuuid", healthcheck.NodeUUID).WithField("node", healthcheck.NodeName).WithField("reportedstatus", healthcheck.ReportedStatus).WithField("func", "healthcheck")
+			clog := log.WithField("pool", healthcheck.PoolName).WithField("backend", healthcheck.BackendName).WithField("nodeuuid", healthcheck.NodeUUID).WithField("node", healthcheck.NodeName).WithField("status", healthcheck.ReportedStatus.String()).WithField("func", "healthcheck")
 			clog.Info("Received healthcheck update")
 			// Local HealthCheck update received from local healthcheck workers
 			// We only reach this update if a Healthcheck changed state (either up or down)

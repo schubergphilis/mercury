@@ -28,7 +28,7 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 			// pool + backend + node = node check Changed
 			// pool + backend = backend check changed - applies to nodes
 			// pool = pool check changed - applies to vip
-			log.WithField("pool", checkresult.PoolName).WithField("backend", checkresult.BackendName).WithField("node", checkresult.NodeName).WithField("actualstatus", checkresult.ActualStatus).WithField("reportedstatus", checkresult.ReportedStatus).WithField("check", checkresult.Description).Info("Received health update from worker")
+			log.WithField("pool", checkresult.PoolName).WithField("backend", checkresult.BackendName).WithField("node", checkresult.NodeName).WithField("actualstatus", checkresult.ActualStatus.String()).WithField("reportedstatus", checkresult.ReportedStatus.String()).WithField("check", checkresult.Description).Info("Received health update from worker")
 
 			// Set status in healh pool
 			healthCheck.SetCheckStatus(checkresult.WorkerUUID, checkresult.ReportedStatus, checkresult.ErrorMsg)
@@ -55,7 +55,7 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 					checkresult.BackendName = backendName
 				}
 
-				log.WithField("pool", checkresult.PoolName).WithField("backend", checkresult.BackendName).WithField("node", checkresult.NodeName).WithField("reportedstatus", checkresult.ReportedStatus).WithField("error", checkresult.ErrorMsg).Info("Sending status update to cluster")
+				log.WithField("pool", checkresult.PoolName).WithField("backend", checkresult.BackendName).WithField("node", checkresult.NodeName).WithField("reportedstatus", checkresult.ReportedStatus.String()).WithField("error", checkresult.ErrorMsg).Info("Sending status update to cluster")
 				manager.healthchecks <- checkresult // do not send pointers, since pointer will change data
 			}
 
