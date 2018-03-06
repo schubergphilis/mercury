@@ -81,7 +81,7 @@ table td, table th {
     top: 0px;
 }
 
-.host, .ip { width: 100%; transition: opacity 0.5s linear; }
+.host, .ip { width: 100%; transition: opacity 0.5s linear; white-space:nowrap;}
 .nodebox:hover .host { opacity: 0; }
 .nodebox:hover .ip { opacity: 1; }
 

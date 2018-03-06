@@ -196,18 +196,21 @@ func (manager *Manager) updateProxyBackendNode(poolName string, backendName stri
 	proxyupdate := &config.ProxyBackendNodeUpdate{
 		PoolName:        poolName,
 		BackendName:     backendName,
-		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference},
+		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference, Status: node.Status},
 		BackendNodeUUID: node.UUID,
 	}
 	if config.Get().Settings.EnableProxy == YES {
 		clog := log.WithField("pool", proxyupdate.PoolName).WithField("backend", proxyupdate.BackendName).WithField("uuid", proxyupdate.BackendNodeUUID).WithField("status", node.Status).WithField("ip", node.IP).WithField("port", node.Port)
 
-		if node.Status == healthcheck.Online {
-			clog.Warnf("Adding backend to proxy")
-			manager.addProxyBackend <- proxyupdate
-
-		} else {
-			clog.Warnf("Removing backend from proxy")
+		switch node.Status {
+		case healthcheck.Online:
+			clog.Warnf("Set proxy to Online")
+			manager.addProxyBackend <- proxyupdate // add or update
+		case healthcheck.Maintenance:
+			clog.Warnf("Set proxy to Maintenance")
+			manager.addProxyBackend <- proxyupdate // add or update
+		default:
+			clog.Warnf("Remove proxy due to offline")
 			manager.removeProxyBackend <- proxyupdate
 		}
 	}

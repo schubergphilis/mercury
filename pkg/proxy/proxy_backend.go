@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/balancer"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -54,6 +55,15 @@ func (b *Backend) AddBackendNode(n *BackendNode) {
 
 func remove(slice []*BackendNode, s int) []*BackendNode {
 	return append(slice[:s], slice[s+1:]...)
+}
+
+// UpdateBackendNode update a backend node with a new status
+func (b *Backend) UpdateBackendNode(nodeid int, status healthcheck.Status) {
+	b.sync.Lock()
+	defer b.sync.Unlock()
+	if err := b.Nodes[nodeid]; err != nil {
+		b.Nodes[nodeid].Status = status
+	}
 }
 
 // RemoveBackendNode remove a backend node from the listener

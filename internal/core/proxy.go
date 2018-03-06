@@ -284,29 +284,37 @@ func (manager *Manager) ProxyHandler() {
 				proxy.Debug()
 			}
 
-		case update := <-manager.addProxyBackend:
-			log.Debug("addProxyBackend")
-			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference) // max connections = 1 -> not used
+		case update := <-manager.addProxyBackend: // add or update
+			log.Debug("UpdateProxyBackend")
 
 			plog := log.WithField("pool", update.PoolName).WithField("backend", update.BackendName).WithField("uuid", update.BackendNodeUUID)
+
 			// Check if packet is for a proxy we have
+			plog.Debugf("proxyGetBackend")
 			backend, err := proxyGetBackend(update.PoolName, update.BackendName)
 			if err != nil {
 				plog.WithError(err).Debug("Unable to get backend")
 				continue
 			}
 
+			plog.Debugf("proxyGetNodeByUUID")
 			nodeid, err := proxyGetNodeByUUID(backend, update.BackendNodeUUID)
 			if err != nil {
 				plog.WithError(err).Debug("Unable to get backend node by UUID")
 				continue
 			}
 
-			// Add Proxy backend
-			if nodeid < 0 {
-				plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
-				backend.AddBackendNode(backendNode)
+			// Node exists, update existing
+			if nodeid >= 0 {
+				plog.WithField("node", update.BackendNode.Name()).WithField("ip", update.BackendNode.IP).WithField("port", update.BackendNode.Port).Debug("Update proxy node")
+				backend.UpdateBackendNode(nodeid, update.BackendNode.Status)
+				continue
 			}
+
+			// New node, add
+			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference, update.BackendNode.Status) // max connections = 1 -> not used
+			plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
+			backend.AddBackendNode(backendNode)
 
 		case update := <-manager.removeProxyBackend:
 			log.Debug("removeProxyBackend")
