@@ -16,7 +16,7 @@ func FindTargets(dnsmanager map[string]Domains, domain, name, request string) ([
 			for _, rec := range dnsmanager[nodename].Domains[domain].Records {
 				if rec.Name == name && rec.Type == request {
 					records = append(records, rec.Target)
-					if rec.Online == true {
+					if rec.Status == Online {
 						okNodes = append(okNodes, nodename)
 					} else {
 						faultyNodes = append(faultyNodes, nodename)

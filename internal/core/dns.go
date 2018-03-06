@@ -7,6 +7,7 @@ import (
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/balancer"
 	"github.com/schubergphilis/mercury/pkg/dns"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -37,10 +38,10 @@ func (manager *Manager) DNSHandler() {
 				ClusterNodes:  dnsupdate.BalanceMode.ClusterNodes,
 				Statistics:    stats,
 				UUID:          dnsupdate.BackendUUID,
-				Online:        dnsupdate.Online,
+				Status:        healthcheckStatusToDnsStatus(dnsupdate.Status),
 			}
 			// TODO: pass record type along, and get rid of ipv6/ipv4 seperation
-			clog := log.WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("cluster", dnsupdate.ClusterNode).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("online", dnsupdate.Online)
+			clog := log.WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("cluster", dnsupdate.ClusterNode).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("status", dnsupdate.Status)
 			// Create IPv4 record if present
 			if dnsupdate.DNSEntry.IP != "" {
 				record.Type = "A"
@@ -138,4 +139,18 @@ func UpdateDNSConfig() {
 		}
 
 	}
+}
+
+func healthcheckStatusToDnsStatus(s healthcheck.Status) dns.Status {
+	switch s {
+	case healthcheck.Online:
+		return dns.Online
+	case healthcheck.Offline:
+		return dns.Offline
+	case healthcheck.Maintenance:
+		return dns.Maintenance
+	case healthcheck.Automatic:
+		return dns.Automatic
+	}
+	return dns.Automatic
 }

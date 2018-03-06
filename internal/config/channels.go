@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/schubergphilis/mercury/pkg/balancer"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 )
 
@@ -30,7 +31,8 @@ type ClusterPacketGlobalDNSUpdate struct {
 	DNSEntry    DNSEntry    `json:"dnsentry"`
 	BalanceMode BalanceMode `json:"balancemode"`
 	BackendUUID string      `toml:"uuid" json:"uuid"`
-	Online      bool        `toml:"online" json:"online"`
+	//Online      bool        `toml:"online" json:"online"`
+	Status healthcheck.Status `toml:"status" json:"status"`
 }
 
 // ClusterPacketGlbalDNSStatisticsUpdate contains backend updates to proxy

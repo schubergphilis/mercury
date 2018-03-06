@@ -66,7 +66,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					continue
 				}
 
-				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("online", dnsupdate.Online).Info("Received cluster dns update")
+				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("status", dnsupdate.Status.String()).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
 
 			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
@@ -170,7 +170,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				DNSEntry:    backend.DNSEntry,
 				BalanceMode: backend.BalanceMode,
 				BackendUUID: backend.UUID,
-				Online:      getLocalNodeStatus(healthcheck.PoolName, healthcheck.BackendName),
+				Status:      getLocalNodeStatus(healthcheck.PoolName, healthcheck.BackendName),
 			}
 
 			manager.dnsupdates <- dnsupdate
@@ -301,19 +301,31 @@ func (manager *Manager) BackendNodeDiscard(node string) {
 	}
 }
 
-func getLocalNodeStatus(poolName, backendName string) bool {
+func getLocalNodeStatus(poolName, backendName string) healthcheck.Status {
 	var online = 0
+	var maintenance = 0
 	config.RLock()
 	defer config.RUnlock()
 	for _, node := range config.GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
 		if node.Status == healthcheck.Online && node.ClusterName == config.GetNoLock().Cluster.Binding.Name {
 			online++
 		}
+		if node.Status == healthcheck.Maintenance && node.ClusterName == config.GetNoLock().Cluster.Binding.Name {
+			maintenance++
+		}
 	}
+	// if any node is online, we are online
 	if online > 0 {
-		return true
+		return healthcheck.Online
 	}
-	return false
+
+	// if we are not online, but we have nodes in maintenance, then status is maintenance
+	if maintenance > 0 {
+		return healthcheck.Maintenance
+	}
+
+	// if no nodes are online or in maintenance, we are offline
+	return healthcheck.Offline
 }
 
 func clusterClearProxyStatistics(cl *cluster.Manager, poolname string, backendname string) {
@@ -353,7 +365,7 @@ func clusterDNSUpdateBroadcastAll(cl *cluster.Manager) {
 }
 
 func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
-	online := getLocalNodeStatus(poolName, backendName)
+	status := getLocalNodeStatus(poolName, backendName)
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,
@@ -361,13 +373,13 @@ func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode stri
 		DNSEntry:    dnsEntry,
 		BalanceMode: balanceMode,
 		BackendUUID: backendUUID,
-		Online:      online,
+		Status:      status,
 	}
 	cl.ToCluster <- dnsupdate
 }
 
 func clusterDNSUpdateBroadcast(cl *cluster.Manager, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
-	online := getLocalNodeStatus(poolName, backendName)
+	status := getLocalNodeStatus(poolName, backendName)
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,
@@ -375,7 +387,7 @@ func clusterDNSUpdateBroadcast(cl *cluster.Manager, clusterNode string, poolName
 		DNSEntry:    dnsEntry,
 		BalanceMode: balanceMode,
 		BackendUUID: backendUUID,
-		Online:      online,
+		Status:      status,
 	}
 	cl.ToCluster <- dnsupdate
 }
