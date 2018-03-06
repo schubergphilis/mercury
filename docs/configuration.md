@@ -285,6 +285,21 @@ When a error page is set in the config, it will always show on internal errors (
 
 If you do not want the sorry page to show on return codes from the webserver, then set this to a higher number then the http error codes (e.g. 600 or up)
 
+## MaintenancePage Attributes
+
+An maintenance page is shown when an healthcheck generates a "maintenance state" of if "maintenance" is set on a healthcheck via the gui
+As soon as there are no backends online, and one or more of the remaining node is in the state of "maintenance" this page will be shown.
+Any node in state maintenance will handle the existing requests, but no longer accept new requests.
+
+Usable in the settings for: `pools` and `backends`
+* `[loadbalancer.pools.poolname.errorpage]` - applying an custom error page on all backends for a pool
+* `[loadbalancer.pools.poolname.backends.backendname.errorpage]` - applying an custom error page on a specific backend only
+
+Key | Option | Default | Values | Description
+--- | --- | --- | --- | ---
+[..errorpage] | file | "" | "/path/to/file" | Path to html file to serve if an error is generated
+
+
 ## DNSEntry attributes
 
 This specifies the dns entry for a backend, this will point to the loadbalancer serving the backend.
@@ -366,6 +381,8 @@ Key | Option | Default | Values | Description
 [[..healthcheck]] | sourceip | listener.IP | string | alternative source IP to use when sending request
 [[..healthcheck]] | interval | 10 | int | how often to check this backend
 [[..healthcheck]] | timeout | 10 | int (seconds) | how long to wait for backend to finish its reply before reporting it in error state
+[[..healthcheck]] | online_state | "online" | online/offline/maintenance | if the healtcheck sais its online, instead send this alternative state
+[[..healthcheck]] | offline_state | "offline" | online/offline/maintenance | if the healtcheck sais its offline, instead send this alternative state
 [[..healthcheck.tls]] | [web.tls] | tls | none | see TLS Attributes | TLS settings for connecting to the backend. the only attribute that applies here is the `insecureskipverify` for when connecting to a node with a self-signed certificate e.g. `{ insecureskipverify: true }`
 
 

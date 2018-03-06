@@ -18,7 +18,6 @@
          <th class="sort" data-sort="clients">Active Clients</th>
          <th class="sort" data-sort="connects">Connects</th>
          <th class="sort" data-sort="responsetime">ResponseTime</th>
-         <th class="sort" data-sort="uuid">UUID</th>
        </tr>
      </thead>
      <tbody class="list">
@@ -71,11 +70,6 @@
         {{$backendnode.Statistics.ResponseTimeGet}}<br>
       {{- end }}
     </td>
-    <td class="uuid">
-      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
-        {{$backendnode.UUID}}<br>
-      {{- end }}
-    </td>
  </tr>
   {{- end }}
 {{- end }}
@@ -86,7 +80,7 @@
 
 <script type="text/javascript">
 var userList = new List('proxy', {
-  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects', 'uuid' ]
+  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects' ]
 });
 </script>
 
