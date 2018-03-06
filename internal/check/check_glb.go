@@ -57,6 +57,7 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 		// Only check local cluster, the other cluster will check its self
 		for domainname := range dnsmanager[nodename].Domains {
 			for _, rec := range dnsmanager[nodename].Domains[domainname].Records {
+				// Get all targets of all clusters
 				targets, okNodes, _ := dns.FindTargets(dnsmanager, domainname, rec.Name, rec.Type)
 				if rec.ActivePassive == YES {
 					if len(okNodes) == 0 {
@@ -77,7 +78,7 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 	}
 
 	if faultyTargets != nil {
-		return CRITICAL, fmt.Errorf("%v\n", faultyTargets)
+		return CRITICAL, fmt.Errorf("%v", faultyTargets)
 	}
 	return OK, nil
 
@@ -101,9 +102,8 @@ func GLB() int {
 	// Prepare data
 	var criticals []string
 	var warnings []string
-	// Execute Checks
-	log.Debug("Checking loadbalancer count")
-	if exitcode, err := checkLoadbalancerCount(dnsentries); err != nil {
+	log.Debug("Checking dns entries exist on all known loadbalancers")
+	if exitcode, err := checkEntryOnAllLoadbalancers(dnsentries); err != nil {
 		switch exitcode {
 		case CRITICAL:
 			criticals = append(criticals, err.Error())
@@ -111,8 +111,9 @@ func GLB() int {
 			warnings = append(warnings, err.Error())
 		}
 	}
-	log.Debug("Checking dns entries exist on all known loadbalancers")
-	if exitcode, err := checkEntryOnAllLoadbalancers(dnsentries); err != nil {
+	// Execute Checks
+	log.Debug("Checking loadbalancer count")
+	if exitcode, err := checkLoadbalancerCount(dnsentries); err != nil {
 		switch exitcode {
 		case CRITICAL:
 			criticals = append(criticals, err.Error())

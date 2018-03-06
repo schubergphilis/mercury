@@ -54,8 +54,8 @@ type HealthCheck struct {
 	IP               string              `json:"ip" toml:"ip"`                             // specific ip
 	SourceIP         string              `json:"sourceip" toml:"sourceip"`                 // specific ip
 	Port             int                 `json:"port" toml:"port"`                         // specific port
-	OnlineState      status              `json:"online_state" toml:"online_state"`         // alternative online_state - default: online / optional: offline / maintenance
-	OfflineState     status              `json:"offline_state" toml:"offline_state"`       // alternative offline_state - default: offline
+	OnlineState      StatusType          `json:"online_state" toml:"online_state"`         // alternative online_state - default: online / optional: offline / maintenance
+	OfflineState     StatusType          `json:"offline_state" toml:"offline_state"`       // alternative offline_state - default: offline
 	uuidStr          string
 }
 
