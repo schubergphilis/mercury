@@ -38,7 +38,7 @@ func (manager *Manager) DNSHandler() {
 				ClusterNodes:  dnsupdate.BalanceMode.ClusterNodes,
 				Statistics:    stats,
 				UUID:          dnsupdate.BackendUUID,
-				Status:        healthcheckStatusToDnsStatus(dnsupdate.Status),
+				Status:        healthcheckStatusToDNSStatus(dnsupdate.Status),
 			}
 			// TODO: pass record type along, and get rid of ipv6/ipv4 seperation
 			clog := log.WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("cluster", dnsupdate.ClusterNode).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("status", dnsupdate.Status)
@@ -141,7 +141,7 @@ func UpdateDNSConfig() {
 	}
 }
 
-func healthcheckStatusToDnsStatus(s healthcheck.Status) dns.Status {
+func healthcheckStatusToDNSStatus(s healthcheck.Status) dns.Status {
 	switch s {
 	case healthcheck.Online:
 		return dns.Online

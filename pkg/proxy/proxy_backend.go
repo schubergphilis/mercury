@@ -145,7 +145,7 @@ func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode st
 	switch len(onlineNodes) {
 	case 0: // return error of no nodes
 		if len(b.Nodes) > 0 { // 0 online, but there are nodes. so all nodes are in maintenance
-			return &BackendNode{}, healthcheck.Maintenance, fmt.Errorf("All backend nodes are in Maintenance", backendpool)
+			return &BackendNode{}, healthcheck.Maintenance, fmt.Errorf("All backend nodes are in Maintenance in backend %s", backendpool)
 		}
 
 		return &BackendNode{}, healthcheck.Offline, fmt.Errorf("Unable to find a node in backend %s", backendpool)

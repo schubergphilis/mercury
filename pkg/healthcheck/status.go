@@ -40,7 +40,6 @@ func (s *StatusType) UnmarshalText(text []byte) error {
 
 // UnmarshalJSON converts json Status to Status uint8
 func (s *StatusType) UnmarshalJSON(text []byte) error {
-	return nil
 	var err error
 	if _, ok := StringToStatusType[string(text)]; !ok {
 		return fmt.Errorf("unknown status type: %s (allowed are: automatic, online, offline and maintenance)", text)
