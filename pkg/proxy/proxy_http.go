@@ -18,6 +18,7 @@ import (
 
 	uuid "github.com/nu7hatch/gouuid"
 
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -78,6 +79,14 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 			statuscode = 502
 			statusmessage = http.StatusText(statuscode)
 		}
+		res = customStatusPage(statuscode, statusmessage, req)
+		return res, nil
+
+	case "maintenance":
+		log.WithField("errorcode", scheme[1]).WithField("error", scheme[2]).Infof("Could not proxy client request")
+		var statuscode int
+		statusmessage := scheme[3]
+		statuscode = 503
 		res = customStatusPage(statuscode, statusmessage, req)
 		return res, nil
 
@@ -268,9 +277,13 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 
 		// Get a Node to balance this request to
 		client := strings.Split(req.RemoteAddr, ":")
-		backendnode, err := backend.GetBackendNodeBalanced(backendname, client[0], stickyCookie, backend.BalanceMode)
+		backendnode, status, err := backend.GetBackendNodeBalanced(backendname, client[0], stickyCookie, backend.BalanceMode)
 		if err != nil {
 			clog.WithField("error", err).Error("No backend node available")
+			if status == healthcheck.Maintenance {
+				req.URL.Scheme = "maintenance//" + backendname + "//503//Service Unavailable - no backend available"
+				return
+			}
 			req.URL.Scheme = "error//" + backendname + "//503//Service Unavailable - no backend available"
 			return
 		}
@@ -319,7 +332,9 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 	modifyresponse := func(res *http.Response) error {
 		// Process OutboundACL if we have a valid request (does not apply to errors)
 		localerror := false
+		localmaintenance := false
 		var errorpage []byte
+		var maintenancepage []byte
 		var showerrorpage bool
 		if res.Request != nil {
 			scheme := strings.Split(res.Request.URL.Scheme, "//")
@@ -327,16 +342,23 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 			backendname := scheme[1]
 			nodeid := scheme[2]
 
-			// Check if backend has error page, if so, keep it
+			// Check if backend has error/maintenance page, if so, keep it
 			if _, ok := l.Backends[backendname]; ok {
 				if l.Backends[backendname].ErrorPage.present() {
 					errorpage = l.Backends[backendname].ErrorPage.content
 					showerrorpage = l.Backends[backendname].ErrorPage.threshold(res.StatusCode)
 				}
+				if l.Backends[backendname].MaintenancePage.present() {
+					maintenancepage = l.Backends[backendname].MaintenancePage.content
+				}
 			}
 
-			// if no errors
-			if proto != "error" {
+			switch proto {
+			case "maintenance":
+				localmaintenance = true
+			case "error":
+				localerror = true
+			default:
 				if backendname != "localhost" && backendname != "" {
 					// Get ACL's
 					acls := l.Backends[backendname].OutboundACL
@@ -352,16 +374,41 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 						acl.ProcessResponse(res)
 					}
 				}
-			} else {
-				localerror = true
+
 			}
 		}
 
+		// Load listener error page if any, and no backend error page
 		if len(errorpage) == 0 {
 			if l.ErrorPage.present() {
 				errorpage = l.ErrorPage.content
 				showerrorpage = l.ErrorPage.threshold(res.StatusCode)
 			}
+		}
+
+		// Load listener maintenance page if any, and no backend maintenance page
+		if len(maintenancepage) == 0 {
+			if l.MaintenancePage.present() {
+				maintenancepage = l.MaintenancePage.content
+			}
+		}
+
+		if localmaintenance {
+			if len(maintenancepage) > 0 { // show maintenance page
+				nbody := &bytes.Buffer{}
+				nbody.Write(maintenancepage)
+				res.Header.Add("x-statuscode", fmt.Sprintf("%d", res.StatusCode))
+				res.Header.Add("x-statusmessage", res.Status)
+				res.Body = ioutil.NopCloser(nbody)
+				// force content length to new size of error body
+				res.Header.Set("Content-Length", fmt.Sprintf("%d", len(maintenancepage)))
+				res.Header.Add("Cache-Control", "no-cache, no-store, must-revalidate")
+				res.Header.Add("Pragma", "no-cache")
+				res.Header.Add("Expires", "0")
+				return nil
+			}
+			// No maintenance page, default back to error page instead
+			localerror = true
 		}
 
 		// Alternative ErrorPage if statuscode reached threshold or local error

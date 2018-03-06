@@ -176,6 +176,11 @@ func (manager *Manager) InitializeProxies() {
 			plog.WithField("file", pool.ErrorPage.File).WithError(err).Warn("Unable to load Error page")
 		}
 
+		if err := newProxy.LoadMaintenancePage(pool.MaintenancePage); err != nil {
+			// This is checked when loading the config
+			plog.WithField("file", pool.MaintenancePage.File).WithError(err).Warn("Unable to load Maintenance page")
+		}
+
 		//log.Debugf("proxy:%s Proxy has the following backends before init:%+v", poolname, removableBackends)
 		for bid := range removableBackends {
 			plog.WithField("backend", bid).Debug("Backend before init")
@@ -193,7 +198,7 @@ func (manager *Manager) InitializeProxies() {
 
 			// Add backend  (will merge if exists)
 			plog.WithField("backend", backendname).Info("Adding/Updating backend")
-			newProxy.UpdateBackend(backendpool.UUID, backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames, pool.Listener.MaxConnections, backendpool.ErrorPage)
+			newProxy.UpdateBackend(backendpool.UUID, backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames, pool.Listener.MaxConnections, backendpool.ErrorPage, backendpool.MaintenancePage)
 
 			// Use backend to attach acl's
 			backend := newProxy.Backends[backendname]

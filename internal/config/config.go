@@ -166,6 +166,12 @@ func (c *Config) ParseConfig() error {
 			}
 		}
 
+		if pool.MaintenancePage.File != "" {
+			if _, err := os.Stat(pool.MaintenancePage.File); err != nil {
+				return fmt.Errorf("Cannot access maintenance page for pool:%s file:%s error:%s", poolName, pool.MaintenancePage.File, err)
+			}
+		}
+
 		p := c.Loadbalancer.Pools[poolName]
 		if p.ErrorPage.TriggerThreshold == 0 {
 			p.ErrorPage.TriggerThreshold = 500
@@ -229,9 +235,17 @@ func (c *Config) ParseConfig() error {
 				}
 			}
 
-			for hid, check := range c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
-				fmt.Printf("HealthCheck Details: %+v\n", check)
+			if backend.ErrorPage.TriggerThreshold == 0 {
+				h.ErrorPage.TriggerThreshold = 500
+			}
 
+			if backend.MaintenancePage.File != "" {
+				if _, err := os.Stat(backend.MaintenancePage.File); err != nil {
+					return fmt.Errorf("Cannot access maintenance page for pool:%s backend:%s file:%s error:%s", poolName, backendName, backend.MaintenancePage.File, err)
+				}
+			}
+
+			for hid, check := range c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks {
 				h.HealthChecks[hid] = SetHealthCheckDefault(check)
 				if backend.BalanceMode.ActivePassive == YES {
 					h.HealthChecks[hid].ActivePassiveID = backend.UUID

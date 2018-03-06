@@ -34,6 +34,7 @@ type LoadbalancePool struct {
 	InboundACL      []proxy.ACL               `json:"inboundacls" toml:"inboundacls"`         // acls applied on incomming connections to backend
 	OutboundACL     []proxy.ACL               `json:"outboundacls" toml:"outboundacls"`       // acl's applied on outgoing connections to client
 	ErrorPage       proxy.ErrorPage           `json:"errorpage" toml:"errorpage"`             // alternative error page to show
+	MaintenancePage proxy.ErrorPage           `json:"maintenancepage" toml:"maintenancepage"` // alternative maintenance page to show
 }
 
 // LoadbalancerListener is a listener for the loadbalancer
@@ -87,6 +88,7 @@ type BackendPool struct {
 	TLSConfig       tlsconfig.TLSConfig       `json:"tls" toml:"tls" yaml:"tls"`              // tls configuratuin
 	Crossconnects   bool                      `json:"crossconnects" toml:"crossconnects"`     // allow cluster cross-connects (e.g. each server can connect to all backends)
 	ErrorPage       proxy.ErrorPage           `json:"errorpage" toml:"errorpage"`             // alternative error page to show
+	MaintenancePage proxy.ErrorPage           `json:"maintenancepage" toml:"maintenancepage"` // alternative maintenance page to show
 }
 
 // BalanceMode Which type of loadbalancing to use

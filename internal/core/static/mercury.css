@@ -58,9 +58,9 @@ table td, table th {
 }
 
 .online { color: #00d000 }
-.maintenance { color: #408000 }
+.forcedonline { color: #408000 }
 .forcedmaintenance { color: #808000 }
-.forcedonline { color: #d08000 }
+.maintenance { color: #d08000 }
 .offline { color: #d00000 }
 .forcedoffline { color: #000 }
 .unknown { color: #808 }

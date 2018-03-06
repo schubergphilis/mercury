@@ -271,6 +271,8 @@ status_code = 301
 [loadbalancer.pools.INTERNAL_VIP_LB.errorpage]
 file = 'tools/html/sorry.html'
 trigger_threshold = 600
+[loadbalancer.pools.INTERNAL_VIP_LB.maintenancepage]
+file = 'tools/html/maintenance.html'
 [loadbalancer.pools.INTERNAL_VIP_LB.listener]
 mode = "https"
 #ip = "127.0.0.1"
