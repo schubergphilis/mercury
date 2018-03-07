@@ -66,7 +66,7 @@ func (h HealthCheck) UUID() string {
 	}
 
 	sort.Strings(h.HTTPHeaders)
-	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck)
+	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t%s%s", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck, h.OfflineState, h.OnlineState)
 	t := sha256.New()
 	t.Write([]byte(s))
 	h.uuidStr = fmt.Sprintf("%x", t.Sum(nil))

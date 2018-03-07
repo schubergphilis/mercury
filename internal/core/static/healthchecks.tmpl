@@ -190,8 +190,12 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
       itemList.add(item);
     }
   });
+console.log("Refresh loading time: "+ addtimer)
   if (addtimer == 1) {
-    window.setTimeout(refreshPage, 10000);
+console.log("Refresh loading")
+    window.setTimeout(function() {
+      refreshPage(1);
+    }, 10000);
   }
   // Show Page
    $( '#itemlist' ).removeClass('hidden')
@@ -208,6 +212,9 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/", function(data) {
     errorHandler("error reading api for status update"+errorThrown)
   })
 }
+
+// Initial loading the data
+console.log("Initial loading")
 refreshPage(1)
 //window.setTimeout(refreshPage, 10000);
 
