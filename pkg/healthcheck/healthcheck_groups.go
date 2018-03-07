@@ -8,10 +8,9 @@ import (
 
 // HealthStatus keeps track of the status of each workers health check
 type HealthStatus struct {
-	CheckStatus bool     `json:"checkstatus" toml:"checkstatus"` // map[checkuuid]status - status returned by worker
-	AdminDown   bool     `json:"admindown" toml:"admindown"`     // manual override
-	AdminUp     bool     `json:"adminup" toml:"adminup"`         // manual override
-	ErrorMsg    []string `json:"errormsg" toml:"errormsg"`       // error message
+	CheckStatus  Status   `json:"checkstatus" toml:"checkstatus"`   // map[checkuuid]status - status returned by worker
+	ManualStatus Status   `json:"manualstatus" toml:"manualstatus"` // manual override
+	ErrorMsg     []string `json:"errormsg" toml:"errormsg"`         // error message
 }
 
 // HealthPool contains a per nodeuuid information about all checks that apply to this node
@@ -24,54 +23,65 @@ type HealthPool struct {
 }
 
 // SetCheckStatus sets the status of a worker check based on the health check result
-func (m *Manager) SetCheckStatus(workerUUID string, status bool, errorMsg []string) {
+func (m *Manager) SetCheckStatus(workerUUID string, status Status, errorMsg []string) {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	if _, ok := m.WorkerMap[workerUUID]; !ok {
-		m.WorkerMap[workerUUID] = HealthStatus{}
+	if _, ok := m.HealthStatusMap[workerUUID]; !ok {
+		m.HealthStatusMap[workerUUID] = HealthStatus{}
 	}
-	s := m.WorkerMap[workerUUID]
+	s := m.HealthStatusMap[workerUUID]
 	s.CheckStatus = status
-	s.ErrorMsg = errorMsg
-	m.WorkerMap[workerUUID] = s
+	if s.CheckStatus != Online {
+		s.ErrorMsg = errorMsg
+	}
+	m.HealthStatusMap[workerUUID] = s
 }
 
 // SetCheckPool sets which checks for a specified backend are applicable
 func (m *Manager) SetCheckPool(nodeUUID string, poolName string, backendName string, nodeName string, match string, checks []string) {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	if _, ok := m.PoolMap[nodeUUID]; !ok {
-		m.PoolMap[nodeUUID] = HealthPool{}
+	if _, ok := m.HealthPoolMap[nodeUUID]; !ok {
+		m.HealthPoolMap[nodeUUID] = HealthPool{}
 	}
-	s := m.PoolMap[nodeUUID]
+	s := m.HealthPoolMap[nodeUUID]
 	s.Checks = checks
 	s.PoolName = poolName
 	s.BackendName = backendName
 	s.NodeName = nodeName
 	s.Match = match
-	m.PoolMap[nodeUUID] = s
+	m.HealthPoolMap[nodeUUID] = s
 }
 
 // GetNodeStatus returns the combined status of all checks applicable to a specific backend
-func (m *Manager) GetNodeStatus(nodeUUID string) (bool, string, string, string, []string) {
+func (m *Manager) GetNodeStatus(nodeUUID string) (Status, string, string, string, []string) {
 	var errors []string
 	log := logging.For("core/healthcheck/nodestatus").WithField("func", "healthcheck")
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	if pool, ok := m.PoolMap[nodeUUID]; ok {
+	if pool, ok := m.HealthPoolMap[nodeUUID]; ok {
 		ok := 0
 		nok := 0
+		maintenance := 0
 		for _, workerUUID := range pool.Checks {
-			if worker, found := m.WorkerMap[workerUUID]; found {
+			if worker, found := m.HealthStatusMap[workerUUID]; found {
 				log.WithField("workeruuid", workerUUID).WithField("checkstatus", worker.CheckStatus).WithField("nodeuuid", nodeUUID).Debug("Status check for node")
-				if worker.AdminDown {
-					nok++
-				} else if worker.AdminUp {
+				switch worker.ManualStatus {
+				case Online:
 					ok++
-				} else if worker.CheckStatus {
-					ok++
-				} else {
+				case Offline:
 					nok++
+				case Maintenance:
+					maintenance++
+				default: // (Automatic)
+					switch worker.CheckStatus {
+					case Online:
+						ok++
+					case Offline:
+						nok++
+					case Maintenance:
+						maintenance++
+					}
 				}
 
 				errors = append(errors, worker.ErrorMsg...)
@@ -82,26 +92,30 @@ func (m *Manager) GetNodeStatus(nodeUUID string) (bool, string, string, string, 
 			}
 		}
 
-		log.WithField("ok", ok).WithField("nok", nok).WithField("nodeuuid", nodeUUID).WithField("match", pool.Match).WithField("pool", pool.PoolName).WithField("backend", pool.BackendName).WithField("node", pool.NodeName).Debug("Health Status Check")
+		log.WithField("ok", ok).WithField("nok", nok).WithField("maintenance", maintenance).WithField("nodeuuid", nodeUUID).WithField("match", pool.Match).WithField("pool", pool.PoolName).WithField("backend", pool.BackendName).WithField("node", pool.NodeName).Debug("Health Status Check")
+		if maintenance > 0 {
+			return Maintenance, pool.PoolName, pool.BackendName, pool.NodeName, errors
+		}
+
 		if pool.Match == "any" && ok > 0 {
-			return true, pool.PoolName, pool.BackendName, pool.NodeName, errors
+			return Online, pool.PoolName, pool.BackendName, pool.NodeName, errors
 		}
 
 		if pool.Match == "all" && nok == 0 {
-			return true, pool.PoolName, pool.BackendName, pool.NodeName, errors
+			return Online, pool.PoolName, pool.BackendName, pool.NodeName, errors
 		}
 
-		return false, pool.PoolName, pool.BackendName, pool.NodeName, errors
+		return Offline, pool.PoolName, pool.BackendName, pool.NodeName, errors
 	}
 
-	return false, "", "", "", []string{"no healthcheck result recorded yet"}
+	return Offline, "", "", "", []string{"no healthcheck result recorded yet"}
 }
 
 // GetPools returns all nodeUUID's of pools that are linked to a worker
 func (m *Manager) GetPools(workerUUID string) (s []string) {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	for nodeUUID, pools := range m.PoolMap {
+	for nodeUUID, pools := range m.HealthPoolMap {
 		for _, worker := range pools.Checks {
 			if worker == workerUUID {
 				s = append(s, nodeUUID)

@@ -18,7 +18,6 @@
          <th class="sort" data-sort="clients">Active Clients</th>
          <th class="sort" data-sort="connects">Connects</th>
          <th class="sort" data-sort="responsetime">ResponseTime</th>
-         <th class="sort" data-sort="uuid">UUID</th>
        </tr>
      </thead>
      <tbody class="list">
@@ -38,7 +37,20 @@
         <span class="offline">None</span>
       {{ else }}
         {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
-          <div class="node"><div class="host">{{$backendnode.Name}}::{{$backendnode.Port}}</div><div class="ip">{{$backendnode.IP}}::{{$backendnode.Port}}</div></div>
+          <div class="node"><div class="host">{{$backendnode.Name}}::{{$backendnode.Port}}
+            {{ if eq $backendnode.Status 0 }}
+              <span class="status unknown">(unknown)</span>
+            {{ end }}
+            {{ if eq $backendnode.Status 1 }}
+              <span class="status online">(online)</span>
+            {{ end }}
+            {{ if eq $backendnode.Status 2 }}
+              <span class="status offline">(offline)</span>
+            {{ end }}
+            {{ if eq $backendnode.Status 3 }}
+              <span class="status maintenance">(maintenance)</span>
+            {{ end }}
+          </div><div class="ip">{{$backendnode.IP}}::{{$backendnode.Port}}</div></div>
         {{- end }}
       {{- end }}
     </td>
@@ -58,11 +70,6 @@
         {{$backendnode.Statistics.ResponseTimeGet}}<br>
       {{- end }}
     </td>
-    <td class="uuid">
-      {{ range $backendnodeid, $backendnode := $backend.Nodes -}}
-        {{$backendnode.UUID}}<br>
-      {{- end }}
-    </td>
  </tr>
   {{- end }}
 {{- end }}
@@ -73,7 +80,7 @@
 
 <script type="text/javascript">
 var userList = new List('proxy', {
-  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects', 'uuid' ]
+  valueNames: [ 'backend', 'vip', 'balancemode', 'listenermode', 'listener', 'connectmode', 'nodes', 'clients', 'connects' ]
 });
 </script>
 

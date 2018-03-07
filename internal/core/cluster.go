@@ -9,6 +9,7 @@ import (
 
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/cluster"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
@@ -65,7 +66,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 					continue
 				}
 
-				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("online", dnsupdate.Online).Info("Received cluster dns update")
+				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("status", dnsupdate.Status.String()).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
 
 			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
@@ -126,7 +127,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 		case healthcheck := <-manager.healthchecks:
 			log.WithField("func", "core").Debug("healthcheck")
-			clog := log.WithField("pool", healthcheck.PoolName).WithField("backend", healthcheck.BackendName).WithField("nodeuuid", healthcheck.NodeUUID).WithField("node", healthcheck.NodeName).WithField("online", healthcheck.Online).WithField("func", "healthcheck")
+			clog := log.WithField("pool", healthcheck.PoolName).WithField("backend", healthcheck.BackendName).WithField("nodeuuid", healthcheck.NodeUUID).WithField("node", healthcheck.NodeName).WithField("status", healthcheck.ReportedStatus.String()).WithField("func", "healthcheck")
 			clog.Info("Received healthcheck update")
 			// Local HealthCheck update received from local healthcheck workers
 			// We only reach this update if a Healthcheck changed state (either up or down)
@@ -142,7 +143,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				continue
 			}
 
-			config.UpdateNodeStatus(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID, healthcheck.Online, healthcheck.ErrorMsg)
+			config.UpdateNodeStatus(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID, healthcheck.ReportedStatus, healthcheck.ErrorMsg)
 
 			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
 			backend := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]
@@ -169,7 +170,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				DNSEntry:    backend.DNSEntry,
 				BalanceMode: backend.BalanceMode,
 				BackendUUID: backend.UUID,
-				Online:      getLocalNodeStatus(healthcheck.PoolName, healthcheck.BackendName),
+				Status:      getLocalNodeStatus(healthcheck.PoolName, healthcheck.BackendName),
 			}
 
 			manager.dnsupdates <- dnsupdate
@@ -195,18 +196,21 @@ func (manager *Manager) updateProxyBackendNode(poolName string, backendName stri
 	proxyupdate := &config.ProxyBackendNodeUpdate{
 		PoolName:        poolName,
 		BackendName:     backendName,
-		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference},
+		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference, Status: node.Status},
 		BackendNodeUUID: node.UUID,
 	}
 	if config.Get().Settings.EnableProxy == YES {
-		clog := log.WithField("pool", proxyupdate.PoolName).WithField("backend", proxyupdate.BackendName).WithField("uuid", proxyupdate.BackendNodeUUID).WithField("online", node.Online).WithField("ip", node.IP).WithField("port", node.Port)
+		clog := log.WithField("pool", proxyupdate.PoolName).WithField("backend", proxyupdate.BackendName).WithField("uuid", proxyupdate.BackendNodeUUID).WithField("status", node.Status).WithField("ip", node.IP).WithField("port", node.Port)
 
-		if node.Online == true {
-			clog.Warnf("Adding backend to proxy")
-			manager.addProxyBackend <- proxyupdate
-
-		} else {
-			clog.Warnf("Removing backend from proxy")
+		switch node.Status {
+		case healthcheck.Online:
+			clog.Warnf("Set proxy to Online")
+			manager.addProxyBackend <- proxyupdate // add or update
+		case healthcheck.Maintenance:
+			clog.Warnf("Set proxy to Maintenance")
+			manager.addProxyBackend <- proxyupdate // add or update
+		default:
+			clog.Warnf("Remove proxy due to offline")
 			manager.removeProxyBackend <- proxyupdate
 		}
 	}
@@ -262,14 +266,14 @@ func (manager *Manager) BackendNodeUpdate(pool string, backend string, node *con
 	log := logging.For("core/cluster/Update").WithField("func", "proxy")
 	for nid, n := range config.Get().Loadbalancer.Pools[pool].Backends[backend].Nodes {
 		if n.UUID == node.UUID {
-			log.WithField("wasonline", n.Online).WithField("online", node.Online).Debug("Update of existing node")
+			log.WithField("oldstatus", n.Status).WithField("status", node.Status).Debug("Update of existing node")
 			// We already know this node, only update its status and error
-			config.UpdateBackendNode(pool, backend, nid, node.Online, node.Errors)
+			config.UpdateBackendNode(pool, backend, nid, node.Status, node.Errors)
 			return
 		}
 	}
 
-	log.WithField("online", node.Online).Debug("Update of new node")
+	log.WithField("status", node.Status).Debug("Update of new node")
 	// It is a new Node, add it
 	config.AddBackendNode(pool, backend, node)
 }
@@ -286,7 +290,7 @@ func (manager *Manager) BackendNodeDiscard(node string) {
 					n := config.GetNoLock().Loadbalancer.Pools[pid].Backends[bid].Nodes[nid]
 					if n.ClusterName == node {
 						log.WithField("pool", pid).WithField("backend", bid).WithField("hostname", n.Hostname).WithField("port", n.Port).WithField("uuid", n.UUID).Warnf("Discarding backend node of leaving cluster")
-						n.Online = false
+						n.Status = healthcheck.Offline
 						go manager.updateProxyBackendNode(pid, bid, *n)
 						// Remove node from our config
 						go config.RemoveBackendNodeUUID(pid, bid, n.UUID)
@@ -297,19 +301,31 @@ func (manager *Manager) BackendNodeDiscard(node string) {
 	}
 }
 
-func getLocalNodeStatus(poolName, backendName string) bool {
+func getLocalNodeStatus(poolName, backendName string) healthcheck.Status {
 	var online = 0
+	var maintenance = 0
 	config.RLock()
 	defer config.RUnlock()
 	for _, node := range config.GetNoLock().Loadbalancer.Pools[poolName].Backends[backendName].Nodes {
-		if node.Online == true && node.ClusterName == config.GetNoLock().Cluster.Binding.Name {
+		if node.Status == healthcheck.Online && node.ClusterName == config.GetNoLock().Cluster.Binding.Name {
 			online++
 		}
+		if node.Status == healthcheck.Maintenance && node.ClusterName == config.GetNoLock().Cluster.Binding.Name {
+			maintenance++
+		}
 	}
+	// if any node is online, we are online
 	if online > 0 {
-		return true
+		return healthcheck.Online
 	}
-	return false
+
+	// if we are not online, but we have nodes in maintenance, then status is maintenance
+	if maintenance > 0 {
+		return healthcheck.Maintenance
+	}
+
+	// if no nodes are online or in maintenance, we are offline
+	return healthcheck.Offline
 }
 
 func clusterClearProxyStatistics(cl *cluster.Manager, poolname string, backendname string) {
@@ -349,7 +365,7 @@ func clusterDNSUpdateBroadcastAll(cl *cluster.Manager) {
 }
 
 func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
-	online := getLocalNodeStatus(poolName, backendName)
+	status := getLocalNodeStatus(poolName, backendName)
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,
@@ -357,13 +373,13 @@ func clusterDNSUpdateSingle(cl *cluster.Manager, client string, clusterNode stri
 		DNSEntry:    dnsEntry,
 		BalanceMode: balanceMode,
 		BackendUUID: backendUUID,
-		Online:      online,
+		Status:      status,
 	}
 	cl.ToCluster <- dnsupdate
 }
 
 func clusterDNSUpdateBroadcast(cl *cluster.Manager, clusterNode string, poolName string, backendName string, dnsEntry config.DNSEntry, balanceMode config.BalanceMode, backendUUID string) {
-	online := getLocalNodeStatus(poolName, backendName)
+	status := getLocalNodeStatus(poolName, backendName)
 	dnsupdate := config.ClusterPacketGlobalDNSUpdate{
 		ClusterNode: clusterNode,
 		PoolName:    poolName,
@@ -371,7 +387,7 @@ func clusterDNSUpdateBroadcast(cl *cluster.Manager, clusterNode string, poolName
 		DNSEntry:    dnsEntry,
 		BalanceMode: balanceMode,
 		BackendUUID: backendUUID,
-		Online:      online,
+		Status:      status,
 	}
 	cl.ToCluster <- dnsupdate
 }

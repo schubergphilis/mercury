@@ -6,36 +6,39 @@ import (
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/balancer"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
 // Backend is a backend where the proxy can connect to
 type Backend struct {
-	sync        *sync.RWMutex
-	UUID        string
-	BalanceMode string
-	ConnectMode string
-	InboundACL  ACLS
-	OutboundACL ACLS
-	Statistics  *balancer.Statistics
-	Nodes       []*BackendNode
-	Hostname    []string
-	Fallback    string
-	Uptime      time.Time
-	ErrorPage   ErrorPage
+	sync            *sync.RWMutex
+	UUID            string
+	BalanceMode     string
+	ConnectMode     string
+	InboundACL      ACLS
+	OutboundACL     ACLS
+	Statistics      *balancer.Statistics
+	Nodes           []*BackendNode
+	Hostname        []string
+	Fallback        string
+	Uptime          time.Time
+	ErrorPage       ErrorPage
+	MaintenancePage ErrorPage
 }
 
 // NewBackend creates a new backend
-func NewBackend(uuid string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage) *Backend {
+func NewBackend(uuid string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage, maintenancePage ErrorPage) *Backend {
 	b := &Backend{
-		sync:        &sync.RWMutex{},
-		UUID:        uuid,
-		BalanceMode: balancemode,
-		ConnectMode: connectmode,
-		Hostname:    hostname,
-		Statistics:  balancer.NewStatistics(uuid, maxconnections),
-		Uptime:      time.Now(),
-		ErrorPage:   errorPage,
+		sync:            &sync.RWMutex{},
+		UUID:            uuid,
+		BalanceMode:     balancemode,
+		ConnectMode:     connectmode,
+		Hostname:        hostname,
+		Statistics:      balancer.NewStatistics(uuid, maxconnections),
+		Uptime:          time.Now(),
+		ErrorPage:       errorPage,
+		MaintenancePage: maintenancePage,
 	}
 	return b
 }
@@ -54,6 +57,15 @@ func (b *Backend) AddBackendNode(n *BackendNode) {
 
 func remove(slice []*BackendNode, s int) []*BackendNode {
 	return append(slice[:s], slice[s+1:]...)
+}
+
+// UpdateBackendNode update a backend node with a new status
+func (b *Backend) UpdateBackendNode(nodeid int, status healthcheck.Status) {
+	b.sync.Lock()
+	defer b.sync.Unlock()
+	if err := b.Nodes[nodeid]; err != nil {
+		b.Nodes[nodeid].Status = status
+	}
 }
 
 // RemoveBackendNode remove a backend node from the listener
@@ -116,33 +128,45 @@ func (b *Backend) GetBackend() (*BackendNode, error) {
 }
 
 // GetBackendNodeBalanced returns a single backend node, based on balancer proto
-func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode string) (*BackendNode, error) {
+func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode string) (*BackendNode, healthcheck.Status, error) {
 	b.sync.RLock()
 	defer b.sync.RUnlock()
 	log := logging.For("Proxy/GetBackendNodeBalanced").WithField("pool", backendpool).WithField("clientip", ip).WithField("sticky", sticky).WithField("mode", balancemode)
 	log.Debug("Getting node from proxy backend")
 
-	switch len(b.Nodes) {
+	var onlineNodes []*BackendNode
+
+	for _, n := range b.Nodes {
+		if n.Status == healthcheck.Online {
+			onlineNodes = append(onlineNodes, n)
+		}
+	}
+
+	switch len(onlineNodes) {
 	case 0: // return error of no nodes
-		return &BackendNode{}, fmt.Errorf("Unable to find a node in backend %s", backendpool)
+		if len(b.Nodes) > 0 { // 0 online, but there are nodes. so all nodes are in maintenance
+			return &BackendNode{}, healthcheck.Maintenance, fmt.Errorf("All backend nodes are in Maintenance in backend %s", backendpool)
+		}
+
+		return &BackendNode{}, healthcheck.Offline, fmt.Errorf("Unable to find a node in backend %s", backendpool)
 
 	case 1: // return node if there is only 1 present
-		return b.Nodes[0], nil
+		return onlineNodes[0], healthcheck.Online, nil
 
 	default: // balance across N Nodes
-		stats := BackendNodeStats(b.Nodes)
+		stats := BackendNodeStats(onlineNodes)
 		nodes, err := balancer.MultiSort(stats, ip, sticky, balancemode)
 		if err != nil {
-			return &BackendNode{}, fmt.Errorf("Unable to parse balance mode %s for backend %s, err: %s", balancemode, backendpool, err)
+			return &BackendNode{}, healthcheck.Offline, fmt.Errorf("Unable to parse balance mode %s for backend %s, err: %s", balancemode, backendpool, err)
 		}
 
 		node, err := b.GetBackendNodeByID(nodes[0].UUID)
 		log.WithField("ip", node.IP).WithField("port", node.Port).WithField("uuid", node.UUID).Debug("Returning node for client")
 		if err != nil {
-			return &BackendNode{}, err
+			return &BackendNode{}, healthcheck.Offline, err
 		}
 
-		return node, nil
+		return node, healthcheck.Online, nil
 	}
 
 }

@@ -12,15 +12,15 @@ import (
 )
 
 var testRecordsServer1 = []Record{
-	{UUID: "1-a", Name: "www-a", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Online: true, Local: false},
-	{UUID: "1-b", Name: "www-b", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Online: false, Local: false},
-	{UUID: "1-c", Name: "www-c", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Online: false, Local: false},
+	{UUID: "1-a", Name: "www-a", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Status: Online, Local: false},
+	{UUID: "1-b", Name: "www-b", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Status: Offline, Local: false},
+	{UUID: "1-c", Name: "www-c", Type: "A", Target: "127.0.0.1", BalanceMode: "leastconnected", Status: Offline, Local: false},
 }
 
 var testRecordsServer2 = []Record{
-	{UUID: "2-a", Name: "www-a", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Online: true, Local: false},
-	{UUID: "2-b", Name: "www-b", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Online: true, Local: false},
-	{UUID: "2-c", Name: "www-c", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Online: false, Local: false},
+	{UUID: "2-a", Name: "www-a", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Status: Online, Local: false},
+	{UUID: "2-b", Name: "www-b", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Status: Online, Local: false},
+	{UUID: "2-c", Name: "www-c", Type: "A", Target: "127.0.0.2", BalanceMode: "leastconnected", Status: Offline, Local: false},
 }
 
 const domain = "example.com"

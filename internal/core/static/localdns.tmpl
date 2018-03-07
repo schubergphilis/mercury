@@ -28,7 +28,19 @@
          <td class="type">{{$record.Type}}</td>
          <td class="ttl">{{$record.TTL}}</td>
          <td class="target">{{$record.Target}}</td>
-         <td class="status {{if $record.Target}}online{{ else }}offline{{end}}">{{if $record.Target}}Online{{ else }}Offline{{end}}</td>
+         {{ if eq $record.Status 0 }}
+           <td class="status unknown">Unknown</td>
+         {{ end }}
+         {{ if eq $record.Status 1 }}
+           <td class="status online">Online</td>
+         {{ end }}
+         {{ if eq $record.Status 2 }}
+           <td class="status offline">Offline</td>
+         {{ end }}
+         {{ if eq $record.Status 3 }}
+           <td class="status maintenance">Maintenance</td>
+         {{ end }}
+
          <td class="requests">{{$record.Statistics.ClientsConnected}}</td>
       </tr>
       {{- end }}

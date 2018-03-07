@@ -3,6 +3,12 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.12.0:
+Features:
+  * Option to set a backend to state "Maintenance" (via healthcheck or gui)
+  * Ability to set a maintenance page on a backend or pool
+  * Alternative state on healthcheck (e.g. online="maintenance" or offline="online")
+  * Setting a backend to "maintenance" will keep serving existing connections, but no longer accept new connections
 
 ## 0.11.1:
 Change:

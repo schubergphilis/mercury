@@ -13,47 +13,49 @@ import (
 
 // Manager manages Health of Node
 type Manager struct {
-	Incoming  chan CheckResult
-	Workers   []*Worker               `json:"workers" toml:"workers"`
-	WorkerMap map[string]HealthStatus `json:"workermap" toml:"workermap"` // keeps the health of all items
-	PoolMap   map[string]HealthPool   `json:"poolmap" toml:"poolmap"`     // keeps a list of uuids and what checks apply to them
+	Incoming        chan CheckResult
+	Workers         []*Worker               `json:"workers" toml:"workers"`
+	HealthStatusMap map[string]HealthStatus `json:"healthstatusmap" toml:"healthstatusmap"` // keeps the health of all items
+	HealthPoolMap   map[string]HealthPool   `json:"healthpoolmap" toml:"healthpoolmap"`     // keeps a list of uuids and what checks apply to them
 
 	Worker sync.RWMutex
 }
 
 // CheckResult holds the check result output
 type CheckResult struct {
-	PoolName    string   `json:"poolname" toml:"poolname"`
-	BackendName string   `json:"backendname" toml:"backendname"`
-	NodeName    string   `json:"nodename" toml:"nodename"`
-	NodeUUID    string   `json:"nodeuuid" toml:"nodeuuid"`
-	WorkerUUID  string   `json:"workeruuid" toml:"workeruuid"`
-	Description string   `json:"description" toml:"description"`
-	Online      bool     `json:"online" toml:"online"`
-	ErrorMsg    []string `json:"errormsg" toml:"errormsg"`
-	SingleCheck bool     `json:"singlecheck" toml:"singlecheck"`
+	PoolName       string   `json:"poolname" toml:"poolname"`             // pool this check belongs to
+	BackendName    string   `json:"backendname" toml:"backendname"`       // backend this check belongs to
+	NodeName       string   `json:"nodename" toml:"nodename"`             // node name of the check
+	NodeUUID       string   `json:"nodeuuid" toml:"nodeuuid"`             // node uuid for the check
+	WorkerUUID     string   `json:"workeruuid" toml:"workeruuid"`         // worker uuid who performed the check
+	Description    string   `json:"description" toml:"description"`       // description of the check (?)
+	ActualStatus   Status   `json:"actualstatus" toml:"actualstatus"`     // status of the check as it is performed
+	ReportedStatus Status   `json:"reportedstatus" toml:"reportedstatus"` // status of the check after applying state processing
+	ErrorMsg       []string `json:"errormsg" toml:"errormsg"`             // error message if any
 }
 
 // HealthCheck custom HealthCheck
 type HealthCheck struct {
-	Type             string              `json:"type" toml:"type"`
-	TCPRequest       string              `json:"tcprequest" toml:"tcprequest"`
-	TCPReply         string              `json:"tcpreply" toml:"tcpreply"`
-	HTTPRequest      string              `json:"httprequest" toml:"httprequest"`
-	HTTPPostData     string              `json:"httppostdata" toml:"httppostdata"`
-	HTTPHeaders      []string            `json:"httpheaders" toml:"httpheaders"`
-	HTTPStatus       int                 `json:"httpstatus" toml:"httpstatus"`
-	HTTPReply        string              `json:"httpreply" toml:"httpreply"`
-	PINGpackets      int                 `json:"pingpackets" toml:"pingpackets"`
-	PINGtimeout      int                 `json:"pingtimeout" toml:"pingtimeout"`
-	Interval         int                 `json:"interval" toml:"interval"`
-	Timeout          int                 `json:"timeout" toml:"timeout"`
-	ActivePassiveID  string              `json:"activepassiveid" toml:"activepassiveid"` // used to link active/passive backends
-	TLSConfig        tlsconfig.TLSConfig `json:"tls" toml:"tls"`
+	Type             string              `json:"type" toml:"type"`                         // check type
+	TCPRequest       string              `json:"tcprequest" toml:"tcprequest"`             // tcp request to send
+	TCPReply         string              `json:"tcpreply" toml:"tcpreply"`                 // tcp reply to expect
+	HTTPRequest      string              `json:"httprequest" toml:"httprequest"`           // http request to send
+	HTTPPostData     string              `json:"httppostdata" toml:"httppostdata"`         // http post data to send
+	HTTPHeaders      []string            `json:"httpheaders" toml:"httpheaders"`           // http headers to send
+	HTTPStatus       int                 `json:"httpstatus" toml:"httpstatus"`             // http status expected
+	HTTPReply        string              `json:"httpreply" toml:"httpreply"`               // http reply expected
+	PINGpackets      int                 `json:"pingpackets" toml:"pingpackets"`           // ping packets to send
+	PINGtimeout      int                 `json:"pingtimeout" toml:"pingtimeout"`           // ping timeout
+	Interval         int                 `json:"interval" toml:"interval"`                 // how often to cechk
+	Timeout          int                 `json:"timeout" toml:"timeout"`                   // timeout performing check
+	ActivePassiveID  string              `json:"activepassiveid" toml:"activepassiveid"`   // used to link active/passive backends
+	TLSConfig        tlsconfig.TLSConfig `json:"tls" toml:"tls"`                           // tls config
 	DisableAutoCheck bool                `json:"disableautocheck" toml:"disableautocheck"` // only respond to check requests
 	IP               string              `json:"ip" toml:"ip"`                             // specific ip
 	SourceIP         string              `json:"sourceip" toml:"sourceip"`                 // specific ip
 	Port             int                 `json:"port" toml:"port"`                         // specific port
+	OnlineState      StatusType          `json:"online_state" toml:"online_state"`         // alternative online_state - default: online / optional: offline / maintenance
+	OfflineState     StatusType          `json:"offline_state" toml:"offline_state"`       // alternative offline_state - default: offline
 	uuidStr          string
 }
 
@@ -64,7 +66,7 @@ func (h HealthCheck) UUID() string {
 	}
 
 	sort.Strings(h.HTTPHeaders)
-	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck)
+	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t%s%s", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck, h.OfflineState, h.OnlineState)
 	t := sha256.New()
 	t.Write([]byte(s))
 	h.uuidStr = fmt.Sprintf("%x", t.Sum(nil))
@@ -77,11 +79,11 @@ func (m *Manager) Debug() {
 		worker.Debug()
 	}
 
-	for wid, wm := range m.WorkerMap {
+	for wid, wm := range m.HealthStatusMap {
 		fmt.Printf("Workermap -> worker:%s status:%+v\n", string(wid), wm)
 	}
 
-	for pmid, pm := range m.PoolMap {
+	for pmid, pm := range m.HealthPoolMap {
 		fmt.Printf("Poolmap -> node:%s map:%v\n", string(pmid), pm)
 	}
 }
@@ -107,9 +109,9 @@ func (m *Manager) RegisterWorker(w *Worker) {
 // NewManager creates a new healtheck manager
 func NewManager() *Manager {
 	manager := &Manager{
-		Incoming:  make(chan CheckResult),
-		WorkerMap: make(map[string]HealthStatus),
-		PoolMap:   make(map[string]HealthPool),
+		Incoming:        make(chan CheckResult),
+		HealthStatusMap: make(map[string]HealthStatus),
+		HealthPoolMap:   make(map[string]HealthPool),
 	}
 
 	return manager
@@ -145,8 +147,8 @@ func (m *Manager) JSON() ([]byte, error) {
 	for _, w := range m.Workers {
 		tmp.Workers = append(tmp.Workers, w.filterWorker())
 	}
-	tmp.WorkerHealth = m.WorkerMap
-	tmp.NodeMap = m.PoolMap
+	tmp.WorkerHealth = m.HealthStatusMap
+	tmp.NodeMap = m.HealthPoolMap
 	result, err := json.Marshal(tmp)
 	return result, err
 }
@@ -165,10 +167,10 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 			tmp.Workers = *w
 		}
 	}
-	if _, ok := m.WorkerMap[uuid]; ok {
-		tmp.WorkerHealth = m.WorkerMap[uuid]
+	if _, ok := m.HealthStatusMap[uuid]; ok {
+		tmp.WorkerHealth = m.HealthStatusMap[uuid]
 	}
-	for _, node := range m.PoolMap {
+	for _, node := range m.HealthPoolMap {
 		for _, p := range node.Checks {
 			if p == uuid {
 				tmp.NodeMap = append(tmp.NodeMap, node.NodeName)
@@ -180,32 +182,17 @@ func (m *Manager) JSONAuthorized(uuid string) ([]byte, error) {
 }
 
 // SetStatus sets the status of a uuid to status
-func (m *Manager) SetStatus(uuid string, status string) error {
+func (m *Manager) SetStatus(uuid string, status Status) error {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
-	if node, ok := m.WorkerMap[uuid]; ok {
-		switch status {
-		case "autodetect":
-			node.AdminDown = false
-			node.AdminUp = false
-			m.WorkerMap[uuid] = node
-			m.sendWorkerUpdate(uuid)
-			return nil
-		case "admindown":
-			node.AdminDown = true
-			node.AdminUp = false
-			m.WorkerMap[uuid] = node
-			m.sendWorkerUpdate(uuid)
-			return nil
-		case "adminup":
-			node.AdminUp = true
-			node.AdminDown = false
-			m.WorkerMap[uuid] = node
-			m.sendWorkerUpdate(uuid)
-			return nil
-		default:
+	if node, ok := m.HealthStatusMap[uuid]; ok {
+		if _, ok := StatusTypeToString[status]; !ok {
 			return fmt.Errorf("unknown status to set: %s", status)
 		}
+		node.ManualStatus = status
+		m.HealthStatusMap[uuid] = node
+		m.sendWorkerUpdate(uuid)
+		return nil
 	}
 	return fmt.Errorf("unkown uuid: %s", uuid)
 }

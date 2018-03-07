@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -67,8 +68,13 @@ func (l *Listener) Handler(client net.Conn) {
 		return
 	}
 
-	node, err := backend.GetBackendNodeBalanced(l.Name, clientip[0], "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
+	node, status, err := backend.GetBackendNodeBalanced(l.Name, clientip[0], "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
 	if err != nil {
+		if status == healthcheck.Maintenance {
+			log.WithError(err).Error("No backend available")
+			client.Close()
+			return
+		}
 		log.WithField("connecttime", 0).WithField("transfertime", 0).WithError(err).Error("Forwarding TCP aborted")
 		client.Close()
 		return

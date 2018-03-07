@@ -69,12 +69,12 @@ func postDataParser(t time.Time, data string) string {
 }
 
 // httpRequest does a http request check
-func httpRequest(method string, host string, port int, sourceIP string, healthCheck HealthCheck) (bool, error) {
+func httpRequest(method string, host string, port int, sourceIP string, healthCheck HealthCheck) (Status, error) {
 	var err error
 
 	localAddr, errl := net.ResolveIPAddr("ip", sourceIP)
 	if errl != nil {
-		return false, errl
+		return Offline, errl
 	}
 
 	localTCPAddr := net.TCPAddr{
@@ -93,7 +93,7 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	// Parse TLS config if provided
 	tlsConfig, err := tlsconfig.LoadCertificate(healthCheck.TLSConfig)
 	if err != nil {
-		return false, fmt.Errorf("Unable to setup TLS:%s", err)
+		return Offline, fmt.Errorf("Unable to setup TLS:%s", err)
 	}
 
 	// Overwrite default transports with our own for checking the correct node
@@ -124,7 +124,7 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	}
 
 	if err != nil {
-		return false, err
+		return Offline, err
 	}
 
 	// Process headers to add
@@ -138,34 +138,34 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 	req.Header.Set("User-Agent", "mercury/1.0")
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, err
+		return Offline, err
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("Error reading HTTP Body: %s", err)
+		return Offline, fmt.Errorf("Error reading HTTP Body: %s", err)
 	}
 
 	// Check health status
 	if healthCheck.HTTPStatus > 0 {
 		if resp.StatusCode != healthCheck.HTTPStatus {
-			return false, fmt.Errorf("HTTP Response code incorrect (got:%d %s expected:%d)", resp.StatusCode, resp.Status, healthCheck.HTTPStatus)
+			return Offline, fmt.Errorf("HTTP Response code incorrect (got:%d %s expected:%d)", resp.StatusCode, resp.Status, healthCheck.HTTPStatus)
 		}
 	}
 
 	// check body
 	r, err := regexp.Compile(healthCheck.HTTPReply)
 	if err != nil {
-		return false, err
+		return Offline, err
 	}
 
 	if len(healthCheck.HTTPReply) != 0 {
 		if !r.MatchString(string(body)) {
-			return false, fmt.Errorf("Reply '%s' not found in body", healthCheck.HTTPReply)
+			return Offline, fmt.Errorf("Reply '%s' not found in body", healthCheck.HTTPReply)
 		}
 	}
 	// http and body check were ok
-	return true, nil
+	return Online, nil
 }

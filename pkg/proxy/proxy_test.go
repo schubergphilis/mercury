@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -255,9 +256,9 @@ func TestTCPProxy(t *testing.T) {
 
 	// Create a TCP Proxy
 	newProxy := New("UUIDP1", "tcpProxy", 1)
-	newBackendNode := NewBackendNode("UUIDBN1", serverIP, serverIP, serverPort, 1, []string{}, 0)
+	newBackendNode := NewBackendNode("UUIDBN1", serverIP, serverIP, serverPort, 1, []string{}, 0, healthcheck.Online)
 	newProxy.SetListener("tcp", proxyIP, proxyPort, 10, &tls.Config{}, 10, 10, 2, "yes")
-	newProxy.AddBackend("UUIDB1", "tcpBackend", "leastconnected", "tcp", []string{}, 1, ErrorPage{})
+	newProxy.AddBackend("UUIDB1", "tcpBackend", "leastconnected", "tcp", []string{}, 1, ErrorPage{}, ErrorPage{})
 	newProxy.Backends["tcpBackend"].AddBackendNode(newBackendNode)
 	go newProxy.Start()
 

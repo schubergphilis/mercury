@@ -20,7 +20,7 @@ type Worker struct {
 	SourceIP    string      `json:"sourceip" toml:"sourceip"`
 	Port        int         `json:"port" toml:"port"` // Port used for check
 	Check       HealthCheck `json:"check" toml:"check"`
-	CheckResult bool        `json:"checkresult" toml:"checkresult"`
+	CheckResult Status      `json:"checkresult" toml:"checkresult"` //
 	CheckError  string      `json:"checkerror" toml:"checkerror"`
 	UUIDStr     string      `json:"uuid" toml:"uuid"`
 	update      chan CheckResult
@@ -45,7 +45,7 @@ func NewWorker(pool string, backend string, nodeName string, nodeUUID string, ip
 
 // ErrorMsg provides a friendly version of the error message
 func (w *Worker) ErrorMsg() string {
-	if w.CheckResult == true {
+	if w.CheckResult == Online {
 		return ""
 	}
 
@@ -103,25 +103,6 @@ func (w *Worker) Debug() {
 	log.WithField("node", w.NodeName).WithField("result", w.CheckResult).WithField("error", w.CheckError).WithField("pool", w.Pool).WithField("backend", w.Backend).WithField("ip", w.IP).WithField("port", w.Port).WithField("type", w.Check.Type).Info("Active Healthchecks")
 }
 
-// SingleCheck executes and reports a single health check and then exits
-func (w *Worker) SingleCheck() {
-	result, err := w.executeCheck()
-	checkresult := CheckResult{
-		PoolName:    w.Pool,
-		BackendName: w.Backend,
-		Online:      result,
-		NodeName:    w.NodeName,
-		Description: w.Description(),
-		SingleCheck: true,
-	}
-
-	if err != nil {
-		checkresult.ErrorMsg = append(checkresult.ErrorMsg, err.Error())
-	}
-
-	w.update <- checkresult
-}
-
 // Start worker, report check result to manager
 func (w *Worker) Start() {
 	log := logging.For("healthcheck/worker/start")
@@ -152,13 +133,13 @@ func (w *Worker) Start() {
 					log.WithField("checktype", w.Check.Type).WithField("online", result).WithField("error", err).Warn("Healtcheck state changed")
 					// Send the result to the cluster
 					checkresult := CheckResult{
-						PoolName:    w.Pool,
-						BackendName: w.Backend,
-						Online:      result,
-						NodeName:    w.NodeName,
-						WorkerUUID:  w.UUID(),
-						Description: w.Description(),
-						SingleCheck: false,
+						PoolName:       w.Pool,
+						BackendName:    w.Backend,
+						ActualStatus:   result,
+						ReportedStatus: w.reportState(result),
+						NodeName:       w.NodeName,
+						WorkerUUID:     w.UUID(),
+						Description:    w.Description(),
 					}
 
 					w.CheckResult = result
@@ -174,12 +155,13 @@ func (w *Worker) Start() {
 
 			case <-w.stop:
 				checkresult := CheckResult{
-					PoolName:    w.Pool,
-					BackendName: w.Backend,
-					Online:      false,
-					NodeName:    w.NodeName,
-					Description: w.Description(),
-					WorkerUUID:  w.UUID(),
+					PoolName:       w.Pool,
+					BackendName:    w.Backend,
+					ActualStatus:   Offline,
+					ReportedStatus: Offline,
+					NodeName:       w.NodeName,
+					Description:    w.Description(),
+					WorkerUUID:     w.UUID(),
 				}
 
 				w.CheckError = "healthcheck worker is exiting"
@@ -198,9 +180,9 @@ func (w *Worker) Stop() {
 }
 
 // executeCheck directs the check to the executioner and returns the result
-func (w *Worker) executeCheck() (bool, error) {
+func (w *Worker) executeCheck() (Status, error) {
 	var err error
-	var result = false
+	var result = Offline
 
 	switch w.Check.Type {
 	case "tcpconnect":
@@ -225,7 +207,7 @@ func (w *Worker) executeCheck() (bool, error) {
 		result, err = ipPing("tcp", w.IP, w.Port, w.SourceIP, w.Check)
 
 	default:
-		result = true
+		result = Online
 	}
 	return result, err
 }
@@ -238,15 +220,25 @@ func (w *Worker) filterWorker() (n Worker) {
 	return
 }
 
-func (w *Worker) sendUpdate(result bool) {
+func (w *Worker) sendUpdate(result Status) {
 	checkresult := CheckResult{
-		PoolName:    w.Pool,
-		BackendName: w.Backend,
-		Online:      result,
-		NodeName:    w.NodeName,
-		WorkerUUID:  w.UUID(),
-		Description: w.Description(),
-		SingleCheck: false,
+		PoolName:       w.Pool,
+		BackendName:    w.Backend,
+		ActualStatus:   result,
+		ReportedStatus: result,
+		NodeName:       w.NodeName,
+		WorkerUUID:     w.UUID(),
+		Description:    w.Description(),
 	}
 	w.update <- checkresult
+}
+
+func (w *Worker) reportState(result Status) Status {
+	switch result {
+	case Online:
+		return w.Check.OnlineState.Status
+	case Offline:
+		return w.Check.OfflineState.Status
+	}
+	return result
 }

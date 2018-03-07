@@ -22,23 +22,24 @@ const (
 
 // Listener contains the config for the proxy listener
 type Listener struct {
-	UUID           string
-	Name           string
-	IP             string
-	Port           int
-	ListenerMode   string // Protocol the listener expects
-	HTTPProto      int    // HTTP Version Protocol the listener expects
-	Backends       map[string]*Backend
-	TLSConfig      *tls.Config // TLS Config
-	MaxConnections int
-	socket         *limitListener
-	Statistics     *balancer.Statistics
-	stop           chan bool
-	ErrorPage      ErrorPage
-	ReadTimeout    int // Timeout in seconds to wait for the client sending the request - https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	WriteTimeout   int // Timeout in seconds to wait for server reply to client
-	Uptime         time.Time
-	OCSPStapling   string // use OCSP Stapling
+	UUID            string
+	Name            string
+	IP              string
+	Port            int
+	ListenerMode    string // Protocol the listener expects
+	HTTPProto       int    // HTTP Version Protocol the listener expects
+	Backends        map[string]*Backend
+	TLSConfig       *tls.Config // TLS Config
+	MaxConnections  int
+	socket          *limitListener
+	Statistics      *balancer.Statistics
+	stop            chan bool
+	ErrorPage       ErrorPage
+	MaintenancePage ErrorPage
+	ReadTimeout     int // Timeout in seconds to wait for the client sending the request - https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+	WriteTimeout    int // Timeout in seconds to wait for server reply to client
+	Uptime          time.Time
+	OCSPStapling    string // use OCSP Stapling
 }
 
 // New creates a new proxy for using a listener
@@ -62,8 +63,8 @@ func (l *Listener) GetBackend() (*Backend, error) {
 }
 
 // AddBackend adds a backend to an existing proxy
-func (l *Listener) AddBackend(uuid string, name string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage) {
-	b := NewBackend(uuid, balancemode, connectmode, hostname, maxconnections, errorPage)
+func (l *Listener) AddBackend(uuid string, name string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage, maintenancePage ErrorPage) {
+	b := NewBackend(uuid, balancemode, connectmode, hostname, maxconnections, errorPage, maintenancePage)
 	l.Backends[name] = b
 }
 
@@ -265,15 +266,19 @@ func (l *Listener) SetListener(mode string, ip string, port int, maxConnections 
 }
 
 // UpdateBackend adds a backend to an existing proxy, or updates an existing one
-func (l *Listener) UpdateBackend(uuid string, name string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage) {
+func (l *Listener) UpdateBackend(uuid string, name string, balancemode string, connectmode string, hostname []string, maxconnections int, errorPage ErrorPage, maintenancePage ErrorPage) {
 	if backend, ok := l.Backends[name]; ok {
 		backend.BalanceMode = balancemode
 		backend.ConnectMode = connectmode
 		backend.Hostname = hostname
 		backend.ErrorPage = errorPage
+		backend.MaintenancePage = maintenancePage
+		backend.ErrorPage.load()
+		backend.MaintenancePage.load()
 	} else {
-		b := NewBackend(uuid, balancemode, connectmode, hostname, maxconnections, errorPage)
+		b := NewBackend(uuid, balancemode, connectmode, hostname, maxconnections, errorPage, maintenancePage)
 		b.ErrorPage.load()
+		b.MaintenancePage.load()
 		l.Backends[name] = b
 	}
 }
@@ -289,6 +294,12 @@ func (l *Listener) RemoveBackend(name string) {
 func (l *Listener) LoadErrorPage(e ErrorPage) error {
 	l.ErrorPage = e
 	return l.ErrorPage.load()
+}
+
+// LoadMaintenancePage preloads the error page
+func (l *Listener) LoadMaintenancePage(e ErrorPage) error {
+	l.MaintenancePage = e
+	return l.MaintenancePage.load()
 }
 
 // GetBackendStats gets the combined statistics from all nodes of a backend

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/schubergphilis/mercury/internal/config"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
 
@@ -17,7 +18,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 			online := 0
 
 			for _, node := range backend.Nodes {
-				if node.Online == false {
+				if node.Status == healthcheck.Offline {
 					offline++
 				} else {
 					online++
@@ -27,7 +28,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 			// Report error nodes if any node is offline, or if active/passive has none online - with the exception of active/passive with only 1 node - we ignore this
 			if (offline > 0 && backend.BalanceMode.ActivePassive != YES) || (offline > 1 && online == 0 && backend.BalanceMode.ActivePassive == YES) {
 				for _, node := range backend.Nodes {
-					if node.Online == false {
+					if node.Status == healthcheck.Online {
 						faultyTargets = append(faultyTargets, fmt.Sprintf("Node:%s:%d (Backend:%s Pool:%s)", node.IP, node.Port, backendname, poolname))
 					}
 				}
@@ -49,7 +50,7 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 			nodes := 0
 
 			for _, node := range backend.Nodes {
-				if node.Online == true {
+				if node.Status == healthcheck.Online {
 					nodes++
 				}
 			}

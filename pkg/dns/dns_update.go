@@ -84,7 +84,7 @@ func createDomain(node, domain string) {
 
 // Update Updates a dns entry in a node
 func Update(node string, domain string, record Record) {
-	log := logging.For("dns/update").WithField("domain", domain).WithField("cluster", node).WithField("online", record.Online).WithField("name", record.Name).WithField("target", record.Target).WithField("mode", record.BalanceMode).WithField("uuid", record.UUID)
+	log := logging.For("dns/update").WithField("domain", domain).WithField("cluster", node).WithField("status", record.Status).WithField("name", record.Name).WithField("target", record.Target).WithField("mode", record.BalanceMode).WithField("uuid", record.UUID)
 	log.Debug("Received DNS update")
 
 	// Create cluster node entry if not there yet
@@ -128,7 +128,7 @@ func Update(node string, domain string, record Record) {
 		addRecord(node, domain, record)
 		// When joining an existing record, reset the counter inorder to keep loadbalancing mechanism working (e..g round robin counters etc)
 		// this only matters when we have a new online records, not for offlines
-		if dnsmanager.proxyStats == false && record.Online == true {
+		if dnsmanager.proxyStats == false && record.Status == Online {
 			resetCounters(record.Name, domain, record.Type)
 		}
 	}
@@ -142,7 +142,7 @@ func MarkOffline(node string) {
 	defer dnsmanager.Unlock()
 	for domainName, domain := range dnsmanager.node[node].Domains {
 		for id := range domain.Records {
-			dnsmanager.node[node].Domains[domainName].Records[id].Online = false
+			dnsmanager.node[node].Domains[domainName].Records[id].Status = Offline
 		}
 	}
 }
@@ -158,7 +158,7 @@ func Discard(node string) {
 
 // AddLocalRecord adds a local record
 func AddLocalRecord(domain string, record Record) {
-	record.Online = true
+	record.Status = Online
 	record.Local = true
 	addRecord("localdns", domain, record)
 }

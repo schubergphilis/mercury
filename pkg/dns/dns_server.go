@@ -41,7 +41,7 @@ type Record struct {
 	ClusterNodes  int                  `toml:"clusternodes" json:"clusternodes"`   // ammount of cluster nodes that should serve this domain (defaults to len(clusternodes))
 	LocalNetwork  string               `toml:"localnetwork" json:"localnetwork"`   // used by balance mode: topology
 	Statistics    *balancer.Statistics `toml:"statistics" json:"statistics"`       // stats
-	Online        bool                 `toml:"online" json:"online"`               // is record online (do we serve it)
+	Status        Status               `toml:"status" json:"status"`               // is record online (do we serve it)
 	Local         bool                 `toml:"local" json:"local"`                 // true if record is of the local dns server
 	UUID          string               `toml:"uuid" json:"uuid"`                   // links record to check that added it,usefull for removing dead checks
 }
@@ -549,7 +549,7 @@ func Debug() {
 	for nodename, node := range dnsmanager.node {
 		for domainname, domain := range node.Domains {
 			for _, record := range domain.Records {
-				log.WithField("cluster", nodename).WithField("domain", domainname).WithField("name", record.Name).WithField("type", record.Type).WithField("target", record.Target).WithField("mode", record.BalanceMode).WithField("uuid", record.UUID).WithField("online", record.Online).WithField("local", record.Local).Info("Active DNS records")
+				log.WithField("cluster", nodename).WithField("domain", domainname).WithField("name", record.Name).WithField("type", record.Type).WithField("target", record.Target).WithField("mode", record.BalanceMode).WithField("uuid", record.UUID).WithField("status", record.Status.String()).WithField("local", record.Local).Info("Active DNS records")
 			}
 		}
 	}
@@ -587,7 +587,7 @@ func getAllRecords(hostName, domainName, request string) (r []Record) {
 						record.Target = reg.ReplaceAllStringFunc(record.Target, fn)
 					}
 
-					if record.Online == true {
+					if record.Status == Online {
 						record.Name = hostName // set the original hostname requested for 0x20 bit
 						r = append(r, record)
 					} else {

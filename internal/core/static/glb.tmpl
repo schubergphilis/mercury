@@ -34,13 +34,24 @@
          <td class="target">{{$record.Target}}</td>
          <td class="method">{{$record.BalanceMode}}</td>
          {{ if eq $record.ActivePassive "yes" }}
-            {{ if $record.Online }}
+            {{ if eq $record.Status 1 }}
             <td class="status gray"><span class="online">Online</span>/Offline</td>
             {{ else }}
             <td class="status gray">Online/<span class="offline">Offline</span></td>
             {{ end }}
          {{ else }}
-         <td class="status {{if $record.Online}}online{{ else }}offline{{end}}">{{if $record.Online}}Online{{ else }}Offline{{end}}</td>
+            {{ if eq $record.Status 0 }}
+              <td class="status unknown">Unknown</td>
+            {{ end }}
+            {{ if eq $record.Status 1 }}
+              <td class="status online">Online</td>
+            {{ end }}
+            {{ if eq $record.Status 2 }}
+              <td class="status offline">Offline</td>
+            {{ end }}
+            {{ if eq $record.Status 3 }}
+              <td class="status maintenance">Maintenance</td>
+            {{ end }}
          {{ end }}
          <td class="error"></td>
          <td class="requests">{{$record.Statistics.ClientsConnected}}</td>

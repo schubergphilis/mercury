@@ -14,7 +14,7 @@ import (
 )
 
 // tcpConnect only does a tcp connection check
-func ipPing(proto string, host string, port int, sourceIP string, healthCheck HealthCheck) (bool, error) {
+func ipPing(proto string, host string, port int, sourceIP string, healthCheck HealthCheck) (Status, error) {
 	errorcount := 0
 	errormsg := ""
 	for i := 0; i < healthCheck.PINGpackets; i++ {
@@ -28,10 +28,10 @@ func ipPing(proto string, host string, port int, sourceIP string, healthCheck He
 	}
 
 	if errorcount == healthCheck.PINGpackets {
-		return false, fmt.Errorf("%s ping lost 100%% packets: %s", proto, errormsg)
+		return Offline, fmt.Errorf("%s ping lost 100%% packets: %s", proto, errormsg)
 	}
 
-	return true, nil
+	return Online, nil
 }
 
 func pingAddr(proto string, host string, port int, sourceIP string, seq int, dataSize int, timeout time.Duration) (bool, int, error) {

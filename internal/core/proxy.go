@@ -176,6 +176,11 @@ func (manager *Manager) InitializeProxies() {
 			plog.WithField("file", pool.ErrorPage.File).WithError(err).Warn("Unable to load Error page")
 		}
 
+		if err := newProxy.LoadMaintenancePage(pool.MaintenancePage); err != nil {
+			// This is checked when loading the config
+			plog.WithField("file", pool.MaintenancePage.File).WithError(err).Warn("Unable to load Maintenance page")
+		}
+
 		//log.Debugf("proxy:%s Proxy has the following backends before init:%+v", poolname, removableBackends)
 		for bid := range removableBackends {
 			plog.WithField("backend", bid).Debug("Backend before init")
@@ -193,7 +198,7 @@ func (manager *Manager) InitializeProxies() {
 
 			// Add backend  (will merge if exists)
 			plog.WithField("backend", backendname).Info("Adding/Updating backend")
-			newProxy.UpdateBackend(backendpool.UUID, backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames, pool.Listener.MaxConnections, backendpool.ErrorPage)
+			newProxy.UpdateBackend(backendpool.UUID, backendname, backendpool.BalanceMode.Method, backendpool.ConnectMode, backendpool.HostNames, pool.Listener.MaxConnections, backendpool.ErrorPage, backendpool.MaintenancePage)
 
 			// Use backend to attach acl's
 			backend := newProxy.Backends[backendname]
@@ -284,29 +289,37 @@ func (manager *Manager) ProxyHandler() {
 				proxy.Debug()
 			}
 
-		case update := <-manager.addProxyBackend:
-			log.Debug("addProxyBackend")
-			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference) // max connections = 1 -> not used
+		case update := <-manager.addProxyBackend: // add or update
+			log.Debug("UpdateProxyBackend")
 
 			plog := log.WithField("pool", update.PoolName).WithField("backend", update.BackendName).WithField("uuid", update.BackendNodeUUID)
+
 			// Check if packet is for a proxy we have
+			plog.Debugf("proxyGetBackend")
 			backend, err := proxyGetBackend(update.PoolName, update.BackendName)
 			if err != nil {
 				plog.WithError(err).Debug("Unable to get backend")
 				continue
 			}
 
+			plog.Debugf("proxyGetNodeByUUID")
 			nodeid, err := proxyGetNodeByUUID(backend, update.BackendNodeUUID)
 			if err != nil {
 				plog.WithError(err).Debug("Unable to get backend node by UUID")
 				continue
 			}
 
-			// Add Proxy backend
-			if nodeid < 0 {
-				plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
-				backend.AddBackendNode(backendNode)
+			// Node exists, update existing
+			if nodeid >= 0 {
+				plog.WithField("node", update.BackendNode.Name()).WithField("ip", update.BackendNode.IP).WithField("port", update.BackendNode.Port).Debug("Update proxy node")
+				backend.UpdateBackendNode(nodeid, update.BackendNode.Status)
+				continue
 			}
+
+			// New node, add
+			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference, update.BackendNode.Status) // max connections = 1 -> not used
+			plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
+			backend.AddBackendNode(backendNode)
 
 		case update := <-manager.removeProxyBackend:
 			log.Debug("removeProxyBackend")
