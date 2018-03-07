@@ -147,6 +147,28 @@ func MarkOffline(node string) {
 	}
 }
 
+// Remove a specific dns entry
+func Remove(node, domainName, hostName string) {
+	log := logging.For("dns/update/remove")
+	log.WithField("cluster", node).WithField("domainName", domainName).WithField("hostName", hostName).Warn("Removing DNS record")
+	dnsmanager.Lock()
+	defer dnsmanager.Unlock()
+	if _, ok := dnsmanager.node[node]; !ok {
+		return
+	}
+	if _, ok := dnsmanager.node[node].Domains[domainName]; !ok {
+		return
+	}
+
+	for i := len(dnsmanager.node[node].Domains[domainName].Records) - 1; i >= 0; i-- {
+		if dnsmanager.node[node].Domains[domainName].Records[i].Name == hostName {
+			r := dnsmanager.node[node].Domains[domainName]
+			r.Records = append(r.Records[:i], r.Records[i+1:]...)
+			dnsmanager.node[node].Domains[domainName] = r
+		}
+	}
+}
+
 // Discard discards all dns entries of a node
 func Discard(node string) {
 	log := logging.For("dns/update/discard")

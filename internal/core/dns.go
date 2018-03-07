@@ -70,6 +70,9 @@ func (manager *Manager) DNSHandler() {
 		case node := <-manager.dnsdiscard:
 			dns.Discard(node)
 
+		case dnsremove := <-manager.dnsremove:
+			dns.Remove(dnsremove.ClusterNode, dnsremove.Domain, dnsremove.Hostname)
+
 		case node := <-manager.dnsoffline:
 			dns.MarkOffline(node)
 		}

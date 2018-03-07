@@ -35,6 +35,13 @@ type ClusterPacketGlobalDNSUpdate struct {
 	Status healthcheck.Status `toml:"status" json:"status"`
 }
 
+// ClusterPacketGlobalDNSRemove contains a dns update to remove a record
+type ClusterPacketGlobalDNSRemove struct {
+	ClusterNode string `json:"clusternode"`
+	Domain      string `json:"domain"`
+	Hostname    string `json:"hostname"`
+}
+
 // ClusterPacketGlbalDNSStatisticsUpdate contains backend updates to proxy
 type ClusterPacketGlbalDNSStatisticsUpdate struct {
 	ClusterNode       string    `json:"clusternode"`
