@@ -71,17 +71,17 @@ Examples configuration files are available at [here](https://github.com/schuberg
 
 a Full list of supported TLS cyphers in the golang tls.Config package is [here](https://golang.org/pkg/crypto/tls/#pkg-constants)
 
-The recommended cypers are:
+The recommended cyphers are:
 
 Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 ```Notice
 Note that this has to be the first cipher in the list!
 ```
 
-HTTP/2 also requires CurveP256 to be suported
+HTTP/2 also requires CurveP256 to be supported
 
 ## Web
-You can browse to the webserver within Mercury on the default url `http://localhost:9001`
+You can browse to the web server within Mercury on the default url `http://localhost:9001`
 
 Alternatively you can use curl to read the status
 
@@ -95,7 +95,7 @@ for json output pass the following option:
 ## Checks
 There are 2 checks which you can execute, and implement them in your monitoring system
 
-Checking the Global Loadbalancing
+Checking the Global Load balancing
 
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb
 
@@ -117,7 +117,7 @@ Checking the Backend nodes
 
         $ make get
 
-4. Make your changes/patches/fixes, committing appropiately
+4. Make your changes/patches/fixes, committing appropriately
 5. **Write tests**
 6. Run tests
 
