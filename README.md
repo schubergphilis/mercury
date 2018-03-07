@@ -7,7 +7,7 @@ Mercury is a load balancer with Global Load balance capabilities across multiple
 
 ## What is Mercury ?
 Mercury is a Global load balancer, designed to add a dns based load balancing layer on top of its internal load balancer or 3rd party load balancers such as cloud services.
-This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancer solutions in place.
+This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancing solutions in place.
 
 ## Resources
 
@@ -40,14 +40,14 @@ This makes mercury able to load balance across multiple cloud environments using
   * Sticky based load balancing for client sticky cookies
 * Is a full load balancer using the supported balancing methods
 * Supports automated Error / Maintenance pages
-* Includes checks for Nagios / Sensu to be used
+* Includes checks for Nagios/Sensu to be used
 * Internal DNS server supports most record types
 * HTTP/2 support
 * Web-socket support
 
 ## Installing
 ### Linux
-For Linux we can make a RHEL / Centos RPM package. to do so run the following:
+For Linux we can make a RHEL/Centos RPM package. To do so run the following:
 
     $ make linux-package
     $ rpm -i builds/packages/mercury-${version}.rpm
