@@ -156,27 +156,30 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				continue
 			}
 
+			// Update node status in memory
 			config.UpdateNodeStatus(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID, healthcheck.ReportedStatus, healthcheck.ErrorMsg)
 
-			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
-			//backend := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]
+			// Get UUID of node
 			clog.WithField("searchnode", healthcheck.NodeUUID).Debug("Search node by uuid")
 			node, err := config.GetNodeByUUID(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID)
 			if err != nil {
 				clog.WithField("error", err).Warn("ignoring healthcheck update for unknown node")
 				continue
 			}
-
 			clog.WithField("foundnode", node.Name()).Debug("Updated status health")
 
+			// If we have proxy enabled send node update to proxy
+			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
 			if config.Get().Settings.EnableProxy == YES && pool.Listener.IP != "" {
 				go clusterClearProxyStatistics(cl, healthcheck.PoolName, healthcheck.BackendName)
-				// - send the update to our proxy server if enabled
 				go manager.updateProxyBackendNode(healthcheck.PoolName, healthcheck.BackendName, node)
 			}
 
+			// Send update to DNS
 			go manager.sendDNSUpdate(cl, healthcheck.PoolName, healthcheck.BackendName)
+
 		case _ = <-manager.dnsrefresh:
+			// On a reload refresh existing and remove unused dns entries
 			log.WithField("func", "core").Debug("dnsreload")
 			go manager.dnsRefresh(cl)
 		}
@@ -218,12 +221,16 @@ func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
 				Hostname:    existingRecord,
 			}
 
+			// Send removal request to local dns manager
 			manager.dnsremove <- dnsremove
+
+			// Send removal to cluster for other nodes to remove this entry
 			cl.ToCluster <- dnsremove
 		}
 	}
 }
 
+// sendDNSUpdate sends dns update to local node, and to the cluster nodes
 func (manager *Manager) sendDNSUpdate(cl *cluster.Manager, poolName string, backendName string) error {
 
 	if _, ok := config.Get().Loadbalancer.Pools[poolName]; !ok {
