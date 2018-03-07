@@ -70,6 +70,9 @@ func (manager *Manager) DNSHandler() {
 		case node := <-manager.dnsdiscard:
 			dns.Discard(node)
 
+		case dnsremove := <-manager.dnsremove:
+			dns.Remove(dnsremove.ClusterNode, dnsremove.Domain, dnsremove.Hostname)
+
 		case node := <-manager.dnsoffline:
 			dns.MarkOffline(node)
 		}
@@ -117,7 +120,6 @@ func UpdateDNSConfig() {
 					oldRecords[i].TTL == record.TTL &&
 					oldRecords[i].Target == record.Target &&
 					oldRecords[i].Type == record.Type {
-					log.Debug("Existing DNS record:%v,  marking as not to be removed", record)
 
 					oldRecords = append(oldRecords[:i], oldRecords[i+1:]...)
 					existing++

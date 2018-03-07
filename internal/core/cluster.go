@@ -9,6 +9,7 @@ import (
 
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/cluster"
+	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/proxy"
@@ -68,6 +69,18 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("status", dnsupdate.Status.String()).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
+
+			case "config.ClusterPacketGlobalDNSRemove":
+				log.WithField("func", "core").Debug("globalDNSRemove")
+				dnsremove := &config.ClusterPacketGlobalDNSRemove{}
+				err := packet.Message(dnsremove)
+				if err != nil {
+					log.Warn("Unable to parse ClusterGlobalDNSRemove request: %s", err.Error())
+					continue
+				}
+
+				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("cluster", dnsremove.ClusterNode).WithField("domain", dnsremove.Domain).WithField("hostname", dnsremove.Hostname).Info("Received cluster dns removal")
+				manager.dnsremove <- dnsremove
 
 			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
 				log.WithField("func", "core").Debug("globalDNSStatistics")
@@ -143,41 +156,107 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				continue
 			}
 
+			// Update node status in memory
 			config.UpdateNodeStatus(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID, healthcheck.ReportedStatus, healthcheck.ErrorMsg)
 
-			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
-			backend := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]
+			// Get UUID of node
 			clog.WithField("searchnode", healthcheck.NodeUUID).Debug("Search node by uuid")
 			node, err := config.GetNodeByUUID(healthcheck.PoolName, healthcheck.BackendName, healthcheck.NodeUUID)
 			if err != nil {
 				clog.WithField("error", err).Warn("ignoring healthcheck update for unknown node")
 				continue
 			}
-
 			clog.WithField("foundnode", node.Name()).Debug("Updated status health")
 
+			// If we have proxy enabled send node update to proxy
+			pool := config.Get().Loadbalancer.Pools[healthcheck.PoolName]
 			if config.Get().Settings.EnableProxy == YES && pool.Listener.IP != "" {
 				go clusterClearProxyStatistics(cl, healthcheck.PoolName, healthcheck.BackendName)
-				// - send the update to our proxy server if enabled
 				go manager.updateProxyBackendNode(healthcheck.PoolName, healthcheck.BackendName, node)
 			}
 
-			// - send DNS updates to local dns servers
-			dnsupdate := &config.ClusterPacketGlobalDNSUpdate{
-				ClusterNode: config.Get().Cluster.Binding.Name,
-				PoolName:    healthcheck.PoolName,
-				BackendName: healthcheck.BackendName,
-				DNSEntry:    backend.DNSEntry,
-				BalanceMode: backend.BalanceMode,
-				BackendUUID: backend.UUID,
-				Status:      getLocalNodeStatus(healthcheck.PoolName, healthcheck.BackendName),
-			}
+			// Send update to DNS
+			go manager.sendDNSUpdate(cl, healthcheck.PoolName, healthcheck.BackendName)
 
-			manager.dnsupdates <- dnsupdate
-			// - send DNS update to cluster nodes
-			go clusterDNSUpdateBroadcast(cl, config.Get().Cluster.Binding.Name, healthcheck.PoolName, healthcheck.BackendName, backend.DNSEntry, backend.BalanceMode, backend.UUID)
+		case _ = <-manager.dnsrefresh:
+			// On a reload refresh existing and remove unused dns entries
+			log.WithField("func", "core").Debug("dnsreload")
+			go manager.dnsRefresh(cl)
 		}
 	}
+}
+
+func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
+	log := logging.For("core/cluster/dnsrefresh")
+	// Get existing entries
+	existingEntries := make(map[string][]string)
+	cache := dns.GetCache()
+	if _, ok := cache[config.Get().Cluster.Binding.Name]; ok {
+		for domain := range cache[config.Get().Cluster.Binding.Name].Domains {
+			for _, record := range cache[config.Get().Cluster.Binding.Name].Domains[domain].Records {
+				if record.Local == false {
+					existingEntries[domain] = append(existingEntries[domain], record.Name)
+				}
+			}
+		}
+	}
+
+	for poolName := range config.Get().Loadbalancer.Pools {
+		for backendName, backend := range config.Get().Loadbalancer.Pools[poolName].Backends {
+			for i := len(existingEntries[backend.DNSEntry.Domain]) - 1; i >= 0; i-- {
+				if existingEntries[backend.DNSEntry.Domain][i] == backend.DNSEntry.HostName {
+					existingEntries[backend.DNSEntry.Domain] = append(existingEntries[backend.DNSEntry.Domain][:i], existingEntries[backend.DNSEntry.Domain][i+1:]...)
+				}
+			}
+			manager.sendDNSUpdate(cl, poolName, backendName)
+		}
+	}
+
+	for domain, existingRecords := range existingEntries {
+		for _, existingRecord := range existingRecords {
+			log.Infof("Deleting unused DNS entry: %s %s\n", domain, existingRecord)
+			dnsremove := &config.ClusterPacketGlobalDNSRemove{
+				ClusterNode: config.Get().Cluster.Binding.Name,
+				Domain:      domain,
+				Hostname:    existingRecord,
+			}
+
+			// Send removal request to local dns manager
+			manager.dnsremove <- dnsremove
+
+			// Send removal to cluster for other nodes to remove this entry
+			cl.ToCluster <- dnsremove
+		}
+	}
+}
+
+// sendDNSUpdate sends dns update to local node, and to the cluster nodes
+func (manager *Manager) sendDNSUpdate(cl *cluster.Manager, poolName string, backendName string) error {
+
+	if _, ok := config.Get().Loadbalancer.Pools[poolName]; !ok {
+		return fmt.Errorf("Pool no longer exists, discarding dns update")
+	}
+
+	if _, ok := config.Get().Loadbalancer.Pools[poolName].Backends[backendName]; !ok {
+		return fmt.Errorf("Backend of pool no longer exists, discarding dns update")
+	}
+
+	backend := config.Get().Loadbalancer.Pools[poolName].Backends[backendName]
+	// - send DNS updates to local dns servers
+	dnsupdate := &config.ClusterPacketGlobalDNSUpdate{
+		ClusterNode: config.Get().Cluster.Binding.Name,
+		PoolName:    poolName,
+		BackendName: backendName,
+		DNSEntry:    backend.DNSEntry,
+		BalanceMode: backend.BalanceMode,
+		BackendUUID: backend.UUID,
+		Status:      getLocalNodeStatus(poolName, backendName),
+	}
+
+	manager.dnsupdates <- dnsupdate
+	// - send DNS update to cluster nodes
+	go clusterDNSUpdateBroadcast(cl, config.Get().Cluster.Binding.Name, poolName, backendName, backend.DNSEntry, backend.BalanceMode, backend.UUID)
+	return nil
 }
 
 func getDNSentry(poolname, backendname string) (config.DNSEntry, error) {

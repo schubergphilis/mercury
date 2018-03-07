@@ -19,9 +19,11 @@ const (
 type Manager struct {
 	cluster                         *cluster.Manager
 	healthchecks                    chan healthcheck.CheckResult
+	dnsrefresh                      chan bool
 	dnsdiscard                      chan string
 	dnsoffline                      chan string
 	dnsupdates                      chan *config.ClusterPacketGlobalDNSUpdate
+	dnsremove                       chan *config.ClusterPacketGlobalDNSRemove
 	clearStatsProxyBackend          chan *config.ClusterPacketClearProxyStatistics
 	clusterGlbalDNSStatisticsUpdate chan *config.ClusterPacketGlbalDNSStatisticsUpdate
 	addProxyBackend                 chan *config.ProxyBackendNodeUpdate
@@ -35,9 +37,11 @@ type Manager struct {
 func NewManager() *Manager {
 	manager := &Manager{
 		healthchecks:                    make(chan healthcheck.CheckResult),
-		dnsupdates:                      make(chan *config.ClusterPacketGlobalDNSUpdate),
+		dnsrefresh:                      make(chan bool),
 		dnsdiscard:                      make(chan string),
 		dnsoffline:                      make(chan string),
+		dnsupdates:                      make(chan *config.ClusterPacketGlobalDNSUpdate),
+		dnsremove:                       make(chan *config.ClusterPacketGlobalDNSRemove),
 		addProxyBackend:                 make(chan *config.ProxyBackendNodeUpdate),
 		removeProxyBackend:              make(chan *config.ProxyBackendNodeUpdate),
 		proxyBackendStatisticsUpdate:    make(chan *config.ProxyBackendStatisticsUpdate),
@@ -97,6 +101,7 @@ func Initialize(reload <-chan bool) {
 			// Start new DNS Listeners (if changed)
 			go manager.StartDNSServer()
 			go UpdateDNSConfig()
+			manager.dnsrefresh <- true
 
 			// Start new healthchecks, and send exits to no longer used ones
 			go manager.InitializeHealthChecks(manager.healthManager)
