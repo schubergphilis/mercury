@@ -3,11 +3,11 @@
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 
 # Mercury
-Mercury is a loadbalancer with Global Loadbalance capababilities across multiple Datacentre or Cloud infrastructures.
+Mercury is a load balancer with Global Load balance capabilities across multiple Datacenter or Cloud infrastructures.
 
 ## What is Mercury ?
-Mercury is a Global loadbalancer, designed to add a dns based loadbalancing layer on top of its internal loadbalancer or 3rd pary loadbalancers such as cloud services.
-This makes mercury able to loadbalance across multiple cloud environments using dns, while keeping existing cloud loadbalancer sollutions in place.
+Mercury is a Global load balancer, designed to add a dns based load balancing layer on top of its internal load balancer or 3rd party load balancers such as cloud services.
+This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancer solutions in place.
 
 ## Resources
 
@@ -20,31 +20,34 @@ This makes mercury able to loadbalance across multiple cloud environments using 
 * Linux (with iproute 3+)
 
 # Features
-* Global Loadbalacing across multiple datacenters or Cloud infrastructures using DNS based loadbalancing
-* Does HealthChecks on local backends, and propegates their availability across other GLB instances
+* Global Load balancing across multiple datacenter or Cloud infrastructures using DNS based load balancing
+* Web GUI for viewing/managing your host state
+* Seamless configuration updates without interrupting connected clients
+* Does HealthChecks on local backends, and propagates their availability across other GLB instances
   * HTTP health checks (POST or GET)
   * TCP Connect checks (connects only)
   * TCP Data check (sends and/or expects data)
   * ICMP/UDP/TCP ping checks
   * None (always online)
 * Is a functional DNS server which provides GLB based replies with
-  * Topology based loadbalancing, with predefined networks
-  * Preference based loadbalancing, for active/passive setup
-  * Roundrobin based loadbalancing for the most balanced setup
-  * LeastConnected based loadbalancing for the host with the least connections
-  * LeastTraffic based loadbalancing for the host with the least traffic
-  * Responsetime based loadbalancing for the host with the quickest responsetime
-  * Random based loadbalancing for when you can't choose
-  * Sticky based loadbalancing for client sticky cookies
-* Is a full loadbalancer using the supported balancing methods
-* Includes checks for Nagios/Sensu to be used
+  * Topology based load balancing, with predefined networks
+  * Preference based load balancing, for active/passive setup
+  * Round robin based load balancing for the most balanced setup
+  * LeastConnected based load balancing for the host with the least connections
+  * LeastTraffic based load balancing for the host with the least traffic
+  * Response time based load balancing for the host with the quickest response time
+  * Random based load balancing for when you can't choose
+  * Sticky based load balancing for client sticky cookies
+* Is a full load balancer using the supported balancing methods
+* Supports automated Error / Maintenance pages
+* Includes checks for Nagios / Sensu to be used
 * Internal DNS server supports most record types
 * HTTP/2 support
-* Websocket support
+* Web-socket support
 
 ## Installing
 ### Linux
-For Linux we can make a RHEL/Centos RPM package. to do so run the following:
+For Linux we can make a RHEL / Centos RPM package. to do so run the following:
 
     $ make linux-package
     $ rpm -i builds/packages/mercury-${version}.rpm
