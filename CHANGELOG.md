@@ -10,6 +10,9 @@ Features:
   * Alternative state on healthcheck (e.g. online="maintenance" or offline="online")
   * Setting a backend to "maintenance" will keep serving existing connections, but no longer accept new connections
 
+Bug:
+  * Fix dns name/topology changes not taking effect on reload of config
+
 ## 0.11.1:
 Change:
   * Improved logging messages
