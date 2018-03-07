@@ -70,6 +70,18 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("pool", dnsupdate.PoolName).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("ip", dnsupdate.DNSEntry.IP).WithField("ip6", dnsupdate.DNSEntry.IP6).WithField("status", dnsupdate.Status.String()).Info("Received cluster dns update")
 				manager.dnsupdates <- dnsupdate
 
+			case "config.ClusterPacketGlobalDNSRemove":
+				log.WithField("func", "core").Debug("globalDNSRemove")
+				dnsremove := &config.ClusterPacketGlobalDNSRemove{}
+				err := packet.Message(dnsremove)
+				if err != nil {
+					log.Warn("Unable to parse ClusterGlobalDNSRemove request: %s", err.Error())
+					continue
+				}
+
+				log.WithField("func", "dns").WithField("client", packet.Name).WithField("request", packet.DataType).WithField("cluster", dnsremove.ClusterNode).WithField("domain", dnsremove.Domain).WithField("hostname", dnsremove.Hostname).Info("Received cluster dns removal")
+				manager.dnsremove <- dnsremove
+
 			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
 				log.WithField("func", "core").Debug("globalDNSStatistics")
 				su := &config.ClusterPacketGlbalDNSStatisticsUpdate{}
@@ -186,11 +198,9 @@ func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
 		}
 	}
 
-	log.Debug("Existing entries before: %+v\n", existingEntries)
 	for poolName := range config.Get().Loadbalancer.Pools {
 		for backendName, backend := range config.Get().Loadbalancer.Pools[poolName].Backends {
 			for i := len(existingEntries[backend.DNSEntry.Domain]) - 1; i >= 0; i-- {
-				//fmt.Printf("ID: %d host:%s %s\n", i, backend.DNSEntry.Domain, backend.DNSEntry.HostName)
 				if existingEntries[backend.DNSEntry.Domain][i] == backend.DNSEntry.HostName {
 					existingEntries[backend.DNSEntry.Domain] = append(existingEntries[backend.DNSEntry.Domain][:i], existingEntries[backend.DNSEntry.Domain][i+1:]...)
 				}
@@ -198,11 +208,10 @@ func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
 			manager.sendDNSUpdate(cl, poolName, backendName)
 		}
 	}
-	log.Debug("Existing entries after: %+v\n", existingEntries)
 
 	for domain, existingRecords := range existingEntries {
 		for _, existingRecord := range existingRecords {
-			fmt.Printf("We should delete DNS entry: %s %s\n", domain, existingRecord)
+			log.Infof("Deleting unused DNS entry: %s %s\n", domain, existingRecord)
 			dnsremove := &config.ClusterPacketGlobalDNSRemove{
 				ClusterNode: config.Get().Cluster.Binding.Name,
 				Domain:      domain,
@@ -210,6 +219,7 @@ func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
 			}
 
 			manager.dnsremove <- dnsremove
+			cl.ToCluster <- dnsremove
 		}
 	}
 }

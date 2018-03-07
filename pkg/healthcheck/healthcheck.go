@@ -75,16 +75,17 @@ func (h HealthCheck) UUID() string {
 
 // Debug shows debug output for all workers
 func (m *Manager) Debug() {
+	log := logging.For("healthcheck/worker/debug")
 	for _, worker := range m.Workers {
 		worker.Debug()
 	}
 
 	for wid, wm := range m.HealthStatusMap {
-		fmt.Printf("Workermap -> worker:%s status:%+v\n", string(wid), wm)
+		log.Infof("Workermap -> worker:%s status:%+v\n", string(wid), wm)
 	}
 
 	for pmid, pm := range m.HealthPoolMap {
-		fmt.Printf("Poolmap -> node:%s map:%v\n", string(pmid), pm)
+		log.Infof("Poolmap -> node:%s map:%v\n", string(pmid), pm)
 	}
 }
 

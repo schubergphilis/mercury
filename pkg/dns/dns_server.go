@@ -545,6 +545,8 @@ func Server(host string, port int, allowedRequests []string) {
 
 // Debug Shows current state
 func Debug() {
+	dnsmanager.Lock()
+	defer dnsmanager.Unlock()
 	log := logging.For("dns/debug")
 	for nodename, node := range dnsmanager.node {
 		for domainname, domain := range node.Domains {

@@ -120,7 +120,7 @@ func UpdateDNSConfig() {
 					oldRecords[i].TTL == record.TTL &&
 					oldRecords[i].Target == record.Target &&
 					oldRecords[i].Type == record.Type {
-					log.Debug("Existing DNS record:%v,  marking as not to be removed", record)
+					//log.Debug("Existing DNS record:%v,  marking as not to be removed", record)
 
 					oldRecords = append(oldRecords[:i], oldRecords[i+1:]...)
 					existing++
