@@ -457,8 +457,8 @@ var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
       return
     }
     if (data.success != true) {
-      // Auto-redirect to login page if login expired oor required
-      if ((data.error == "Login token expired") || (data.error == "Login required")) {
+      // Auto-redirect to login page if login expired oor required (or not set yet)
+      if ((data.error == "Login token expired") || (data.error == "Login required") || (data.error="token contains an invalid number of segments")) {
         window.location = '/login'
         return
       }
