@@ -231,6 +231,11 @@ setTimeout(loadingText, 1000);
 
 function showDetails(id) {
   // Load details
+  if (window.sessionStorage.accessToken == undefined) {
+    window.location = '/login'
+    return
+  }
+
 var jqxhr = $.getJSON( "/api/v1/healthchecks/admin/"+id, function(data) {
   if (data == null) {
     errorHandler("unable to read data from healthcheck API (no data)")
