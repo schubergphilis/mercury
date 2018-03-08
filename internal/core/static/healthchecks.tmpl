@@ -55,6 +55,11 @@ var options = {
 };
 var    itemList = new List('itemlist', options);
 
+$.ajaxSetup({
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', 'BEARER '+window.sessionStorage.accessToken )
+    }
+});
 
 // API caller for main list
 function refreshPage(addtimer) {

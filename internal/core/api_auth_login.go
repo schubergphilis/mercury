@@ -40,10 +40,10 @@ func (h apiLoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie := http.Cookie{Name: "session", Value: apiKey, Expires: expiration, Path: "/"}
-	http.SetCookie(w, &cookie)
+	//cookie := http.Cookie{Name: "session", Value: apiKey, Expires: expiration, Path: "/"}
+	//http.SetCookie(w, &cookie)
 
-	apiWriteData(w, http.StatusOK, apiMessage{Success: true})
+	apiWriteData(w, http.StatusOK, apiMessage{Success: true, Data: apiKey})
 
 }
 

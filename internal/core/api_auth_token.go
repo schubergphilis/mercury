@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -15,9 +16,25 @@ type apiAuthentication struct {
 }
 
 func (h apiAuthentication) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("session")
-	if cookie != nil {
-		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+	auth := r.Header.Get("Authorization")
+	if auth != "" {
+		bearer := strings.Split(auth, " ")
+		if bearer[0] != "BEARER" {
+			apiWriteData(w, 405, apiMessage{Success: false, Error: "Invalid authorization header type"})
+			return
+		}
+		if len(bearer) < 2 {
+			apiWriteData(w, 405, apiMessage{Success: false, Error: "Invalid authorization header length"})
+			return
+		}
+		/*
+			}
+
+			cookie, _ := r.Cookie("session")
+			if cookie != nil {
+				token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		*/
+		token, err := jwt.Parse(bearer[1], func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
