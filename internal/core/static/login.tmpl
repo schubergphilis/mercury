@@ -17,6 +17,21 @@ $('.loginform').on('submit', function () {
         username: document.getElementById('lgn').value,
         password: document.getElementById('pwd').value,
     }, function(data) {
+      if (data == null) {
+        errorHandler("unable to read data from healthcheck API (no data)")
+        return
+      }
+
+      var jsonData = JSON.parse(data)
+      if (jsonData.success != true) {
+        errorHandler("unable to read data from healthcheck API (success=false)")
+        return
+      }
+
+      var accessToken = JSON.parse(jsonData.data)
+
+      window.sessionStorage.accessToken = accessToken;
+
       if (!document.referrer.match(/\/login\//g)) {
         window.location = document.referrer;
       } else {
