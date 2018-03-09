@@ -418,6 +418,9 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 	}
 
 	log.WithField("exitcode", exitcode).Debugf("Request Finished")
+	if exitcode == dnssrv.RcodeSuccess {
+		return exitcode, nil
+	}
 
 	return exitcode, fmt.Errorf("No records returned")
 }
