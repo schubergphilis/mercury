@@ -13,6 +13,7 @@ Features:
 Bug:
   * Fix dns name/topology changes not taking effect on reload of config
   * Fix CSRF issue in GUI
+  * Fix dns return code on non-existing hostname
 
 ## 0.11.1:
 Change:
