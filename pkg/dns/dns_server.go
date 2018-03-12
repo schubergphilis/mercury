@@ -229,6 +229,8 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 	clientIP := net.ParseIP(clientdata)
 	log.WithField("client", clientIP).WithField("orgclient", client).WithField("clientdata", clientdata).Debug("Client")
 
+	exitcode := dnssrv.RcodeServerFailure
+
 	for _, q := range m.Question {
 
 		// Only deal with fqdn's
@@ -398,13 +400,29 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			}
 		}
 
+		switch q.Qtype {
+		case dnssrv.TypeAAAA, dnssrv.TypeA:
+			if len(m.Answer) == 0 {
+				// Only for loadbalanced records (A/AAAA) do we show failure if there are no Records
+				// This so that the 2nd loadbalancer will be queried
+				exitcode = dnssrv.RcodeServerFailure
+			} else {
+				exitcode = dnssrv.RcodeSuccess
+			}
+		default:
+			// For all other records, we know that the domain exists, but there is no host records
+			// So return a successfull query with 0 records
+			exitcode = dnssrv.RcodeSuccess
+		}
+
 	}
 
-	if len(m.Answer) > 0 {
-		return dnssrv.RcodeSuccess, nil
+	log.WithField("exitcode", exitcode).Debugf("Request Finished")
+	if exitcode == dnssrv.RcodeSuccess {
+		return exitcode, nil
 	}
 
-	return dnssrv.RcodeServerFailure, fmt.Errorf("No records returned")
+	return exitcode, fmt.Errorf("No records returned")
 }
 
 func dnsForwarder(m *dnssrv.Msg, q dnssrv.Question) {
