@@ -10,19 +10,19 @@ body {
     margin-left:10px;
     margin-right:10px;
     margin-bottom:20px;
-    padding:0px;
+    padding:0;
 }
 img {border-style:none;}
-form,ul,li,p {margin:0px; padding:0px;}
+form,ul,li,p {margin:0; padding:0;}
 a {text-decoration: none;}
 a:hover {text-decoration: none;}
-h1 { }
 h3 { color: #ddd; }
 a { color:#000; }
 td { vertical-align: top }
 
 
 div {
+    -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
@@ -78,7 +78,7 @@ table td, table th {
 .ip {
     opacity: 0;
     position: absolute;
-    top: 0px;
+    top: 0;
 }
 
 .host, .ip { width: 100%; transition: opacity 0.5s linear; white-space:nowrap;}
@@ -142,7 +142,7 @@ li .sort.desc:after {
 .tablegroup li div:first-child { display: none;}
 /* div */
 .tableheader { display: table-header-group;user-select: none;}
-.tableheader li div { background-color: #bbb; border: 0 solid #000; border-width: 0px 1px 1px 0px; }
+.tableheader li div { background-color: #bbb; border: 0 solid #000; border-width: 0 1px 1px 0; }
 .tableheader li div:hover { background-color: #8fd2ef; }
 /*.tableheader li div:hover { background-color: #28a8e0; } *?
 /* div */
@@ -310,7 +310,7 @@ li .sort.desc:after {
 .popup { margin: 70px auto; padding: 20px; background: #fff; border-radius: 5px; width: 50%; position: relative; }
 .popup h2 { margin-top: 0; color: #333; font-family: Tahoma, Arial, sans-serif; }
 
-.popup .close { position: absolute; top: 20px; right: 30px; font-size: 30px; font-weight: bold; text-decoration: none; color: #333; border: 0px;background-color: #FFF;}
+.popup .close { position: absolute; top: 20px; right: 30px; font-size: 30px; font-weight: bold; text-decoration: none; color: #333; border: 0;background-color: #FFF;}
 .popup .close:hover { color: #06D85F; }
 /*.popup .content { max-height: 30%; overflow: auto; }*/
 
@@ -337,7 +337,7 @@ li .sort.desc:after {
 
 /* TEMP to get old gui in line, will be replaced once other gui's are converted to proper API calls */
 table { border-spacing: 1px 1px; width: 100%; }
-th { background-color: #bbb; border: 0 solid #000; border-width: 0px 1px 1px 0px; border-radius: 6px;padding: 2px 6px;font-weight:normal; }
+th { background-color: #bbb; border: 0 solid #000; border-width: 0 1px 1px 0; border-radius: 6px;padding: 2px 6px;font-weight:normal; }
 th:hover { background-color: #8fd2ef; }
 tr:nth-child(odd)		{ background-color:#eee; }
 tr:nth-child(even)		{ background-color:#fff; }
