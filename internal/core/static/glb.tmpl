@@ -3,66 +3,66 @@
 
 <div id="glb">
   <div class="searchbox">
-  Search: <input type="text" class="search" placeholder="Search Entry" />
+    Search: <input type="text" class="search" placeholder="Search Entry" />
   </div>
-   <table>
-     <thead>
-       <tr>
-         <th class="sort" data-sort="clusternode">ClusterNode</th>
-         <th class="sort" data-sort="fqdn">FQDN</th>
-         <th class="sort" data-sort="type">Type</th>
-         <th class="sort" data-sort="ttl">TTL</th>
-         <th class="sort" data-sort="target">Target(s)</th>
-         <th class="sort" data-sort="method">Method</th>
-         <th class="sort" data-sort="status">Status</th>
-         <th class="sort" data-sort="error">Errors</th>
-         <th class="sort" data-sort="requests">Requests</th>
-       </tr>
-     </thead>
-     <tbody class="list">
+  <table>
+    <thead>
+      <tr>
+        <th class="sort" data-sort="clusternode">ClusterNode</th>
+        <th class="sort" data-sort="fqdn">FQDN</th>
+        <th class="sort" data-sort="type">Type</th>
+        <th class="sort" data-sort="ttl">TTL</th>
+        <th class="sort" data-sort="target">Target(s)</th>
+        <th class="sort" data-sort="method">Method</th>
+        <th class="sort" data-sort="status">Status</th>
+        <th class="sort" data-sort="error">Errors</th>
+        <th class="sort" data-sort="requests">Requests</th>
+      </tr>
+    </thead>
+    <tbody class="list">
 
-{{ range $clusternode, $node := .DNS -}}
-  {{ range $domainname, $domain := $node.Domains -}}
-    {{ range $recordid, $record := $domain.Records -}}
-       {{ if eq $record.Local false }}
-       <tr>
-         <td class="id" style="display:none;">{{$recordid}}</td>
-         <td class="clusternode">{{$clusternode}}</td>
-         <td class="fqdn">{{$record.Name}}.{{$domainname}}</td>
-         <td class="type">{{$record.Type}}</td>
-         <td class="ttl">{{$record.TTL}}</td>
-         <td class="target">{{$record.Target}}</td>
-         <td class="method">{{$record.BalanceMode}}</td>
-         {{ if eq $record.ActivePassive "yes" }}
-            {{ if eq $record.Status 1 }}
-            <td class="status gray"><span class="online">Online</span>/Offline</td>
-            {{ else }}
-            <td class="status gray">Online/<span class="offline">Offline</span></td>
-            {{ end }}
-         {{ else }}
-            {{ if eq $record.Status 0 }}
-              <td class="status unknown">Unknown</td>
-            {{ end }}
-            {{ if eq $record.Status 1 }}
-              <td class="status online">Online</td>
-            {{ end }}
-            {{ if eq $record.Status 2 }}
-              <td class="status offline">Offline</td>
-            {{ end }}
-            {{ if eq $record.Status 3 }}
-              <td class="status maintenance">Maintenance</td>
-            {{ end }}
-         {{ end }}
-         <td class="error"></td>
-         <td class="requests">{{$record.Statistics.ClientsConnected}}</td>
+      {{ range $clusternode, $node := .DNS -}}
+      {{ range $domainname, $domain := $node.Domains -}}
+      {{ range $recordid, $record := $domain.Records -}}
+      {{ if eq $record.Local false }}
+      <tr>
+        <td class="id" style="display:none;">{{$recordid}}</td>
+        <td class="clusternode">{{$clusternode}}</td>
+        <td class="fqdn">{{$record.Name}}.{{$domainname}}</td>
+        <td class="type">{{$record.Type}}</td>
+        <td class="ttl">{{$record.TTL}}</td>
+        <td class="target">{{$record.Target}}</td>
+        <td class="method">{{$record.BalanceMode}}</td>
+        {{ if eq $record.ActivePassive "yes" }}
+        {{ if eq $record.Status 1 }}
+        <td class="status gray"><span class="online">Online</span>/Offline</td>
+        {{ else }}
+        <td class="status gray">Online/<span class="offline">Offline</span></td>
+        {{ end }}
+        {{ else }}
+        {{ if eq $record.Status 0 }}
+        <td class="status unknown">Unknown</td>
+        {{ end }}
+        {{ if eq $record.Status 1 }}
+        <td class="status online">Online</td>
+        {{ end }}
+        {{ if eq $record.Status 2 }}
+        <td class="status offline">Offline</td>
+        {{ end }}
+        {{ if eq $record.Status 3 }}
+        <td class="status maintenance">Maintenance</td>
+        {{ end }}
+        {{ end }}
+        <td class="error"></td>
+        <td class="requests">{{$record.Statistics.ClientsConnected}}</td>
 
       </tr>
       {{- end }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-</tbody>
-</table>
+      {{- end }}
+      {{- end }}
+      {{- end }}
+    </tbody>
+  </table>
 </div>
 
 <script type="text/javascript">

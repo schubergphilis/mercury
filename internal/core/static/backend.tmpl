@@ -3,95 +3,95 @@
 
 <div id="backends">
   <div class="searchbox">
-   Search: <input type="text" class="search" placeholder="Search Backend" />
+    Search: <input type="text" class="search" placeholder="Search Backend" />
   </div>
-   <table>
-     <thead>
-       <tr>
-         <th class="sort" data-sort="clusternode">ClusterNode</th>
-         <th class="sort" data-sort="vip">VIP</th>
-         <th class="sort" data-sort="backend">Backend</th>
-         <th class="sort" data-sort="node">Node</th>
-         <th class="sort" data-sort="hostnames">Hostnames</th>
-         <th class="sort" data-sort="status">Status</th>
-         <th class="sort" data-sort="error">Error</th>
-       </tr>
-     </thead>
-     <tbody class="list">
-{{ range $poolname, $pool := .Loadbalancer.Pools -}}
-  {{ range $backendname, $backend := $pool.Backends -}}
-    {{ if eq $backend.ConnectMode "internal" }}
-    <tr>
-      <td class="id" style="display:none;">0</td>
-      <td class="clusternode">{{$.ClusterNode}}</td>
-      <td class="vip">{{$poolname}}</td>
-      <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
-      <td class="node">Internal</td>
-      <td class="hostnames">
-        {{ range $hostid, $hostname := $backend.HostNames -}}
-          {{$hostname}}<br>
-        {{- end }}
-      </td>
-      <td class="status online">Online</td>
-      <td class="node"></td>
-   </tr>
-
-    {{ else if not $backend.Nodes }}
-    <tr>
-      <td class="id" style="display:none;">0</td>
-      <td class="clusternode">{{$.ClusterNode}}</td>
-      <td class="vip">{{$poolname}}</td>
-      <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
-      <td class="node">None</td>
-      <td class="hostnames">
-        {{ range $hostid, $hostname := $backend.HostNames -}}
-          {{$hostname}}<br>
-        {{- end }}
-      </td>
-      <td class="status offline">Offline</td>
-      <td class="node">No node configured for this backend</td>
-   </tr>
-    {{- end }}
-    {{ range $nodeid , $node := $backend.Nodes -}}
-       <tr>
-         <td class="id" style="display:none;">{{$nodeid}}</td>
-         <td class="clusternode">{{$node.ClusterName}}</td>
-         <td class="vip">{{$poolname}}</td>
-         <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
-         <td class="node"><div class="nodebox"><div class="host">{{$node.ServerName}}::{{$node.Port}}</div><div class="ip">{{$node.IP}}::{{$node.Port}}</div></div></td>
-         <td class="hostnames">
-           {{ range $hostid, $hostname := $backend.HostNames -}}
-             {{$hostname}}<br>
-           {{- end }}
-         </td>
-         {{ $length := len $node.Errors }}
-         {{ if eq $backend.BalanceMode.ActivePassive "yes" }}
-            {{ if eq $node.Status 1 }}
-            <td class="status gray"><span class="online">Active</span>/Passive</td>
-            {{ else }}
-            <td class="status gray">Active/<span class="offline">Passive</span></td>
-            {{ end }}
-         {{ else }}
-            {{ if eq $node.Status 0 }}
-              <td class="status unknown">Unknown</td>
-            {{ end }}
-            {{ if eq $node.Status 1 }}
-              <td class="status online">Online</td>
-            {{ end }}
-            {{ if eq $node.Status 2 }}
-              <td class="status offline">Offline</td>
-            {{ end }}
-            {{ if eq $node.Status 3 }}
-              <td class="status maintenance">Maintenance</td>
-            {{ end }}
-         {{ end }}
-         <td class="node">{{range $err := $node.Errors}}{{$err}}<br>{{- end}}</td>
+  <table>
+    <thead>
+      <tr>
+        <th class="sort" data-sort="clusternode">ClusterNode</th>
+        <th class="sort" data-sort="vip">VIP</th>
+        <th class="sort" data-sort="backend">Backend</th>
+        <th class="sort" data-sort="node">Node</th>
+        <th class="sort" data-sort="hostnames">Hostnames</th>
+        <th class="sort" data-sort="status">Status</th>
+        <th class="sort" data-sort="error">Error</th>
       </tr>
-    {{- end }}
-  {{- end }}
-{{- end }}
-</tbody>
-</table>
+    </thead>
+    <tbody class="list">
+      {{ range $poolname, $pool := .Loadbalancer.Pools -}}
+      {{ range $backendname, $backend := $pool.Backends -}}
+      {{ if eq $backend.ConnectMode "internal" }}
+      <tr>
+        <td class="id" style="display:none;">0</td>
+        <td class="clusternode">{{$.ClusterNode}}</td>
+        <td class="vip">{{$poolname}}</td>
+        <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
+        <td class="node">Internal</td>
+        <td class="hostnames">
+          {{ range $hostid, $hostname := $backend.HostNames -}}
+          {{$hostname}}<br>
+          {{- end }}
+        </td>
+        <td class="status online">Online</td>
+        <td class="node"></td>
+      </tr>
+
+      {{ else if not $backend.Nodes }}
+      <tr>
+        <td class="id" style="display:none;">0</td>
+        <td class="clusternode">{{$.ClusterNode}}</td>
+        <td class="vip">{{$poolname}}</td>
+        <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
+        <td class="node">None</td>
+        <td class="hostnames">
+          {{ range $hostid, $hostname := $backend.HostNames -}}
+          {{$hostname}}<br>
+          {{- end }}
+        </td>
+        <td class="status offline">Offline</td>
+        <td class="node">No node configured for this backend</td>
+      </tr>
+      {{- end }}
+      {{ range $nodeid , $node := $backend.Nodes -}}
+      <tr>
+        <td class="id" style="display:none;">{{$nodeid}}</td>
+        <td class="clusternode">{{$node.ClusterName}}</td>
+        <td class="vip">{{$poolname}}</td>
+        <td class="backend"><a href="/backenddetails?pool={{$poolname}}&backend={{$backendname}}">{{$backendname}}</a></td>
+        <td class="node"><div class="nodebox"><div class="host">{{$node.ServerName}}::{{$node.Port}}</div><div class="ip">{{$node.IP}}::{{$node.Port}}</div></div></td>
+        <td class="hostnames">
+          {{ range $hostid, $hostname := $backend.HostNames -}}
+          {{$hostname}}<br>
+          {{- end }}
+        </td>
+        {{ $length := len $node.Errors }}
+        {{ if eq $backend.BalanceMode.ActivePassive "yes" }}
+        {{ if eq $node.Status 1 }}
+        <td class="status gray"><span class="online">Active</span>/Passive</td>
+        {{ else }}
+        <td class="status gray">Active/<span class="offline">Passive</span></td>
+        {{ end }}
+        {{ else }}
+        {{ if eq $node.Status 0 }}
+        <td class="status unknown">Unknown</td>
+        {{ end }}
+        {{ if eq $node.Status 1 }}
+        <td class="status online">Online</td>
+        {{ end }}
+        {{ if eq $node.Status 2 }}
+        <td class="status offline">Offline</td>
+        {{ end }}
+        {{ if eq $node.Status 3 }}
+        <td class="status maintenance">Maintenance</td>
+        {{ end }}
+        {{ end }}
+        <td class="node">{{range $err := $node.Errors}}{{$err}}<br>{{- end}}</td>
+      </tr>
+      {{- end }}
+      {{- end }}
+      {{- end }}
+    </tbody>
+  </table>
 </div>
 
 <script type="text/javascript">

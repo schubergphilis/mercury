@@ -2,40 +2,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ .Page.Title }}</title>
-    <meta charset="UTF-8" /> <!-- html5 standard //-->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- IE9 compatibility //-->
-    <link rel="stylesheet" type="text/css" href="/static/mercury.css">
-    <script src="/static/jquery.min.js"></script>
+  <title>{{ .Page.Title }}</title>
+  <meta charset="UTF-8" /> <!-- html5 standard //-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- IE9 compatibility //-->
+  <link rel="stylesheet" type="text/css" href="/static/mercury.css">
+  <script src="/static/jquery.min.js"></script>
 
-<script src="/static/mercury.js"></script>
-<script src="/static/list.min.js"></script>
+  <script src="/static/mercury.js"></script>
+  <script src="/static/list.min.js"></script>
 </head>
 <body>
   <header>
-  <ul class="topheader">
-   <li class="title"><a class="home" href="/"><img class="left" src="/static/logo32.png" alt="Home">ercury</a></li>
-   <li class="hostname">Running on {{$.Page.Hostname}}<br>{{$.Page.Time.Format "02-Jan-2006 15:04"}}</li>
-   <li class="loginlink">
-       {{if .Page.Username}}
-       Welcome {{.Page.Username}}<br>
+    <ul class="topheader">
+      <li class="title"><a class="home" href="/"><img class="left" src="/static/logo32.png" alt="Home">ercury</a></li>
+      <li class="hostname">Running on {{$.Page.Hostname}}<br>{{$.Page.Time.Format "02-Jan-2006 15:04"}}</li>
+      <li class="loginlink">
+        {{if .Page.Username}}
+        Welcome {{.Page.Username}}<br>
         <a href="/logout">logout</a>
-       {{else}}
+        {{else}}
         <a href="/login">login</a>
-       {{end}}
-   </li>
- </ul>
- </header>
-<nav>
-  <ul class="navigation">
-    <li><a class="{{ if eq .Page.URI "/" -}}active{{- end }}" href="/">Home</a></li>
-    <li><a class="{{ if eq .Page.URI "/glb" -}}active{{- end }}" href="/glb">GLB</a></li>
-    <li><a class="{{ if eq .Page.URI "/proxy" -}}active{{- end }}" href="/proxy">Proxy</a></li>
-    <li><a class="{{ if eq .Page.URI "/backend" -}}active{{- end }}" href="/backend">Backend</a></li>
-    <li><a class="{{ if eq .Page.URI "/healthchecks/" -}}active{{- end }}" href="/healthchecks">Healthchecks</a></li>
-    <li><a class="{{ if eq .Page.URI "/cluster" -}}active{{- end }}" href="/cluster">Cluster</a></li>
-    <li><a class="{{ if eq .Page.URI "/localdns" -}}active{{- end }}" href="/localdns">Local DNS</a></li>
-  </ul>
-</nav>
-<main>
-{{end}}
+        {{end}}
+      </li>
+    </ul>
+  </header>
+  <nav>
+    <ul class="navigation">
+      <li><a class="{{ if eq .Page.URI "/" -}}active{{- end }}" href="/">Home</a></li>
+      <li><a class="{{ if eq .Page.URI "/glb" -}}active{{- end }}" href="/glb">GLB</a></li>
+      <li><a class="{{ if eq .Page.URI "/proxy" -}}active{{- end }}" href="/proxy">Proxy</a></li>
+      <li><a class="{{ if eq .Page.URI "/backend" -}}active{{- end }}" href="/backend">Backend</a></li>
+      <li><a class="{{ if eq .Page.URI "/healthchecks/" -}}active{{- end }}" href="/healthchecks">Healthchecks</a></li>
+      <li><a class="{{ if eq .Page.URI "/cluster" -}}active{{- end }}" href="/cluster">Cluster</a></li>
+      <li><a class="{{ if eq .Page.URI "/localdns" -}}active{{- end }}" href="/localdns">Local DNS</a></li>
+    </ul>
+  </nav>
+  <main>
+    {{end}}
