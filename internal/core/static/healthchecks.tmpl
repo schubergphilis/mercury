@@ -194,7 +194,6 @@ function refreshPage(addtimer) {
 // Initial loading the data
 console.log("Initial loading")
 refreshPage(1)
-//window.setTimeout(refreshPage, 10000);
 
 // Delayed loading screen, incase things take a while
 function loadingText(){
@@ -253,7 +252,6 @@ function showDetails(id) {
       $("#popupcontent ul").append('<li><div>HTTP Request</div><div>'+worker.check.httppostdata+'</div></li>')
       $("#popupcontent ul").append('<li><div>HTTP Reply</div><div>'+worker.check.httpreply+'</div></li>')
       $("#popupcontent ul").append('<li><div>HTTP Status</div><div>'+worker.check.httpstatus+'</div></li>')
-      //checkRequest = worker.check.httprequest.split('?')[0]
       break;
       case "tcpconnect":
       break;
@@ -269,9 +267,6 @@ function showDetails(id) {
 
     var checkStatusDetail=''
     $("#popupcontent ul").append('<li><div>Used by</div><div>'+jsonData.nodemap.join(', ')+'</div></li>')
-    /*
-    (jsonData.workerhealth.checkstatus == true) ? checkStatusDetail='online' : checkStatusDetail='offline'
-    */
     selectautomatic='selected'
     selectmaintenance=''
     selectoffline=''
@@ -353,12 +348,6 @@ function showDetails(id) {
       break;
     }
 
-    /*
-    if (jsonData.workerhealth.checkstatus == true) { checkStatusDetail='<p class="online">online</p>'; selectautodetect='selected';} else { checkStatusDetail='<p class="offline">offline</p>'; selectautodetect='selected';}
-    if (jsonData.workerhealth.admindown == true) { checkStatusDetail='<p class="admindown">admindown</p>'; selectadmindown='selected';}
-    if (jsonData.workerhealth.adminup == true) { checkStatusDetail='<p class="adminup">adminup</p>';selectadminup='selected'; }
-    */
-
     $("#popupcontent ul").append('<li><div>Check Status</div><div>'+checkStatusDetailActual+'</div></li>')
     $("#popupcontent ul").append('<li><div>Check Output</div><div>'+worker.checkerror+'</div></li>')
     if (online_state != 'online') {
@@ -394,6 +383,7 @@ function showDetails(id) {
           errorHandler("unable to read data from healthcheck API (no data)")
           return
         }
+
         if (xData.responseText == null) {
           errorHandler("unable to read response from healthcheck API (no data)")
           return
@@ -404,6 +394,7 @@ function showDetails(id) {
           errorHandler("unable to read data from healthcheck API (no data)")
           return
         }
+
         if (data.success != true) {
           errorHandler("failed to change state: "+data.error)
           return
@@ -414,11 +405,10 @@ function showDetails(id) {
       return false;
 
     });
-
     $("#popup").css('visibility', 'visible');
+
   })
   .fail(function(jqXHR, textStatus, errorThrown) {
-    /*errorHandler("error reading details of node"+errorThrown)*/
     if (jqXHR == null) {
       errorHandler("failed: unable to read data from healthcheck API (no data)")
       return
@@ -443,11 +433,9 @@ function showDetails(id) {
       errorHandler("failed: "+data.error)
       return
     }
-
     errorHandler("error reading healthcheck api"+errorThrown)
 
   });
-
 }
 
 
