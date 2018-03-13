@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+
+Bug:
+  * Correct html/css validation for better browser support
+
 ## 0.12.0:
 Features:
   * Option to set a backend to state "Maintenance" (via healthcheck or gui)
