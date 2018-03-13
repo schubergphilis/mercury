@@ -59,7 +59,7 @@ table td, table th {
 .forcedmaintenance { color: #808000 }
 .maintenance { color: #d08000 }
 .offline { color: #d00000 }
-.forcedoffline { color: #00000 }
+.forcedoffline { color: #000000 }
 .unknown { color: #880088 }
 
 .checking { color: #d08000 }
