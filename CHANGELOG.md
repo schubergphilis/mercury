@@ -3,9 +3,8 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
-
-Bug:
-  * Correct html/css validation for better browser support
+Feature:
+  * Improve html/css validation for better browser support
 
 ## 0.12.0:
 Features:
