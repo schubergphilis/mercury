@@ -6,6 +6,9 @@
 Feature:
   * Improve html/css validation for better browser support
 
+Bug
+  * Fix reload issue when changing cipher or curve preferences (#44)
+
 ## 0.12.0:
 Features:
   * Option to set a backend to state "Maintenance" (via healthcheck or gui)
