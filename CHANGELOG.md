@@ -4,6 +4,10 @@
 
 ## unreleased
 
+## 0.12.2
+Feature
+  * Allow filters in LDAP authentication to verify user uid after login
+
 ## 0.12.1
 Feature:
   * Improve html/css validation for better browser support
