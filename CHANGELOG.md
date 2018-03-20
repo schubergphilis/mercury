@@ -5,14 +5,18 @@
 ## unreleased
 
 ## 0.12.2
-Feature
+Feature:
   * Allow filters in LDAP authentication to verify user uid after login
+
+Bug:
+  * Correct JSON unmarshal for backend check
+  * Remove lingering error messages if healthcheck recovered
 
 ## 0.12.1
 Feature:
   * Improve html/css validation for better browser support
 
-Bug
+Bug:
   * Fix reload issue when changing cipher or curve preferences (#44)
 
 ## 0.12.0:
