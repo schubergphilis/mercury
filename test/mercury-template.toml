@@ -17,9 +17,11 @@ test = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 #host = "localhost"
 #port = 389
 #method = "tls"
-#binddn = "dc=example,dc=org"
-#[web.auth.ldap.tls]
-#insecureskipverify = true
+#binddn = "OU=Users,DC=example,DC=com"
+#filter = "(&(objectClass=organizationalPerson)(sAMAccountName=%s))"
+#domain = "example"
+[web.auth.ldap.tls]
+insecureskipverify = true
 [cluster.binding]
 name = "localhost1"
 addr = "127.0.0.1:9000"
