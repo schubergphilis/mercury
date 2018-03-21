@@ -327,14 +327,19 @@ You can add any number of users by adding a new line per user with its username 
 ```
 
 ### Username/Password
-To use LDAP specify the LDAP host, and the DN to find the users in
+To use LDAP specify the LDAP host, and the DN+Filter to find the users in
+LDAP first does the authentication with provided credentials, and then verifies if the username also exists in the binddn with the applied filter.
+If user exists in the filter, then login is successful
 ```
 [web]
   [web.auth.ldap]
     host = "localhost"                      # Ldap Host to connect to
     port = 389                              # Ldap Port to connect to
     method = "tls"                          # Protocol to connect to LDAP
-    binddn = "dc=users,dc=example,dc=org"   # Binding DN to connect to
+    binddn = "ou=users,dc=example,dc=org"   # DN to execute filter in
+    filter = "(&(objectClass=organizationalPerson)(uid=%s))" # Filter to apply to find the user, where %s replaces the username
+    domain = "example"                      # Domain to prepend to the username provided
+
     [web.auth.ldap.tls]
     insecureskipverify = true               # Ignore SSL certificate hostname mismatches (for self-signed certificates)
 ```

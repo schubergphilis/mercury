@@ -1,8 +1,10 @@
 package dns
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Status holds the status of a check
@@ -31,22 +33,34 @@ func (s Status) String() string {
 // UnmarshalText converts json Status to Status uint8
 func (s *StatusType) UnmarshalText(text []byte) error {
 	var err error
-	if _, ok := StringToStatusType[string(text)]; !ok {
-		return fmt.Errorf("unknown status type: %s (allowed are: automatic, online, offline and maintenance)", text)
+	t := strings.Replace(string(text), "\"", "", -1)
+	if _, ok := StringToStatusType[t]; !ok {
+		return fmt.Errorf("unknown status type1: %s (allowed are: automatic, online, offline and maintenance)", text)
 	}
-	s.Status = StringToStatusType[string(text)]
+	s.Status = StringToStatusType[t]
 	return err
 }
 
 // UnmarshalJSON converts json Status to Status uint8
 func (s *StatusType) UnmarshalJSON(text []byte) error {
 	var err error
-	if _, ok := StringToStatusType[string(text)]; !ok {
-		return fmt.Errorf("unknown status type: %s (allowed are: automatic, online, offline and maintenance)", text)
+	var tmp struct {
+		Status int
 	}
-	s.Status = StringToStatusType[string(text)]
-	return err
+	err = json.Unmarshal(text, &tmp)
+	if err != nil {
+		fmt.Printf("Err: %s", err)
+	}
+	s.Status = IntToStatusType[tmp.Status]
+	return nil
 }
+
+// MarshalJSON converts json Status to []byte
+/*
+func (s *StatusType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", s.String())), nil
+}
+*/
 
 // StatusTypeToString converts status to string
 var StatusTypeToString = map[Status]string{
@@ -62,4 +76,12 @@ var StringToStatusType = map[string]Status{
 	"online":      Online,
 	"offline":     Offline,
 	"maintenance": Maintenance,
+}
+
+// IntToStatusType converts int to status
+var IntToStatusType = map[int]Status{
+	0: Automatic,
+	1: Online,
+	2: Offline,
+	3: Maintenance,
 }
