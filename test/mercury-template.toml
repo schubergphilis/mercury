@@ -141,12 +141,12 @@ method = "leastconnected"
 [loadbalancer.pools.INTERNAL_VIP.backends.example.dnsentry]
 domain = "glb.example.com"
 hostname = "www"
-[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthcheck]]
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthchecks]]
 type = "tcpping"
 ip = "%LOCALIP%"
 port = 9001
-[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthcheck]]
-[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthcheck]]
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthchecks]]
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthchecks]]
 interval = 10
 httpreply = "login"
 httpstatus = 200
@@ -405,7 +405,7 @@ method = "preference"
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.dnsentry]
 domain = "glb.example.com"
 hostname = "preference"
-[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.healthcheck]]
+[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr.healthchecks]]
 # httpreply = "login"
 # httpstatus = 200
 # httprequest = "http://preference.glb.example.com"
@@ -497,7 +497,7 @@ method = "responsetime"
 [loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.dnsentry]
 domain = "glb.example.com"
 hostname = "mx"
-[[loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.healthcheck]]
+[[loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.healthchecks]]
 type = "tcpdata"
 tcpreply = "220 "
 [[loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.nodes]]
@@ -523,7 +523,7 @@ clusternodes = 1
 [loadbalancer.pools.INTERNAL_VIP_ONE.backends.example_mx.dnsentry]
 domain = "glb.example.com"
 hostname = "one"
-[[loadbalancer.pools.INTERNAL_VIP_ONE.backends.example_mx.healthcheck]]
+[[loadbalancer.pools.INTERNAL_VIP_ONE.backends.example_mx.healthchecks]]
 type = "tcpdata"
 tcpreply = "220 "
 [[loadbalancer.pools.INTERNAL_VIP_ONE.backends.example_mx.nodes]]
