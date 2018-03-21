@@ -363,29 +363,29 @@ The following methods are an exception: `sticky`, `topology` and `firstavailable
 Health checks will be fired on backend nodes to ensure they can server requests. It is highly recommended to have a functional test here.
 
 Usable in the settings for: `pools` and `backends`
-* `[[loadbalancer.pools.poolname.healthcheck]]` - health checks applicable to determain pool availability. if this failed all backends will fail.
-* `[[loadbalancer.pools.poolname.backends.backendname.healthcheck]]` - health checks applicable to determain backend availability, only applies to the specific backend
+* `[[loadbalancer.pools.poolname.healthchecks]]` - health checks applicable to determain pool availability. if this failed all backends will fail.
+* `[[loadbalancer.pools.poolname.backends.backendname.healthchecks]]` - health checks applicable to determain backend availability, only applies to the specific backend
 
 Key | Option | Default | Values | Description
 --- | --- | --- | --- | ---
-[[..healthcheck]] | type | "tcpconnect" | See HealthCheck | types for all available healthchecks to perform
-[[..healthcheck]] | tcprequest | | string | the data to send to a tcp socket for testing  
-[[..healthcheck]] | tcpreply | | string | the reply expected to a tcp socket for testing  
-[[..healthcheck]] | httprequest | | string | the request sent to a webserver (e.g. "http://www.example.com/")  
-[[..healthcheck]] | httppostdata | | string/special | post data sent to the host, see `Specials Keys` below for special parameters in the post string  
-[[..healthcheck]] | httpheaders | | ["arrayofstrings"] | headers sent with the http request (e.g. [ 'Accept: application/json' ])  
-[[..healthcheck]] | httpstatus | 200 | int | http status code expected from backend  
-[[..healthcheck]] | httpreply | | string/regex | string/regex expected in http reply from backend  
-[[..healthcheck]] | pingpackets | 4 | int | number of ping packets to send (only when 100% packetloss this will be reported as down)
-[[..healthcheck]] | pingtimeout | 1 | int (seconds) | timeout in seconds for each ping request
-[[..healthcheck]] | ip | | node.IP | alternative IP to send request to
-[[..healthcheck]] | port | | node.Port | alternative Port to send request to
-[[..healthcheck]] | sourceip | listener.IP | string | alternative source IP to use when sending request
-[[..healthcheck]] | interval | 10 | int | how often to check this backend
-[[..healthcheck]] | timeout | 10 | int (seconds) | how long to wait for backend to finish its reply before reporting it in error state
-[[..healthcheck]] | online_state | "online" | online/offline/maintenance | if the healtcheck sais its online, instead send this alternative state
-[[..healthcheck]] | offline_state | "offline" | online/offline/maintenance | if the healtcheck sais its offline, instead send this alternative state
-[[..healthcheck.tls]] | [web.tls] | tls | none | see TLS Attributes | TLS settings for connecting to the backend. the only attribute that applies here is the `insecureskipverify` for when connecting to a node with a self-signed certificate e.g. `{ insecureskipverify: true }`
+[[..healthchecks]] | type | "tcpconnect" | See HealthCheck | types for all available healthchecks to perform
+[[..healthchecks]] | tcprequest | | string | the data to send to a tcp socket for testing  
+[[..healthchecks]] | tcpreply | | string | the reply expected to a tcp socket for testing  
+[[..healthchecks]] | httprequest | | string | the request sent to a webserver (e.g. "http://www.example.com/")  
+[[..healthchecks]] | httppostdata | | string/special | post data sent to the host, see `Specials Keys` below for special parameters in the post string  
+[[..healthchecks]] | httpheaders | | ["arrayofstrings"] | headers sent with the http request (e.g. [ 'Accept: application/json' ])  
+[[..healthchecks]] | httpstatus | 200 | int | http status code expected from backend  
+[[..healthchecks]] | httpreply | | string/regex | string/regex expected in http reply from backend  
+[[..healthchecks]] | pingpackets | 4 | int | number of ping packets to send (only when 100% packetloss this will be reported as down)
+[[..healthchecks]] | pingtimeout | 1 | int (seconds) | timeout in seconds for each ping request
+[[..healthchecks]] | ip | | node.IP | alternative IP to send request to
+[[..healthchecks]] | port | | node.Port | alternative Port to send request to
+[[..healthchecks]] | sourceip | listener.IP | string | alternative source IP to use when sending request
+[[..healthchecks]] | interval | 10 | int | how often to check this backend
+[[..healthchecks]] | timeout | 10 | int (seconds) | how long to wait for backend to finish its reply before reporting it in error state
+[[..healthchecks]] | online_state | "online" | online/offline/maintenance | if the healtcheck sais its online, instead send this alternative state
+[[..healthchecks]] | offline_state | "offline" | online/offline/maintenance | if the healtcheck sais its offline, instead send this alternative state
+[[..healthchecks.tls]] | [web.tls] | tls | none | see TLS Attributes | TLS settings for connecting to the backend. the only attribute that applies here is the `insecureskipverify` for when connecting to a node with a self-signed certificate e.g. `{ insecureskipverify: true }`
 
 
 

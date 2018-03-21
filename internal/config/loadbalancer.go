@@ -74,7 +74,7 @@ type DNSEntry struct {
 // BackendPool nodes and details
 type BackendPool struct {
 	Nodes           []*BackendNode            `json:"nodes" toml:"nodes"`                     // backend nodes
-	HealthChecks    []healthcheck.HealthCheck `json:"healthcheck" toml:"healthcheck"`         // healthcheck to perform on each backend node
+	HealthChecks    []healthcheck.HealthCheck `json:"healthchecks" toml:"healthchecks"`       // healthchecks to perform on each backend node
 	HealthCheckMode string                    `json:"healthcheckmode" toml:"healthcheckmode"` // healthcheck mode (all / any)
 	DNSEntry        DNSEntry                  `json:"dnsentry" toml:"dnsentry"`               // glb dns entry for this backend
 	Online          bool                      `json:"online" toml:"online"`                   // is backend pool online

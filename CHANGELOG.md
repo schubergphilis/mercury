@@ -4,6 +4,10 @@
 
 ## unreleased
 
+## 0.12.3
+Change:
+  * healthcheck configuration item renames to healthchecks, as it now contains multiple healthchecks
+
 ## 0.12.2
 Feature:
   * Allow filters in LDAP authentication to verify user uid after login
