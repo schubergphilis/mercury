@@ -19,6 +19,10 @@ func CreateListeners() {
 	}
 	for poolName, pool := range config.Get().Loadbalancer.Pools {
 		clog := log.WithField("ip", pool.Listener.IP).WithField("pool", poolName).WithField("interface", pool.Listener.Interface)
+		if pool.Listener.IP == "" {
+			clog.Debugf("Skipping IP for DNS only loadbalance setup on pool %s", poolName)
+			continue
+		}
 		clog.Debug("Binding IP")
 		err := network.CreateListener(pool.Listener.Interface, pool.Listener.IP)
 		if err != nil {

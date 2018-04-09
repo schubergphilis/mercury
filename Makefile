@@ -13,7 +13,7 @@ LASTCOMMIT := $(shell git rev-parse --verify HEAD)
 BUILD := $(shell cat tools/rpm/BUILDNR)
 LDFLAGS := "-X main.version=$(VERSION) -X main.versionBuild=$(BUILD) -X main.versionSha=$(LASTCOMMIT)"
 PENDINGCOMMIT := $(shell git diff-files --quiet --ignore-submodules && echo 0 || echo 1)
-LOCALIP := $(shell ifconfig | grep "inet " | grep broadcast | awk {'print $$2'} )
+LOCALIP := $(shell ifconfig | grep "inet " | grep broadcast | awk {'print $$2'} | head -1 )
 
 default: build
 
