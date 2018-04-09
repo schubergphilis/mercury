@@ -4,6 +4,10 @@
 
 ## unreleased
 
+## 0.12.4
+Bug:
+  * No longer attempt to bind listener ip for dns-only loadbalancing config
+
 ## 0.12.3
 Change:
   * healthcheck configuration item renames to healthchecks, as it now contains multiple healthchecks
