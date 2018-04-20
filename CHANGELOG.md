@@ -3,6 +3,8 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+Bug:
+  * Exclicitly deny non-query opscodes, as we don't support remote updates at this point
 
 ## 0.12.4
 Bug:

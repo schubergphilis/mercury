@@ -469,6 +469,8 @@ func handleDNSRequest(w dnssrv.ResponseWriter, r *dnssrv.Msg) {
 		if rcode >= 0 {
 			m.SetRcode(r, rcode)
 		}
+	default:
+		m.SetRcode(r, dnssrv.RcodeRefused)
 	}
 
 	w.WriteMsg(m)
