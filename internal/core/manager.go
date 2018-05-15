@@ -108,6 +108,11 @@ func Initialize(reload <-chan bool) {
 			// Re-read proxies, and update where needed
 			// This needs to be after the healthchecks have been evacuated
 			go manager.InitializeProxies()
+			if config.Get().Web.Auth.LDAP != nil {
+				manager.webAuthenticator = config.Get().Web.Auth.LDAP
+			} else {
+				manager.webAuthenticator = config.Get().Web.Auth.Password
+			}
 		}
 	}
 }
