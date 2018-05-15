@@ -235,6 +235,8 @@ function showDetails(id) {
 
     $("#popup h2").html(checkTarget)
     $("#popupcontent").html('<ul class="tablegroupdetails"></ul>')
+    $("#popupcontent ul").append('<li><div>Pool</div><div>'+worker.pool+'</div></li>')
+    $("#popupcontent ul").append('<li><div>Backend</div><div>'+worker.backend+'</div></li>')
     $("#popupcontent ul").append('<li><div>Check Type</div><div>'+worker.check.type+'</div></li>')
     $("#popupcontent ul").append('<li><div>SourceIP</div><div>'+checkSource+'</div></li>')
     $("#popupcontent ul").append('<li><div>TargetIP</div><div>'+checkTargetIP+'</div></li>')
