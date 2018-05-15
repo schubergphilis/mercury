@@ -13,6 +13,7 @@
       <li>
         <div class="unselectable hidden" data-sort="id" unselectable="on">Id</div>
         <div class="sort unselectable" data-sort="status" unselectable="on">Status</div>
+        <div class="sort unselectable" data-sort="backend" unselectable="on">Backend</div>
         <div class="sort unselectable" data-sort="node" unselectable="on">Node</div>
         <div class="sort unselectable" data-sort="nodeip" unselectable="on">Ip</div>
         <div class="sort unselectable" data-sort="port" unselectable="on">Port</div>
@@ -44,6 +45,7 @@ var options = {
   valueNames: [
     'id',
     'status',
+    'backend',
     'type',
     'node',
     'nodeip',
@@ -51,7 +53,7 @@ var options = {
     'request',
     'error',
   ],
-  item: '<li class="tablerow"><div class="id"></div><div class="status"></div><div class="node"></div><div class="nodeip"></div><div class="port"></div><div class="type"></div><div class="request"></div><div class="error"></div></li>',
+  item: '<li class="tablerow"><div class="id"></div><div class="status"></div><div class="backend"></div><div class="node"></div><div class="nodeip"></div><div class="port"></div><div class="type"></div><div class="request"></div><div class="error"></div></li>',
 };
 var    itemList = new List('itemlist', options);
 
@@ -157,7 +159,7 @@ function refreshPage(addtimer) {
         checkRequest = ""
         break;
       }
-      item = {'id': checkId, 'status':checkStatus, 'type':checkType, 'source':checkSource, 'node':checkTarget, 'nodeip':checkTargetIP, 'port':checkPort, 'request':checkRequest, 'error':checkError }
+      item = {'id': checkId, 'status':checkStatus, 'backend':worker.backend, 'type':checkType, 'source':checkSource, 'node':checkTarget, 'nodeip':checkTargetIP, 'port':checkPort, 'request':checkRequest, 'error':checkError }
 
       existing = itemList.get('id', worker.uuid);
       if (existing.length > 0) {
