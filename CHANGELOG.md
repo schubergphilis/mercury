@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.12.6
+Bug:
+  * Ensure that if a webserver sends gzip encoded content without a content type, that mercury does not try to detect and send a type to the client
+
 ## 0.12.5
 Feature:
   * backend name is included in healthcheck page

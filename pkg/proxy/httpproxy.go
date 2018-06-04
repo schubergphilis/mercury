@@ -222,7 +222,16 @@ func (rp *ReverseProxy) ServeHTTP(rw http.ResponseWriter, outreq *http.Request) 
 		}
 
 		copyHeader(rw.Header(), res.Header)
-
+		modheader := rw.Header()
+		// if we do not have a content Type
+		// if we do have content Encoding
+		// and content encoding is gzip
+		// then keep content type empty by using nil
+		if len(modheader["Content-Encoding"]) > 0 && len(modheader["Content-Type"]) == 0 {
+			if strings.EqualFold(modheader["Content-Encoding"][0], "gzip") {
+				modheader["Content-Type"] = nil
+			}
+		}
 		// The "Trailer" header isn't included in the Transport's response,
 		// at least for *http.Transport. Build it up from Trailer.
 		if len(res.Trailer) > 0 {
