@@ -224,11 +224,14 @@ func (rp *ReverseProxy) ServeHTTP(rw http.ResponseWriter, outreq *http.Request) 
 		copyHeader(rw.Header(), res.Header)
 		// if we do not have a content Type
 		// if we do have content Encoding
-		// and content encoding is gzip
+		// and content encoding is gzip/compress/deflate/br
 		// then keep content type empty by using nil
 		modheader := rw.Header()
 		if len(modheader["Content-Encoding"]) > 0 && len(modheader["Content-Type"]) == 0 {
-			if strings.EqualFold(modheader["Content-Encoding"][0], "gzip") {
+			if strings.EqualFold(modheader["Content-Encoding"][0], "gzip") ||
+				strings.EqualFold(modheader["Content-Encoding"][0], "compress") ||
+				strings.EqualFold(modheader["Content-Encoding"][0], "deflate") ||
+				strings.EqualFold(modheader["Content-Encoding"][0], "br") {
 				modheader["Content-Type"] = nil
 			}
 		}
