@@ -3,13 +3,17 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.12.6
+Bug:
+  * Ensure that if a webserver sends an encoded content without a content type, that mercury does not try to detect and send a type to the client
+
 ## 0.12.5
 Feature:
   * backend name is included in healthcheck page
 
 Bug:
   * Exclicitly deny non-query opscodes, as we don't support remote updates at this point
-  * Reload did not affect new ldap configuration 
+  * Reload did not affect new ldap configuration
 
 ## 0.12.4
 Bug:
