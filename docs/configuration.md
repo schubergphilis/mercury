@@ -192,6 +192,7 @@ Deny | Inbound	| will deny a client if any of the deny rules matches the client 
 Add | Inbound/Outbound | Adds a header/cookie given match. Only if it does not exist.
 Replace | Inbound/Outbound | Replaces a header/cookie/status code given match. Only if it exists.
 Remove | Inbound/Outbound | Removes a header/cookie given match Only if it exists
+Modify | Inbound/Outbound | Modifies the supplied value of an existing entry (only works for Cookies)
 
 ## ACL special keys
 The following special keys are translated in the ACL to a value.
@@ -266,6 +267,23 @@ cookie_secure = true
 cookie_value = "###NODE_ID###"
 ```
 adds a stky cookie with the node_id the client is connected to
+
+SSL offloading adding/removing of Secure cookie
+add secure flag with responses to client we serve using https
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "modify"
+cookie_key = "ssloffloadedcookie"
+cookie_secure = true
+```
+
+remove secure flag with responses to server listening on http
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "modify"
+cookie_key = "ssloffloadedcookie"
+cookie_secure = false
+```
 
 
 ## ErrorPage Attributes

@@ -3,6 +3,14 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.0
+Feature:
+  * It is now possible to modify cookies based on specific values
+
+Bug:
+  * Fixed issue where request headers with cookie name X, would not return responses with the same cookie name
+  * Fixed issue where adding cookies would not be possible if a shorter cookie name, matched the start of a longer cookie name
+
 ## 0.12.6
 Bug:
   * Ensure that if a webserver sends an encoded content without a content type, that mercury does not try to detect and send a type to the client

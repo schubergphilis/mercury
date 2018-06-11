@@ -15,8 +15,8 @@ type ACL struct {
 	CookieValue    string   `json:"cookie_value" toml:"cookie_value"`       // cookie value
 	CookiePath     string   `json:"cookie_path" toml:"cookie_path"`         // cookie path
 	CookieExpire   duration `json:"cookie_expire" toml:"cookie_expire"`     // cookie expiry date
-	CookieSecure   bool     `json:"cookie_secure" toml:"cookie_secure"`     // cookie secure
-	Cookiehttponly bool     `json:"cookie_httponly" toml:"cookie_httponly"` // cookie httponly
+	CookieSecure   *bool    `json:"cookie_secure" toml:"cookie_secure"`     // cookie secure
+	Cookiehttponly *bool    `json:"cookie_httponly" toml:"cookie_httponly"` // cookie httponly
 	ConditionType  string   `json:"conditiontype" toml:"conditiontype"`     // header, cookie, other?
 	ConditionMatch string   `json:"conditionmatch" toml:"conditionmatch"`   // header text (e.g. /^Content-Type: (.*)/(.*)$/i)
 	StatusCode     int      `json:"status_code" toml:"status_code"`         // status code
@@ -51,6 +51,7 @@ const (
 	statusMatch  = "status"
 	addMatch     = "add"
 	replaceMatch = "replace"
+	modifyMatch  = "modify"
 	removeMatch  = "remove"
 	denyMatch    = "deny"
 	allowMatch   = "allow"
