@@ -19,8 +19,9 @@ var TestDuration = duration{}
 func TestACLCookie(t *testing.T) {
 	logging.Configure("stdout", "error")
 	TestDuration.UnmarshalText([]byte("24h"))
+	secureCookie := true
 	var TestACLForCookie = []ACL{
-		{Action: "add", CookieKey: "testkey", CookieValue: "testvalue", CookieExpire: TestDuration, CookieSecure: true, Cookiehttponly: true},
+		{Action: "add", CookieKey: "testkey", CookieValue: "testvalue", CookieExpire: TestDuration, CookieSecure: &secureCookie, Cookiehttponly: &secureCookie},
 	}
 
 	var TestACLForCookieResult = []string{
