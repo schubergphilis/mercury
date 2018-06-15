@@ -129,12 +129,16 @@ func (acl ACL) processCookie(header *http.Header, reqHeader *http.Header, cookie
 func (acl ACL) newCookie() *http.Cookie {
 	expire := time.Now().Add(acl.CookieExpire.Duration)
 	cookie := &http.Cookie{
-		Name:     acl.CookieKey,
-		Value:    acl.CookieValue,
-		Path:     acl.CookiePath,
-		Expires:  expire,
-		Secure:   *acl.CookieSecure,
-		HttpOnly: *acl.Cookiehttponly,
+		Name:    acl.CookieKey,
+		Value:   acl.CookieValue,
+		Path:    acl.CookiePath,
+		Expires: expire,
+	}
+	if acl.CookieSecure != nil {
+		cookie.Secure = *acl.CookieSecure
+	}
+	if acl.Cookiehttponly != nil {
+		cookie.HttpOnly = *acl.Cookiehttponly
 	}
 
 	return cookie
