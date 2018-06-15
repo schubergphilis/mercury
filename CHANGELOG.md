@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.1
+Feature:
+  * Add option to healthcheck to follow redirects httpget/httpposts (default is no)
+
 ## 0.13.0
 Feature:
   * It is now possible to modify cookies based on specific values

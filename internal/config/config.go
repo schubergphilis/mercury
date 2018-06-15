@@ -361,6 +361,10 @@ func SetHealthCheckDefault(check healthcheck.HealthCheck) healthcheck.HealthChec
 		check.Type = "tcpconnect"
 	}
 
+	if check.HTTPFollowRedirect == "" {
+		check.HTTPFollowRedirect = "yes"
+	}
+
 	switch check.OnlineState.Status {
 	case healthcheck.Automatic:
 		check.OnlineState.Status = healthcheck.Online

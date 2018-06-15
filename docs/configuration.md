@@ -394,6 +394,7 @@ Key | Option | Default | Values | Description
 [[..healthchecks]] | httpheaders | | ["arrayofstrings"] | headers sent with the http request (e.g. [ 'Accept: application/json' ])  
 [[..healthchecks]] | httpstatus | 200 | int | http status code expected from backend  
 [[..healthchecks]] | httpreply | | string/regex | string/regex expected in http reply from backend  
+[[..healthchecks]] | httpfollowredirect | "yes" | string | makes the http healchecks follow redirects or not, note that this does not follow to different ports (e.g. 80 to 443)
 [[..healthchecks]] | pingpackets | 4 | int | number of ping packets to send (only when 100% packetloss this will be reported as down)
 [[..healthchecks]] | pingtimeout | 1 | int (seconds) | timeout in seconds for each ping request
 [[..healthchecks]] | ip | | node.IP | alternative IP to send request to

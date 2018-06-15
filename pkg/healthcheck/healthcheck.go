@@ -36,27 +36,28 @@ type CheckResult struct {
 
 // HealthCheck custom HealthCheck
 type HealthCheck struct {
-	Type             string              `json:"type" toml:"type"`                         // check type
-	TCPRequest       string              `json:"tcprequest" toml:"tcprequest"`             // tcp request to send
-	TCPReply         string              `json:"tcpreply" toml:"tcpreply"`                 // tcp reply to expect
-	HTTPRequest      string              `json:"httprequest" toml:"httprequest"`           // http request to send
-	HTTPPostData     string              `json:"httppostdata" toml:"httppostdata"`         // http post data to send
-	HTTPHeaders      []string            `json:"httpheaders" toml:"httpheaders"`           // http headers to send
-	HTTPStatus       int                 `json:"httpstatus" toml:"httpstatus"`             // http status expected
-	HTTPReply        string              `json:"httpreply" toml:"httpreply"`               // http reply expected
-	PINGpackets      int                 `json:"pingpackets" toml:"pingpackets"`           // ping packets to send
-	PINGtimeout      int                 `json:"pingtimeout" toml:"pingtimeout"`           // ping timeout
-	Interval         int                 `json:"interval" toml:"interval"`                 // how often to cechk
-	Timeout          int                 `json:"timeout" toml:"timeout"`                   // timeout performing check
-	ActivePassiveID  string              `json:"activepassiveid" toml:"activepassiveid"`   // used to link active/passive backends
-	TLSConfig        tlsconfig.TLSConfig `json:"tls" toml:"tls"`                           // tls config
-	DisableAutoCheck bool                `json:"disableautocheck" toml:"disableautocheck"` // only respond to check requests
-	IP               string              `json:"ip" toml:"ip"`                             // specific ip
-	SourceIP         string              `json:"sourceip" toml:"sourceip"`                 // specific ip
-	Port             int                 `json:"port" toml:"port"`                         // specific port
-	OnlineState      StatusType          `json:"online_state" toml:"online_state"`         // alternative online_state - default: online / optional: offline / maintenance
-	OfflineState     StatusType          `json:"offline_state" toml:"offline_state"`       // alternative offline_state - default: offline
-	uuidStr          string
+	Type               string              `json:"type" toml:"type"`                             // check type
+	TCPRequest         string              `json:"tcprequest" toml:"tcprequest"`                 // tcp request to send
+	TCPReply           string              `json:"tcpreply" toml:"tcpreply"`                     // tcp reply to expect
+	HTTPRequest        string              `json:"httprequest" toml:"httprequest"`               // http request to send
+	HTTPPostData       string              `json:"httppostdata" toml:"httppostdata"`             // http post data to send
+	HTTPHeaders        []string            `json:"httpheaders" toml:"httpheaders"`               // http headers to send
+	HTTPStatus         int                 `json:"httpstatus" toml:"httpstatus"`                 // http status expected
+	HTTPReply          string              `json:"httpreply" toml:"httpreply"`                   // http reply expected
+	HTTPFollowRedirect string              `json:"httpfollowredirect" toml:"httpfollowredirect"` // http follow redirects
+	PINGpackets        int                 `json:"pingpackets" toml:"pingpackets"`               // ping packets to send
+	PINGtimeout        int                 `json:"pingtimeout" toml:"pingtimeout"`               // ping timeout
+	Interval           int                 `json:"interval" toml:"interval"`                     // how often to cechk
+	Timeout            int                 `json:"timeout" toml:"timeout"`                       // timeout performing check
+	ActivePassiveID    string              `json:"activepassiveid" toml:"activepassiveid"`       // used to link active/passive backends
+	TLSConfig          tlsconfig.TLSConfig `json:"tls" toml:"tls"`                               // tls config
+	DisableAutoCheck   bool                `json:"disableautocheck" toml:"disableautocheck"`     // only respond to check requests
+	IP                 string              `json:"ip" toml:"ip"`                                 // specific ip
+	SourceIP           string              `json:"sourceip" toml:"sourceip"`                     // specific ip
+	Port               int                 `json:"port" toml:"port"`                             // specific port
+	OnlineState        StatusType          `json:"online_state" toml:"online_state"`             // alternative online_state - default: online / optional: offline / maintenance
+	OfflineState       StatusType          `json:"offline_state" toml:"offline_state"`           // alternative offline_state - default: offline
+	uuidStr            string
 }
 
 // UUID returns a uuid of a healthcheck

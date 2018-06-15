@@ -111,6 +111,12 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 
 	client := &http.Client{Transport: tr}
 
+	if !strings.EqualFold(healthCheck.HTTPFollowRedirect, "yes") {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	}
+
 	var postData *bytes.Buffer
 	var req *http.Request
 	t := time.Now()
