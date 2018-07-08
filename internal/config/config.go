@@ -437,6 +437,9 @@ func SetDefaultDNSConfig(d *dns.Config) {
 				uuid := fmt.Sprintf("%x", hash.Sum(nil))
 				d.Domains[domainName].Records[rid].UUID = uuid
 				d.Domains[domainName].Records[rid].Statistics = balancer.NewStatistics(uuid, 0)
+				if d.Domains[domainName].Records[rid].LocalNetwork != "" {
+					d.Domains[domainName].Records[rid].Statistics.Topology = []string{d.Domains[domainName].Records[rid].LocalNetwork}
+				}
 			}
 		}
 	}
