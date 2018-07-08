@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.2
+Change:
+  * Topology based loadbalancing now returns records based on closest match (instead of all matching records)
+ 
 ## 0.13.1
 Feature:
   * Add option to healthcheck to follow redirects httpget/httpposts (default is no)
