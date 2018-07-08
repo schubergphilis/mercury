@@ -11,6 +11,9 @@ Change:
 Feature:
   * Add option to healthcheck to follow redirects httpget/httpposts (default is no)
 
+Bug:
+  * fix nil error if secure cookie or http only cookie was not set on a acl
+
 ## 0.13.0
 Feature:
   * It is now possible to modify cookies based on specific values
