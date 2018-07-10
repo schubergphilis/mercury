@@ -23,7 +23,7 @@ func sshAuth(host string, port int, sourceIP string, healthCheck HealthCheck) (S
 		sshConfig = &ssh.ClientConfig{
 			User: healthCheck.SSHUser,
 			Auth: []ssh.AuthMethod{
-				PublicKeyFile(healthCheck.SSHKey),
+				publicKeyFile(healthCheck.SSHKey),
 			},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
@@ -58,7 +58,8 @@ func sshAuth(host string, port int, sourceIP string, healthCheck HealthCheck) (S
 	return Online, nil
 }
 
-func PublicKeyFile(keyString string) ssh.AuthMethod {
+// publicKeyFile converts a string in to a ssh public key
+func publicKeyFile(keyString string) ssh.AuthMethod {
 	/*buffer, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil
