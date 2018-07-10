@@ -395,6 +395,9 @@ Key | Option | Default | Values | Description
 [[..healthchecks]] | httpstatus | 200 | int | http status code expected from backend  
 [[..healthchecks]] | httpreply | | string/regex | string/regex expected in http reply from backend  
 [[..healthchecks]] | httpfollowredirect | "yes" | string | makes the http healchecks follow redirects or not, note that this does not follow to different ports (e.g. 80 to 443)
+[[..healthchecks]] | sshuser | "" | string | username to create a ssh session with
+[[..healthchecks]] | sshpassword | "" | string | when set, use a password to authenticate
+[[..healthchecks]] | sshkey | "" | string | ssh private key joined with line breaks (e.g. "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAA...FA==\n-----END RSA PRIVATE KEY-----")
 [[..healthchecks]] | pingpackets | 4 | int | number of ping packets to send (only when 100% packetloss this will be reported as down)
 [[..healthchecks]] | pingtimeout | 1 | int (seconds) | timeout in seconds for each ping request
 [[..healthchecks]] | ip | | node.IP | alternative IP to send request to
@@ -420,6 +423,7 @@ httppost | same as `httpget`, only performs a POST instead of a GET
 icmpping | does a icmpping for the amount of `pingpackets` and will report down if there is 100% packetloss
 tcpping	| does a tcpping for the amount of `pingpackets` and will report down if there is 100% packetloss
 udpping | does a udpping for the amount of `pingpackets` and will report down if there is 100% packetloss
+ssh | does ssh authentication at the remote host
 
 ### Special Keys
 
