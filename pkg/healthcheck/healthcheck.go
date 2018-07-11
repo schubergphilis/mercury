@@ -45,6 +45,9 @@ type HealthCheck struct {
 	HTTPStatus         int                 `json:"httpstatus" toml:"httpstatus"`                 // http status expected
 	HTTPReply          string              `json:"httpreply" toml:"httpreply"`                   // http reply expected
 	HTTPFollowRedirect string              `json:"httpfollowredirect" toml:"httpfollowredirect"` // http follow redirects
+	SSHUser            string              `json:"sshuser" toml:"sshuser"`                       // ssh user
+	SSHPassword        string              `json:"sshpassword" toml:"sshpassword"`               // ssh password
+	SSHKey             string              `json:"sshkey" toml:"sshkey"`                         // ssh key
 	PINGpackets        int                 `json:"pingpackets" toml:"pingpackets"`               // ping packets to send
 	PINGtimeout        int                 `json:"pingtimeout" toml:"pingtimeout"`               // ping timeout
 	Interval           int                 `json:"interval" toml:"interval"`                     // how often to cechk

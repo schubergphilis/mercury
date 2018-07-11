@@ -61,6 +61,9 @@ func (w *Worker) Description() string {
 	case "tcpdata":
 		return fmt.Sprintf("tcpdata:%s:%d:%s", w.IP, w.Port, w.Check.TCPRequest)
 
+	case "ssh":
+		return fmt.Sprintf("ssh:%s:%d:%s", w.IP, w.Port, w.Check.SSHUser)
+
 	case "httpget":
 		return fmt.Sprintf("httpget:%s:%d:%s", w.IP, w.Port, strings.Split(w.Check.HTTPRequest, "?")[0])
 
@@ -190,6 +193,9 @@ func (w *Worker) executeCheck() (Status, error) {
 
 	case "tcpdata":
 		result, err = tcpData(w.IP, w.Port, w.SourceIP, w.Check)
+
+	case "ssh":
+		result, err = sshAuth(w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "httpget":
 		result, err = httpRequest("GET", w.IP, w.Port, w.SourceIP, w.Check)

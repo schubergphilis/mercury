@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.3
+Feature:
+  * Added option to use SSH authentication as health check for a node
+
 ## 0.13.2
 Change:
   * Topology based loadbalancing now returns records based on closest match (instead of all matching records)
