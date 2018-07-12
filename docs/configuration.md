@@ -288,6 +288,13 @@ cookie_key = "ssloffloadedcookie"
 cookie_secure = false
 ```
 
+rewrite all urls behind "/old/path" to "/new"
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.inboundacls]]
+action = "rewrite"
+urlmatch = "/old/path/(.*)$"
+urlreplace = "/new/$1"
+```
 
 ## ErrorPage Attributes
 
