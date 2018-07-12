@@ -80,7 +80,7 @@ func (acl ACL) ProcessRequest(req *http.Request) (deny bool) {
 
 	default: // always executed
 		if acl.URLMatch != "" {
-			return acl.processUri(req)
+			return acl.processURI(req)
 		}
 
 		if acl.HeaderKey != "" {
