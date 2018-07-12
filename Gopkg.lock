@@ -32,6 +32,12 @@
   revision = "a5fe2436ffcb3236e175e5149162b41cd28bd27d"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
@@ -56,15 +62,27 @@
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/rdoorn/dnsr"
   packages = ["."]
   revision = "7ea4e5f385b0fb47b2e9f575ab1c63c6e1f1b186"
 
 [[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ed25519","ed25519/internal/edwards25519","ocsp"]
+  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","internal/chacha20","ocsp","poly1305","ssh"]
   revision = "d9133f5469342136e669e85192a26056b587f503"
 
 [[projects]]
@@ -106,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "806dcfda6dfd602cc3c7ae815bb0ba9ae70ef71a0549aa01f5c8ca3f7a696378"
+  inputs-digest = "22a0503ab6fc1f529d3e34ebf3e35042c73309d3221537396a883a54cdc95e49"
   solver-name = "gps-cdcl"
   solver-version = 1
