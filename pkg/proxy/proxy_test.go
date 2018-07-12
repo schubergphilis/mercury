@@ -12,6 +12,7 @@ import (
 
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
+	"github.com/stretchr/testify/assert"
 )
 
 var TestDuration = duration{}
@@ -335,4 +336,40 @@ func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
 			return
 		}
 	}
+}
+
+func TestACLURL(t *testing.T) {
+	logging.Configure("stdout", "error")
+	TestDuration.UnmarshalText([]byte("24h"))
+	var acl = []ACL{
+		{Action: "allow", URLMatch: "/ok/.*"},
+		{Action: "deny", URLMatch: "/deny/.*"},
+		{Action: "rewrite", URLMatch: "/.(.*)$", URLRewrite: "/X$1"},
+	}
+
+	req, _ := http.NewRequest("GET", "/ok/ok", nil)
+	result := acl[0].ProcessRequest(req)
+	//fmt.Printf("expect:allow deny:%t url:%s\n", result, req.URL.RequestURI())
+	assert.Equal(t, false, result, "url should be allowed")
+
+	req, _ = http.NewRequest("GET", "/deny", nil)
+	result = acl[0].ProcessRequest(req)
+	//fmt.Printf("expect:deny deny:%t url:%s\n", result, req.URL.RequestURI())
+	assert.Equal(t, true, result, "url should not be allowed")
+
+	req, _ = http.NewRequest("GET", "/deny/deny", nil)
+	result = acl[1].ProcessRequest(req)
+	//fmt.Printf("expect:deny deny:%t url:%s\n", result, req.URL.RequestURI())
+	assert.Equal(t, true, result, "url should not be allowed")
+
+	req, _ = http.NewRequest("GET", "/ok", nil)
+	result = acl[1].ProcessRequest(req)
+	//fmt.Printf("expect:allow deny:%t url:%s\n", result, req.URL.RequestURI())
+	assert.Equal(t, false, result, "url should be allowed")
+
+	req, _ = http.NewRequest("GET", "/rewrite", nil)
+	result = acl[2].ProcessRequest(req)
+	//fmt.Printf("expect rewrite + allow deny:%t url:%s\n", result, req.URL.RequestURI())
+	assert.Equal(t, "/Xewrite", req.URL.RequestURI(), "url should be rewritten")
+
 }

@@ -19,6 +19,8 @@ type ACL struct {
 	Cookiehttponly *bool    `json:"cookie_httponly" toml:"cookie_httponly"` // cookie httponly
 	ConditionType  string   `json:"conditiontype" toml:"conditiontype"`     // header, cookie, other?
 	ConditionMatch string   `json:"conditionmatch" toml:"conditionmatch"`   // header text (e.g. /^Content-Type: (.*)/(.*)$/i)
+	URLMatch       string   `json:"urlmatch" toml:"urlmatch"`               // url match #^/(.*)#
+	URLRewrite     string   `json:"urlrewrite" toml:"urlrewrite"`           // url rewrite /Other/Path/$1
 	StatusCode     int      `json:"status_code" toml:"status_code"`         // status code
 	URLPath        string   `json:"url_path" toml:"url_path"`               // request path to match this acl if provided
 	CIDRS          []string `json:"cidrs" toml:"cidrs"`                     // network cidr
@@ -49,6 +51,7 @@ const (
 	headerMatch  = "header"
 	cookieMatch  = "cookie"
 	statusMatch  = "status"
+	rewriteMatch = "rewrite"
 	addMatch     = "add"
 	replaceMatch = "replace"
 	modifyMatch  = "modify"
@@ -76,6 +79,10 @@ func (acl ACL) ProcessRequest(req *http.Request) (deny bool) {
 		return acl.processCookie(&req.Header, nil, "Cookie")
 
 	default: // always executed
+		if acl.URLMatch != "" {
+			return acl.processUri(req)
+		}
+
 		if acl.HeaderKey != "" {
 			return acl.processHeader(&req.Header)
 		}
