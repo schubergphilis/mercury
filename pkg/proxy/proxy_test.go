@@ -349,27 +349,22 @@ func TestACLURL(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/ok/ok", nil)
 	result := acl[0].ProcessRequest(req)
-	//fmt.Printf("expect:allow deny:%t url:%s\n", result, req.URL.RequestURI())
 	assert.Equal(t, false, result, "url should be allowed")
 
 	req, _ = http.NewRequest("GET", "/deny", nil)
 	result = acl[0].ProcessRequest(req)
-	//fmt.Printf("expect:deny deny:%t url:%s\n", result, req.URL.RequestURI())
 	assert.Equal(t, true, result, "url should not be allowed")
 
 	req, _ = http.NewRequest("GET", "/deny/deny", nil)
 	result = acl[1].ProcessRequest(req)
-	//fmt.Printf("expect:deny deny:%t url:%s\n", result, req.URL.RequestURI())
 	assert.Equal(t, true, result, "url should not be allowed")
 
 	req, _ = http.NewRequest("GET", "/ok", nil)
 	result = acl[1].ProcessRequest(req)
-	//fmt.Printf("expect:allow deny:%t url:%s\n", result, req.URL.RequestURI())
 	assert.Equal(t, false, result, "url should be allowed")
 
 	req, _ = http.NewRequest("GET", "/rewrite", nil)
 	result = acl[2].ProcessRequest(req)
-	//fmt.Printf("expect rewrite + allow deny:%t url:%s\n", result, req.URL.RequestURI())
 	assert.Equal(t, "/Xewrite", req.URL.RequestURI(), "url should be rewritten")
 
 }
