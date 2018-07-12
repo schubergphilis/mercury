@@ -180,6 +180,8 @@ Key | Option | Default | Values | Description
 ... | cookiesecure |  | bool | secure cookie
 ... | conditiontype | "" | string | header/cookie status	type to match with regex
 ... | conditionmatch | "" | string | regex string to match
+... | urlmatch | "" | regex | match a request URL (e.g. `/my/path/(.*)$` )
+... | urlrewrite | "" | regex | rewrite a request URL (e.g. `/new/path/$1`) (does not work with the ACL special keys)
 ... | statuscode |  | int | status code to return to the client (e.g. 500)
 ... | cidrs |  | ["ip/nm"] | cidr for use with allow/deny acl's (e.g. 127.0.0.1/32)
 ... | urlpath | "" | regex string | request path to which this acl applies. if path is set and does not match, acl is ignored.  (e.g. ^/path/to/file )
@@ -189,6 +191,7 @@ Action | ACL Type | Result
 --- | --- | ---
 Allow | Inbound	| will deny a client if non of the allowed rules matches the client header/ip
 Deny | Inbound	| will deny a client if any of the deny rules matches the client header/ip
+Rewrite | Inbound	| will rewrite a url based on urlmatch and urlrewrite
 Add | Inbound/Outbound | Adds a header/cookie given match. Only if it does not exist.
 Replace | Inbound/Outbound | Replaces a header/cookie/status code given match. Only if it exists.
 Remove | Inbound/Outbound | Removes a header/cookie given match Only if it exists
@@ -285,6 +288,13 @@ cookie_key = "ssloffloadedcookie"
 cookie_secure = false
 ```
 
+rewrite all urls behind "/old/path" to "/new"
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.inboundacls]]
+action = "rewrite"
+urlmatch = "/old/path/(.*)$"
+urlreplace = "/new/$1"
+```
 
 ## ErrorPage Attributes
 

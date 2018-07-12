@@ -3,6 +3,11 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.4
+Feature:
+  * Added option to rewrite url before passing it on to the backend
+  * Added option to allow/deny requests based on url matches
+
 ## 0.13.3
 Feature:
   * Added option to use SSH authentication as health check for a node
