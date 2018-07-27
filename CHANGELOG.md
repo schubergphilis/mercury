@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.5
+Change: 
+  * Added additional security headers to web gui
+
 ## 0.13.4
 Feature:
   * Added option to rewrite url before passing it on to the backend
