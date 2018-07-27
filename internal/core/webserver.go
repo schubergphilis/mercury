@@ -335,6 +335,7 @@ func (m *Manager) NewServer(ip string, port int) (s *http.Server, l net.Listener
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
+		Handler:        WebSecurityHeaders(http.DefaultServeMux),
 	}
 	box, _ := rice.FindBox("static")
 	staticContent := http.StripPrefix("/static/", http.FileServer(box.HTTPBox()))
@@ -388,4 +389,18 @@ func webWriteError(w http.ResponseWriter, statusCode int, err string) {
 	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte("Oops... " + err))
+}
+
+func WebSecurityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Add("X-XSS-Protection", "1; mode=block")
+		w.Header().Add("X-Frame-Options", "SAMEORIGIN")
+		w.Header().Add("X-Content-Type-Options", "nosniff")
+		if r.TLS != nil {
+			w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubdomains; preload")
+		}
+		next.ServeHTTP(w, r)
+	})
+
 }
