@@ -391,6 +391,7 @@ func webWriteError(w http.ResponseWriter, statusCode int, err string) {
 	w.Write([]byte("Oops... " + err))
 }
 
+// WebSecurityHeaders adds security headers to the web gui
 func WebSecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
