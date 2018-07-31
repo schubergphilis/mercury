@@ -506,7 +506,9 @@ port = 25
 [[loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.nodes]]
 ip = "95.142.102.175"
 port = 25
-
+[[loadbalancer.pools.INTERNAL_VIP_MX.backends.example_mx.inboundacls]]
+action = "allow"
+cidrs = ["10.10.0.197/32", "%LOCALIP%/32"]
 
 # MX TCP test
 [loadbalancer.pools.INTERNAL_VIP_ONE.listener]
