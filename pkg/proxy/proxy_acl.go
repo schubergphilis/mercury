@@ -154,3 +154,12 @@ func (acls ACLS) CountActions(action string) (count int) {
 
 	return
 }
+
+// ProcessTCPRequest processes ACL's for tcp proxy
+func (acl ACL) ProcessTCPRequest(clientIP string) (deny bool) {
+
+	if len(acl.CIDRS) > 0 {
+		return acl.processCIDR(clientIP)
+	}
+	return false
+}

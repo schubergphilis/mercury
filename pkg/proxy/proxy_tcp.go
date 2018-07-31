@@ -68,6 +68,32 @@ func (l *Listener) Handler(client net.Conn) {
 		return
 	}
 
+	// ACL
+	aclAllows := backend.InboundACL.CountActions("allow")
+	aclDenies := backend.InboundACL.CountActions("deny")
+	// Process all ACL's and count hit's if any
+	aclsHit := 0
+	for _, inacl := range backend.InboundACL {
+		if inacl.ProcessTCPRequest(clientip[0]) { // process request returns true if we match a allow/deny acl
+			aclsHit++
+		}
+	}
+
+	// Take actions based on allow/deny, you cannot combine allow and denies
+	if aclDenies > 0 && aclAllows > 0 {
+		log.Errorf("Found ALLOW and DENY ACL's in the same block, only allows will be processed")
+	}
+
+	if aclAllows > 0 && aclsHit == 0 { // setting an allow ACL, will deny all who do not match atleast 1 allow
+		log.Infof("Client did not match allow acl")
+		client.Close()
+		return
+	} else if aclAllows == 0 && aclDenies > 0 && aclsHit > 0 { // setting an deny ACL, will deny all who match 1 of the denies
+		log.Infof("Client matched deny acl")
+		client.Close()
+		return
+	}
+
 	node, status, err := backend.GetBackendNodeBalanced(l.Name, clientip[0], "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
 	if err != nil {
 		if status == healthcheck.Maintenance {
