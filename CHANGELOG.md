@@ -4,8 +4,9 @@
 
 ## unreleased
 ## 0.13.5
-Change: 
+Change:
   * Added additional security headers to web gui
+  * CIDR inbound ACL's now also apply to TCP proxy
 
 ## 0.13.4
 Feature:
