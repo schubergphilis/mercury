@@ -208,6 +208,7 @@ NODE_IP	| returns the ip of the backend node
 LB_IP | returns the ip of the listener
 REQ_URL | returns the requested host + path
 REQ_PATH | returns the requested path
+REQ_QUERY | returns the encoded query values without the leading '?'
 REQ_HOST | returns the requested host
 REQ_IP | returns the ip of the requested host
 CLIENT_IP	| returns the remote addr of the client

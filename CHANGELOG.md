@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.6
+Feature:
+  * Added option for REQ_QUERY in ACL url rewriting
+
 ## 0.13.5
 Change:
   * Added additional security headers to web gui

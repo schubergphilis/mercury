@@ -150,6 +150,9 @@ func processACLVariables(acl []ACL, l *Listener, backendnode BackendNode, req *h
 			case "REQ_URL":
 				return req.Host + req.URL.Path
 
+			case "REQ_QUERY":
+				return req.URL.RawQuery
+
 			case "REQ_PATH":
 				return req.URL.Path
 
