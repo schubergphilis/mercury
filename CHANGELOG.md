@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.7
+Feature:
+  * Support TLS Client certificates in checks
+
 ## 0.13.6
 Feature:
   * Added option for REQ_QUERY in ACL url rewriting
