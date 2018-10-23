@@ -496,6 +496,14 @@ func (c *Config) ValidateCertificates() error {
 						return fmt.Errorf("Certificate issue for pool:%s backend:%s %s", poolName, backendName, err.Error())
 					}
 
+					for _, check := range backend.HealthChecks {
+						if check.TLSConfig.CertificateProvided() {
+							if err := check.TLSConfig.Valid(); err != nil {
+								return fmt.Errorf("Certificate issue for pool:%s backend:%s check:%s_%s_%d %s", poolName, backendName, check.Type, check.IP, check.Port, err.Error())
+							}
+						}
+					}
+
 					certcount++
 				}
 			}
