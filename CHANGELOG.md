@@ -3,6 +3,11 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.8
+Feature:
+  * Be able to specify the amount of cluster nodes, or backend nodes for monitoring to alert on
+  * Optionally enable golang pprof profiler using the PROFILER_ADDR="localhost:6060" environment variable
+
 ## 0.13.7
 Feature:
   * Support TLS Client certificates in checks

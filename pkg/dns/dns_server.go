@@ -32,18 +32,18 @@ type Domain struct {
 
 // Record of any type
 type Record struct {
-	Name          string               `toml:"name" json:"name"`                   // hostname
-	Type          string               `toml:"type" json:"type"`                   // record type
-	Target        string               `toml:"target" json:"target"`               // reply of record
-	TTL           int                  `toml:"ttl" json:"ttl"`                     // time to live
-	BalanceMode   string               `toml:"balancemode" json:"balancemode"`     // balance mode of dns
-	ActivePassive string               `toml:"activepassive" json:"activepassive"` // used for monitoring only: record is active/passive setup
-	ClusterNodes  int                  `toml:"clusternodes" json:"clusternodes"`   // ammount of cluster nodes that should serve this domain (defaults to len(clusternodes))
-	LocalNetwork  string               `toml:"localnetwork" json:"localnetwork"`   // used by balance mode: topology
-	Statistics    *balancer.Statistics `toml:"statistics" json:"statistics"`       // stats
-	Status        Status               `toml:"status" json:"status"`               // is record online (do we serve it)
-	Local         bool                 `toml:"local" json:"local"`                 // true if record is of the local dns server
-	UUID          string               `toml:"uuid" json:"uuid"`                   // links record to check that added it,usefull for removing dead checks
+	Name                string               `toml:"name" json:"name"`                                   // hostname
+	Type                string               `toml:"type" json:"type"`                                   // record type
+	Target              string               `toml:"target" json:"target"`                               // reply of record
+	TTL                 int                  `toml:"ttl" json:"ttl"`                                     // time to live
+	BalanceMode         string               `toml:"balancemode" json:"balancemode"`                     // balance mode of dns
+	ActivePassive       string               `toml:"activepassive" json:"activepassive"`                 // used for monitoring only: record is active/passive setup
+	ServingClusterNodes int                  `toml:"serving_cluster_nodes" json:"serving_cluster_nodes"` // ammount of cluster nodes that should serve this domain (defaults to len(clusternodes))
+	LocalNetwork        string               `toml:"localnetwork" json:"localnetwork"`                   // used by balance mode: topology
+	Statistics          *balancer.Statistics `toml:"statistics" json:"statistics"`                       // stats
+	Status              Status               `toml:"status" json:"status"`                               // is record online (do we serve it)
+	Local               bool                 `toml:"local" json:"local"`                                 // true if record is of the local dns server
+	UUID                string               `toml:"uuid" json:"uuid"`                                   // links record to check that added it,usefull for removing dead checks
 }
 
 // Config has the dns config

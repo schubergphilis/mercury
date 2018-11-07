@@ -31,14 +31,14 @@ func (manager *Manager) DNSHandler() {
 			}
 
 			record := dns.Record{
-				Name:          dnsupdate.DNSEntry.HostName,
-				TTL:           ttl,
-				BalanceMode:   dnsupdate.BalanceMode.Method,
-				ActivePassive: dnsupdate.BalanceMode.ActivePassive,
-				ClusterNodes:  dnsupdate.BalanceMode.ClusterNodes,
-				Statistics:    stats,
-				UUID:          dnsupdate.BackendUUID,
-				Status:        healthcheckStatusToDNSStatus(dnsupdate.Status),
+				Name:                dnsupdate.DNSEntry.HostName,
+				TTL:                 ttl,
+				BalanceMode:         dnsupdate.BalanceMode.Method,
+				ActivePassive:       dnsupdate.BalanceMode.ActivePassive,
+				ServingClusterNodes: dnsupdate.BalanceMode.ServingClusterNodes,
+				Statistics:          stats,
+				UUID:                dnsupdate.BackendUUID,
+				Status:              healthcheckStatusToDNSStatus(dnsupdate.Status),
 			}
 			// TODO: pass record type along, and get rid of ipv6/ipv4 seperation
 			clog := log.WithField("hostname", dnsupdate.DNSEntry.HostName).WithField("domain", dnsupdate.DNSEntry.Domain).WithField("cluster", dnsupdate.ClusterNode).WithField("backend", dnsupdate.BackendName).WithField("uuid", dnsupdate.BackendUUID).WithField("status", dnsupdate.Status)

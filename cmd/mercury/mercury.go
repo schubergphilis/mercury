@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -14,7 +15,8 @@ import (
 
 	"github.com/Wang/pid"
 	// Only enabled for profiling
-	// _ "net/http/pprof"
+	"net/http"
+	"net/http/pprof"
 )
 
 // version is set during makefile
@@ -36,10 +38,11 @@ func main() {
 
 	log := logging.For("main")
 
-	// pprof profiling disabled by default
-	// go http.ListenAndServe("localhost:6060", nil)
-	// runtime.SetBlockProfileRate(1)
-	// runtime.SetMutexProfileFraction(1)
+	addr, ok := os.LookupEnv("PROFILER_ADDR")
+	if ok {
+		log.Info("Starting profiler at http://%s", addr)
+		go EnableProfiler(addr)
+	}
 
 	// Default logging before reading the config
 	config.LogTarget = "stdout"
@@ -107,4 +110,13 @@ func main() {
 			reload <- true
 		}
 	}
+}
+
+// EnableProfiler starts the profiler on localhost port 6060
+func EnableProfiler(addr string) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", pprof.Index)
+	runtime.SetBlockProfileRate(1)
+	runtime.SetMutexProfileFraction(1)
+	http.ListenAndServe(addr, mux)
 }

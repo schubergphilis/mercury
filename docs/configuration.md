@@ -360,7 +360,9 @@ Key | Option | Default | Values | Description
 [..balance] | local_topology | [] | ["ip/nm"] | List of cidr's that defines the local network (e.g. [ "127.0.0.1/32" ])
 [..balance] | preference |  | int | value used for preference based load-balancing
 [..balance] | active_passive | "no" | "yes"/"no" | set to yes if this will only be up on 1 of the clusters - only affects monitoring
-[..balance] | clusternodes | *calculated* | int | the ammount of cluster nodes serving this backend - only affects monitoring (used for backend that are only available on 1 of multiple load-balancers)
+[..balance] | clusternodes | *calculated* | int | (depricated) use serving_cluster_nodes instead
+[..balance] | serving_cluster_nodes | *calculated* | int | the ammount of cluster nodes serving this backend - only affects monitoring (used for backend that are only available on 1 of multiple load-balancers)
+[..balance] | serving_backend_nodes | *calculated* | int | the ammount of backend nodes serving this backend - only affects monitoring (used for when you expect x out of y nodes to be online always)
 
 
 ## Loadbalancing Methods
