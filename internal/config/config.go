@@ -265,8 +265,17 @@ func (c *Config) ParseConfig() error {
 				h.HealthCheckMode = "all"
 			}
 
-			if backend.BalanceMode.ClusterNodes == 0 {
-				h.BalanceMode.ClusterNodes = len(c.Cluster.Nodes)
+			// Backwards compatibility: if ClusterNodes is set, put this in the new ServingClusterNdoes
+			if backend.BalanceMode.ClusterNodes != 0 {
+				h.BalanceMode.ServingClusterNodes = backend.BalanceMode.ClusterNodes
+			}
+
+			if backend.BalanceMode.ServingClusterNodes == 0 {
+				h.BalanceMode.ServingClusterNodes = len(c.Cluster.Nodes)
+			}
+
+			if backend.BalanceMode.ServingBackendNodes == 0 {
+				h.BalanceMode.ServingBackendNodes = len(backend.Nodes)
 			}
 
 			if backend.BalanceMode.LocalTopology != "" {

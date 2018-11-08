@@ -20,6 +20,9 @@ func otherNodes(nodes []string) (diff []string) {
 		m[val.Name] = m[val.Name] + 1
 	}
 
+	// remove self from the other nodes
+	m[config.Get().Cluster.Binding.Name] = 0
+
 	for key, val := range m {
 		if val == 1 {
 			diff = append(diff, key)
@@ -69,9 +72,9 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 				} else if len(okNodes) == 0 {
 					// Completely offline
 					faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: No backends online on any cluster! (%d/%d)", rec.Name, domainname, len(okNodes), len(targets)))
-				} else if len(okNodes) < rec.ClusterNodes {
+				} else if len(okNodes) < rec.ServingClusterNodes {
 					// we do not have all ok nodes, faultyNodes however might not know all nodes in error, so lets report all not OK
-					faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: Entry not available on all clusters (ok:%v, faulty:%v expected number of nodes ok:%v)", rec.Name, domainname, okNodes, otherNodes(okNodes), rec.ClusterNodes))
+					faultyTargets = append(faultyTargets, fmt.Sprintf("%s.%s in error: Entry not available on all clusters (ok:%v, faulty:%v expected number of nodes ok:%v)", rec.Name, domainname, okNodes, otherNodes(okNodes), rec.ServingClusterNodes))
 				}
 			}
 		}

@@ -93,12 +93,14 @@ type BackendPool struct {
 
 // BalanceMode Which type of loadbalancing to use
 type BalanceMode struct {
-	Method        string   `json:"method" toml:"method"`                 // balance method for the backend
-	LocalTopology string   `json:"local_topology" toml:"local_topology"` // overrides localnetwork
-	ActivePassive string   `json:"active_passive" toml:"active_passive"` // active_passive only affects monitoring: when "yes" only alert if there are no nodes up
-	Preference    int      `json:"preference" toml:"preference"`         // used for preference based loadbalancing
-	LocalNetwork  []string `json:"local_network" toml:"local_network"`   // used for topology based loadbalancing
-	ClusterNodes  int      `json:"clusternodes" toml:"clusternodes"`     // affects monitoring only: how many cluster nodes serve this backend
+	Method              string   `json:"method" toml:"method"`                               // balance method for the backend
+	LocalTopology       string   `json:"local_topology" toml:"local_topology"`               // overrides localnetwork
+	ActivePassive       string   `json:"active_passive" toml:"active_passive"`               // active_passive only affects monitoring: when "yes" only alert if there are no nodes up
+	Preference          int      `json:"preference" toml:"preference"`                       // used for preference based loadbalancing
+	LocalNetwork        []string `json:"local_network" toml:"local_network"`                 // used for topology based loadbalancing
+	ClusterNodes        int      `json:"clusternodes" toml:"clusternodes"`                   // Depricated: affects monitoring only: how many cluster nodes serve this backend
+	ServingClusterNodes int      `json:"serving_cluster_nodes" toml:"serving_cluster_nodes"` // affects monitoring only: how many cluster nodes serve this backend
+	ServingBackendNodes int      `json:"serving_backend_nodes" toml:"serving_backend_nodes"` // affects monitoring only: how many backend nodes serve this backend
 }
 
 // Network Contains network information
