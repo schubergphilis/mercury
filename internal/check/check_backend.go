@@ -12,6 +12,7 @@ import (
 // checkBackendsOnline checks if all backends are online
 func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 	var faultyTargets []string
+	//var faultyTargetsOnline []string
 	for poolname, pool := range pools {
 		for backendname, backend := range pool.Backends {
 			offline := 0
@@ -23,13 +24,32 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 				} else {
 					online++
 				}
+				fmt.Printf("node: %s status: %s onlinecount:%d offlinecount:%d activepassive:%s backendNodes:%d servingbackends:%d\n", node.Name(), node.Status, online, offline, backend.BalanceMode.ActivePassive, backend.Nodes, backend.BalanceMode.ServingBackendNodes)
 			}
 
-			// Report error nodes if any node is offline, or if active/passive has none online - with the exception of active/passive with only 1 node - we ignore this
-			if (online != backend.BalanceMode.ServingBackendNodes && backend.BalanceMode.ActivePassive != YES) || (offline > 1 && online == 0 && backend.BalanceMode.ActivePassive == YES) {
+			// active passive: if offline > 1 && online == 0   - we alert if there is more then 1 offline, or none online
+			if offline > 1 && online == 0 && backend.BalanceMode.ActivePassive == YES {
+				for _, node := range backend.Nodes {
+					if node.Status == healthcheck.Offline {
+						faultyTargets = append(faultyTargets, fmt.Sprintf("Offline Node:%s:%d (Backend:%s Pool:%s)", node.IP, node.Port, backendname, poolname))
+					}
+				}
+			}
+
+			// non-acitve-passive nodes offline
+			if online < backend.BalanceMode.ServingBackendNodes && backend.BalanceMode.ActivePassive != YES {
+				for _, node := range backend.Nodes {
+					if node.Status == healthcheck.Offline {
+						faultyTargets = append(faultyTargets, fmt.Sprintf("%d/%d Online Node:%s:%d (Backend:%s Pool:%s)", online, backend.BalanceMode.ServingBackendNodes, node.IP, node.Port, backendname, poolname))
+					}
+				}
+			}
+
+			// non-acitve-passive too many nodes online
+			if online > backend.BalanceMode.ServingBackendNodes && backend.BalanceMode.ActivePassive != YES {
 				for _, node := range backend.Nodes {
 					if node.Status == healthcheck.Online {
-						faultyTargets = append(faultyTargets, fmt.Sprintf("Node:%s:%d (Backend:%s Pool:%s)", node.IP, node.Port, backendname, poolname))
+						faultyTargets = append(faultyTargets, fmt.Sprintf("%d/%d Online Node:%s:%d (Backend:%s Pool:%s)", online, backend.BalanceMode.ServingBackendNodes, node.IP, node.Port, backendname, poolname))
 					}
 				}
 			}
@@ -37,7 +57,7 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 		}
 	}
 	if faultyTargets != nil {
-		return CRITICAL, fmt.Errorf("The following node(s) failed their healthcheck(s) and are Offline: %v", faultyTargets)
+		return CRITICAL, fmt.Errorf("The following node(s) failed their healthcheck(s): %v", faultyTargets)
 	}
 	return OK, nil
 }
@@ -53,6 +73,7 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 				if node.Status == healthcheck.Online {
 					nodes++
 				}
+				//fmt.Printf("node: %s status: %s onlinecount:%d activepassive:%s backendNodes:%d\n", node.Name(), node.Status, nodes, backend.BalanceMode.ActivePassive, backend.Nodes)
 			}
 
 			if backend.BalanceMode.ActivePassive == YES {
