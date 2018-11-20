@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.13.9
+Bug:
+  * Health check report had wrong wording when reporting 2 nodes online when 1 was expected
+
 ## 0.13.8
 Feature:
   * Be able to specify the amount of cluster nodes, or backend nodes for monitoring to alert on
