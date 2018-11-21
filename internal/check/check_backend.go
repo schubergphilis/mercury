@@ -12,7 +12,6 @@ import (
 // checkBackendsOnline checks if all backends are online
 func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 	var faultyTargets []string
-	//var faultyTargetsOnline []string
 	for poolname, pool := range pools {
 		for backendname, backend := range pool.Backends {
 			offline := 0
@@ -24,7 +23,6 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 				} else {
 					online++
 				}
-				fmt.Printf("node: %s status: %s onlinecount:%d offlinecount:%d activepassive:%s backendNodes:%d servingbackends:%d\n", node.Name(), node.Status, online, offline, backend.BalanceMode.ActivePassive, backend.Nodes, backend.BalanceMode.ServingBackendNodes)
 			}
 
 			// active passive: if offline > 1 && online == 0   - we alert if there is more then 1 offline, or none online
@@ -73,7 +71,6 @@ func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error)
 				if node.Status == healthcheck.Online {
 					nodes++
 				}
-				//fmt.Printf("node: %s status: %s onlinecount:%d activepassive:%s backendNodes:%d\n", node.Name(), node.Status, nodes, backend.BalanceMode.ActivePassive, backend.Nodes)
 			}
 
 			if backend.BalanceMode.ActivePassive == YES {
