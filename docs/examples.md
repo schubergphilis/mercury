@@ -343,3 +343,22 @@ If user exists in the filter, then login is successful
     [web.auth.ldap.tls]
     insecureskipverify = true               # Ignore SSL certificate hostname mismatches (for self-signed certificates)
 ```
+
+
+### Healthchecks via Commandline
+You can execute health checks using the commandline for use with Sensu, Nagios or another tool
+
+Checking a specific backend:
+```
+mercury --config-file ./test/mercury.toml --pid-file /tmp/mercury.pid --check-backend --pool-name INTERNAL_VIP --backend-name example
+```
+
+Checking a specific GLB entry/DNS Name:
+```
+mercury --config-file ./test/mercury.toml --pid-file /tmp/mercury.pid --check-glb --dns-name random.glb.example.com
+```
+
+Checking the cluster status:
+```
+mercury --config-file ./test/mercury.toml --pid-file /tmp/mercury.pid --check-glb --cluster-only
+```

@@ -18,6 +18,10 @@ type Config struct {
 	CheckBackend *bool
 	Debug        *bool
 	Version      *bool
+	BackendName  *string
+	PoolName     *string
+	DNSName      *string
+	ClusterOnly  *bool
 }
 
 var (
@@ -34,6 +38,10 @@ func init() {
 		CheckBackend: flag.Bool("check-backend", false, "gives you a Backend report"),
 		Debug:        flag.Bool("debug", false, "force logging to debug mode"),
 		Version:      flag.Bool("version", false, "display version"),
+		BackendName:  flag.String("backend-name", "", "only check selected backend name"),
+		PoolName:     flag.String("pool-name", "", "only check selected pool name"),
+		DNSName:      flag.String("dns-name", "", "only check selected dns name"),
+		ClusterOnly:  flag.Bool("cluster-only", false, "only check cluster"),
 	}
 	flag.Parse()
 	config = &c

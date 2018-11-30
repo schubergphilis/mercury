@@ -7,6 +7,7 @@ import (
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/logging"
+	"github.com/schubergphilis/mercury/pkg/param"
 )
 
 // otherNodes Find the other nodes, not the nodes given
@@ -55,11 +56,17 @@ func checkLoadbalancerCount(dnsmanager map[string]dns.Domains) (int, error) {
 // checkEntryOnAllLoadbalancers checks if a dne record has a entry in all loadbalancers
 func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error) {
 	var faultyTargets []string
+	recordsFound := 0
 	nodename := config.Get().Cluster.Binding.Name
 	if _, ok := dnsmanager[nodename]; ok {
 		// Only check local cluster, the other cluster will check its self
 		for domainname := range dnsmanager[nodename].Domains {
 			for _, rec := range dnsmanager[nodename].Domains[domainname].Records {
+				if *param.Get().DNSName != "" && *param.Get().DNSName != fmt.Sprintf("%s.%s", rec.Name, domainname) {
+					continue
+				}
+				recordsFound++
+
 				// Get all targets of all clusters
 				targets, okNodes, _ := dns.FindTargets(dnsmanager, domainname, rec.Name, rec.Type)
 				if rec.ActivePassive == YES {
@@ -83,6 +90,10 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 	if faultyTargets != nil {
 		return CRITICAL, fmt.Errorf("%v", faultyTargets)
 	}
+
+	if *param.Get().DNSName != "" && recordsFound == 0 {
+		return CRITICAL, fmt.Errorf("could not find the specified dns-name %s", *param.Get().DNSName)
+	}
 	return OK, nil
 
 }
@@ -105,23 +116,27 @@ func GLB() int {
 	// Prepare data
 	var criticals []string
 	var warnings []string
-	log.Debug("Checking dns entries exist on all known loadbalancers")
-	if exitcode, err := checkEntryOnAllLoadbalancers(dnsentries); err != nil {
-		switch exitcode {
-		case CRITICAL:
-			criticals = append(criticals, err.Error())
-		case WARNING:
-			warnings = append(warnings, err.Error())
+	if *param.Get().ClusterOnly == false {
+		log.Debug("Checking dns entries exist on all known loadbalancers")
+		if exitcode, err := checkEntryOnAllLoadbalancers(dnsentries); err != nil {
+			switch exitcode {
+			case CRITICAL:
+				criticals = append(criticals, err.Error())
+			case WARNING:
+				warnings = append(warnings, err.Error())
+			}
 		}
 	}
 	// Execute Checks
-	log.Debug("Checking loadbalancer count")
-	if exitcode, err := checkLoadbalancerCount(dnsentries); err != nil {
-		switch exitcode {
-		case CRITICAL:
-			criticals = append(criticals, err.Error())
-		case WARNING:
-			warnings = append(warnings, err.Error())
+	if *param.Get().DNSName == "" {
+		log.Debug("Checking loadbalancer count")
+		if exitcode, err := checkLoadbalancerCount(dnsentries); err != nil {
+			switch exitcode {
+			case CRITICAL:
+				criticals = append(criticals, err.Error())
+			case WARNING:
+				warnings = append(warnings, err.Error())
+			}
 		}
 	}
 	if len(criticals) > 0 {
