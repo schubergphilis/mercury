@@ -7,13 +7,24 @@ import (
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
+	"github.com/schubergphilis/mercury/pkg/param"
 )
 
 // checkBackendsOnline checks if all backends are online
 func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 	var faultyTargets []string
+	var poolsfound = 0
+	var backendsfound = 0
 	for poolname, pool := range pools {
+		if *param.Get().PoolName != "" && *param.Get().PoolName != poolname {
+			continue
+		}
+		poolsfound++
 		for backendname, backend := range pool.Backends {
+			if *param.Get().BackendName != "" && *param.Get().BackendName != backendname {
+				continue
+			}
+			backendsfound++
 			offline := 0
 			online := 0
 
@@ -57,6 +68,12 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 	if faultyTargets != nil {
 		return CRITICAL, fmt.Errorf("The following node(s) failed their healthcheck(s): %v", faultyTargets)
 	}
+	if *param.Get().PoolName != "" && poolsfound == 0 {
+		return CRITICAL, fmt.Errorf("No pools found by the name %s", *param.Get().PoolName)
+	}
+	if *param.Get().BackendName != "" && backendsfound == 0 {
+		return CRITICAL, fmt.Errorf("No backends found by the name %s in pool %s", *param.Get().BackendName, *param.Get().PoolName)
+	}
 	return OK, nil
 }
 
@@ -64,7 +81,13 @@ func checkBackendsOnline(pools map[string]config.LoadbalancePool) (int, error) {
 func checkBackendsHasNodes(pools map[string]config.LoadbalancePool) (int, error) {
 	var faultyTargets []string
 	for poolname, pool := range pools {
+		if *param.Get().PoolName != "" && *param.Get().PoolName != poolname {
+			continue
+		}
 		for backendname, backend := range pool.Backends {
+			if *param.Get().BackendName != "" && *param.Get().BackendName != backendname {
+				continue
+			}
 			nodes := 0
 
 			for _, node := range backend.Nodes {

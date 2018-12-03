@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.14.0
+Feature:
+  * Allow checking of specific parts of the LB using --dns-name, --pool-name, --backend-name and --cluster-only to check specific backends/pools/dns or cluster parts
+
 ## 0.13.9
 Bug:
   * Health check report had wrong wording when reporting 2 nodes online when 1 was expected
