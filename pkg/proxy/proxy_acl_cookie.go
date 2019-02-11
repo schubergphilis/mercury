@@ -13,19 +13,37 @@ import (
 )
 
 // removeHeader removes matching headers
-func removeCookie(header *http.Header, cookieHeader string, match string) {
+func removeCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, match string) {
+	log := logging.For("proxy/removecookie")
 	if cookieHeader == "Set-Cookie" {
-		// Set-Cookies must have their own header for each cookie
-		// header.Del(fmt.Sprintf("%s: %s")cookieHeader: match)
+		cookies := readSetCookies(*reqHeader, cookieHeader)
+
+		if len(cookies) == 0 {
+			log.Debug("Delete cookie called but cookie doesn't exist")
+			return
+		}
+
+		var newCookies []string
+		for _, cookie := range cookies {
+			if cookie.Name != match {
+				newCookies = append(newCookies, cookie.String())
+			}
+		}
+		// set cookies are 1 per line (old rfc)
+		reqHeader.Del(cookieHeader)
+		for _, cookie := range newCookies {
+			reqHeader.Add(cookieHeader, cookie)
+		}
 	} else {
-		// TODO: put something meaning full here
+		// TODO: implement something usefull here
+		// header.Del(fmt.Sprintf("%s: %s", cookieHeader, match))
 	}
 }
 
 // removeHeader removes matching headers
 func replaceCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, match string, acl ACL) {
 	// remove cookie
-	removeCookie(header, cookieHeader, "")
+	removeCookie(header, reqHeader, cookieHeader, acl.CookieKey)
 	addCookie(header, reqHeader, cookieHeader, acl, true)
 }
 
@@ -33,17 +51,18 @@ func replaceCookie(header *http.Header, reqHeader *http.Header, cookieHeader str
 func addCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, acl ACL, force bool) {
 	log := logging.For("proxy/addcookie")
 	if force == false {
-		if reqHeader != nil && cookieExists(reqHeader, "Cookie", acl.CookieKey) && cookieHeader == "Cookie" { // do nothing on existing cookies
+		// if reqHeader is not empty, check the set-cookie headers
+		if reqHeader != nil && cookieExists(reqHeader, "Set-Cookie", acl.CookieKey) && cookieHeader == "Set-Cookie" { // do nothing on existing cookies
 			return
-		} else if cookieExists(header, "Set-Cookie", acl.CookieKey) && cookieHeader == "Set-Cookie" {
+		} else if cookieExists(header, "Cookie", acl.CookieKey) && cookieHeader == "Cookie" {
 			return
 		}
 	}
 
 	cookie := acl.newCookie()
 	if cookieHeader == "Set-Cookie" {
-		// Set-Cookies must have their own header for each cookie
-		header.Add(cookieHeader, cookie.String())
+		// Set-Cookies must have their own header for each cookie, we write them to the request header
+		reqHeader.Add(cookieHeader, cookie.String())
 
 	} else {
 		// Cookies can have multiple values on 1 cookie: header
@@ -111,7 +130,7 @@ func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 func (acl ACL) processCookie(header *http.Header, reqHeader *http.Header, cookieName string) (deny bool) {
 	switch acl.Action {
 	case removeMatch:
-		removeCookie(header, cookieName, acl.ConditionMatch)
+		removeCookie(header, reqHeader, cookieName, acl.ConditionMatch)
 
 	case replaceMatch:
 		replaceCookie(header, reqHeader, cookieName, acl.ConditionMatch, acl)
@@ -146,6 +165,11 @@ func (acl ACL) newCookie() *http.Cookie {
 }
 
 func cookieExists(header *http.Header, cookieHeader string, cookieKey string) bool {
+	// if no headers are set yet
+	if header == nil {
+		return false
+	}
+
 	search := fmt.Sprintf("%s: .*%s", cookieHeader, cookieKey)
 	regex, err := regexp.Compile("(?i)" + search + `\W`)
 	if err != nil {
