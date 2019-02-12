@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.14.1
+Bug:
+  * Fixed the outbound acl from spawning multiple set-cookies (affected replace and addcookie)
+
 ## 0.14.0
 Feature:
   * Allow checking of specific parts of the LB using --dns-name, --pool-name, --backend-name and --cluster-only to check specific backends/pools/dns or cluster parts
