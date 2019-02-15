@@ -94,4 +94,30 @@ func TestCookieReplace(t *testing.T) {
 	assert.Equal(t, 1, addcount, "Replacecookie generated more then 1 cookie with the same name")
 	assert.Equal(t, "USERID9", addValue, "Replcecookie should overwrite existing cookie")
 
+	aclModifyMercID := ACL{
+		Action:         "modify",
+		CookieKey:      "mercid",
+		CookieValue:    "USERID10",
+		CookieExpire:   duration{time.Second * 10},
+		CookieSecure:   &secure,
+		Cookiehttponly: &httpOnly,
+		CookiePath:     "/",
+	}
+
+	// try to replace the cookie 10 times
+	for i := 10; i < 20; i++ {
+		aclModifyMercID.CookieValue = fmt.Sprintf("USERID%d", i)
+		modifyCookie(nil, &res.Header, "Set-Cookie", aclModifyMercID)
+	}
+
+	addcount = 0
+	addValue = ""
+	for _, cookie := range res.Cookies() {
+		if cookie.Name == aclModifyMercID.CookieKey {
+			addcount++
+			addValue = cookie.Value
+		}
+	}
+	assert.Equal(t, 1, addcount, "Modifycookie generated more then 1 cookie with the same name")
+	assert.Equal(t, "USERID19", addValue, "Modifycookie should overwrite existing cookie")
 }

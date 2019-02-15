@@ -81,13 +81,20 @@ func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 	log := logging.For("proxy/modifycookie")
 	log.Debug("Modify cookie called")
 	if acl.CookieKey == "" {
-		log.Warn("attept to modify a cookie without a cookie key with acl: %+v", acl)
+		log.Warnf("attept to modify a cookie without a cookie key with acl: %+v", acl)
 		return
 	}
-	cookies := readSetCookies(*header, cookieHeader)
+
+	var cookies []*http.Cookie
+	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
+		cookies = readSetCookies(*reqHeader, cookieHeader)
+	}
+	if strings.Compare(cookieHeader, "Cookie") == 0 {
+		cookies = readSetCookies(*header, cookieHeader)
+	}
 
 	if len(cookies) == 0 {
-		log.Debug("Modify cookie called but cookie doesn't exist acl:%+v", acl)
+		log.Debugf("Modify cookie called but cookie doesn't exist acl:%+v", acl)
 		return
 	}
 
@@ -112,16 +119,21 @@ func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 	}
 	if cookieHeader == "Set-Cookie" {
 		// set cookies are 1 per line (old rfc)
-		header.Del(cookieHeader)
+		reqHeader.Del(cookieHeader)
 		for _, cookie := range newCookies {
-			header.Add(cookieHeader, cookie)
+			reqHeader.Add(cookieHeader, cookie)
 		}
 	} else {
 		// cookies are all on 1 line
 		header.Set(cookieHeader, strings.Join(newCookies, ";"))
 	}
 
-	cookies = readSetCookies(*header, cookieHeader)
+	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
+		cookies = readSetCookies(*reqHeader, cookieHeader)
+	}
+	if strings.Compare(cookieHeader, "Cookie") == 0 {
+		cookies = readSetCookies(*header, cookieHeader)
+	}
 	log.WithField("cookie", cookieHeader).Debug("Modify Cookie Called")
 
 }
