@@ -12,11 +12,11 @@ import (
 	"golang.org/x/net/lex/httplex"
 )
 
-// removeHeader removes matching headers
-func removeCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, match string) {
+// removeHeader removes matching requestHeaders
+func removeCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHeader string, match string) {
 	log := logging.For("proxy/removecookie")
 	if cookieHeader == "Set-Cookie" {
-		cookies := readSetCookies(*reqHeader, cookieHeader)
+		cookies := readSetCookies(*responseHeader, cookieHeader)
 
 		if len(cookies) == 0 {
 			log.Debug("Delete cookie called but cookie doesn't exist")
@@ -30,46 +30,59 @@ func removeCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 			}
 		}
 		// set cookies are 1 per line (old rfc)
-		reqHeader.Del(cookieHeader)
+		responseHeader.Del(cookieHeader)
 		for _, cookie := range newCookies {
-			reqHeader.Add(cookieHeader, cookie)
+			responseHeader.Add(cookieHeader, cookie)
 		}
 	} else {
 		// TODO: implement something usefull here
-		// header.Del(fmt.Sprintf("%s: %s", cookieHeader, match))
+		// requestHeader.Del(fmt.Sprintf("%s: %s", cookieHeader, match))
 	}
 }
 
-// removeHeader removes matching headers
-func replaceCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, match string, acl ACL) {
+// removeHeader removes matching requestHeaders
+func replaceCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHeader string, match string, acl ACL) {
 	// remove cookie
-	removeCookie(header, reqHeader, cookieHeader, acl.CookieKey)
-	addCookie(header, reqHeader, cookieHeader, acl, true)
+	removeCookie(requestHeader, responseHeader, cookieHeader, acl.CookieKey)
+	addCookie(requestHeader, responseHeader, cookieHeader, acl, true)
 }
 
-// addHeader adds a http header, only if cookie does not exist yet
-func addCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, acl ACL, force bool) {
+// addHeader adds a http requestHeader, only if cookie does not exist yet
+func addCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHeader string, acl ACL, force bool) {
 	log := logging.For("proxy/addcookie")
 	if force == false {
-		// if reqHeader is not empty, check the set-cookie headers
-		if reqHeader != nil && cookieExists(reqHeader, "Set-Cookie", acl.CookieKey) && cookieHeader == "Set-Cookie" { // do nothing on existing cookies
-			return
-		} else if cookieExists(header, "Cookie", acl.CookieKey) && cookieHeader == "Cookie" {
-			return
+		// if we are setting a response cookie (server -> mercury -[here]-> browser)
+		if cookieHeader == "Set-Cookie" {
+			// check if we have a request header, we verify if the cookie was already set in the request before adding it again
+			if requestHeader != nil && cookieExists(requestHeader, "Cookie", acl.CookieKey) {
+				// cookie key already existed in the request, so browser already has this key, we don't need to add the cookie
+				return
+			}
+			// check if the cookie already exists in the response header
+			if responseHeader != nil && cookieExists(responseHeader, "Set-Cookie", acl.CookieKey) {
+				// cookie key already existed in the response, so the server already set this key, we are not going to add it again
+				return
+			}
+		} else {
+			// we are settings a request cookie (browser -> mercury -[here]-> server)
+			if requestHeader != nil && cookieExists(requestHeader, "Cookie", acl.CookieKey) {
+				// cookie key already existed in the request, so browser already has this key, we don't need to add the cookie
+				return
+			}
 		}
 	}
 
 	cookie := acl.newCookie()
 	if cookieHeader == "Set-Cookie" {
-		// Set-Cookies must have their own header for each cookie, we write them to the request header
-		reqHeader.Add(cookieHeader, cookie.String())
+		// Set-Cookies must have their own requestHeader for each cookie, we write them to the request requestHeader
+		responseHeader.Add(cookieHeader, cookie.String())
 
 	} else {
-		// Cookies can have multiple values on 1 cookie: header
-		if c := header.Get(cookieHeader); c != "" {
-			header.Set(cookieHeader, c+"; "+cookie.String())
+		// Cookies can have multiple values on 1 cookie: requestHeader
+		if c := requestHeader.Get(cookieHeader); c != "" {
+			requestHeader.Set(cookieHeader, c+"; "+cookie.String())
 		} else {
-			header.Set(cookieHeader, cookie.String())
+			requestHeader.Set(cookieHeader, cookie.String())
 		}
 	}
 
@@ -77,7 +90,7 @@ func addCookie(header *http.Header, reqHeader *http.Header, cookieHeader string,
 }
 
 // modifyCookie modifies a existing
-func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader string, acl ACL) {
+func modifyCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHeader string, acl ACL) {
 	log := logging.For("proxy/modifycookie")
 	log.Debug("Modify cookie called")
 	if acl.CookieKey == "" {
@@ -87,10 +100,10 @@ func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 
 	var cookies []*http.Cookie
 	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
-		cookies = readSetCookies(*reqHeader, cookieHeader)
+		cookies = readSetCookies(*responseHeader, cookieHeader)
 	}
 	if strings.Compare(cookieHeader, "Cookie") == 0 {
-		cookies = readSetCookies(*header, cookieHeader)
+		cookies = readSetCookies(*requestHeader, cookieHeader)
 	}
 
 	if len(cookies) == 0 {
@@ -119,38 +132,38 @@ func modifyCookie(header *http.Header, reqHeader *http.Header, cookieHeader stri
 	}
 	if cookieHeader == "Set-Cookie" {
 		// set cookies are 1 per line (old rfc)
-		reqHeader.Del(cookieHeader)
+		responseHeader.Del(cookieHeader)
 		for _, cookie := range newCookies {
-			reqHeader.Add(cookieHeader, cookie)
+			responseHeader.Add(cookieHeader, cookie)
 		}
 	} else {
 		// cookies are all on 1 line
-		header.Set(cookieHeader, strings.Join(newCookies, ";"))
+		requestHeader.Set(cookieHeader, strings.Join(newCookies, ";"))
 	}
 
 	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
-		cookies = readSetCookies(*reqHeader, cookieHeader)
+		cookies = readSetCookies(*responseHeader, cookieHeader)
 	}
 	if strings.Compare(cookieHeader, "Cookie") == 0 {
-		cookies = readSetCookies(*header, cookieHeader)
+		cookies = readSetCookies(*requestHeader, cookieHeader)
 	}
 	log.WithField("cookie", cookieHeader).Debug("Modify Cookie Called")
 
 }
 
-// processHeader calls the correct handler when editing headers
-func (acl ACL) processCookie(header *http.Header, reqHeader *http.Header, cookieName string) (deny bool) {
+// processHeader calls the correct handler when editing requestHeaders
+func (acl ACL) processCookie(requestHeader *http.Header, responseHeader *http.Header, cookieName string) (deny bool) {
 	switch acl.Action {
 	case removeMatch:
-		removeCookie(header, reqHeader, cookieName, acl.ConditionMatch)
+		removeCookie(requestHeader, responseHeader, cookieName, acl.ConditionMatch)
 
 	case replaceMatch:
-		replaceCookie(header, reqHeader, cookieName, acl.ConditionMatch, acl)
+		replaceCookie(requestHeader, responseHeader, cookieName, acl.ConditionMatch, acl)
 
 	case addMatch:
-		addCookie(header, reqHeader, cookieName, acl, false)
+		addCookie(requestHeader, responseHeader, cookieName, acl, false)
 	case modifyMatch:
-		modifyCookie(header, reqHeader, cookieName, acl)
+		modifyCookie(requestHeader, responseHeader, cookieName, acl)
 	}
 
 	return false
@@ -176,9 +189,9 @@ func (acl ACL) newCookie() *http.Cookie {
 
 }
 
-func cookieExists(header *http.Header, cookieHeader string, cookieKey string) bool {
-	// if no headers are set yet
-	if header == nil {
+func cookieExists(requestHeader *http.Header, cookieHeader string, cookieKey string) bool {
+	// if no requestHeaders are set yet
+	if requestHeader == nil {
 		return false
 	}
 
@@ -188,7 +201,7 @@ func cookieExists(header *http.Header, cookieHeader string, cookieKey string) bo
 		return false
 	}
 
-	for key, hdr := range *header {
+	for key, hdr := range *requestHeader {
 		for _, hdrstr := range hdr {
 			if regex.MatchString(fmt.Sprintf("%s: %s", key, hdrstr)) == true {
 				return true

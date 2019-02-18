@@ -119,6 +119,9 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 
 	// Save the original scheme, we need it when modifying output
 	res.Request.URL.Scheme = originalScheme
+	if res.Request.Header == nil {
+		res.Request.Header = req.Header
+	}
 	return res, err
 }
 
