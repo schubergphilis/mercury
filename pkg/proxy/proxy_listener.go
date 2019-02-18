@@ -172,7 +172,7 @@ func (l *Listener) Start() {
 				log.Debug("Stopping HTTP(s) Proxy on request")
 				err := httpsrv.Shutdown(nil)
 				if err != http.ErrServerClosed {
-					log.Debug("Gracefull stop of Proxy failed: %s", err)
+					log.Debugf("Gracefull stop of Proxy failed: %s", err)
 					listener.Close()
 				}
 

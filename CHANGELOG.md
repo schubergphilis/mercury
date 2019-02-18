@@ -3,6 +3,10 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+## 0.14.2
+Bug:
+  * Fixed nil pointer issue in modify cookie
+
 ## 0.14.1
 Bug:
   * Fixed the outbound acl from spawning multiple set-cookies (affected replace and addcookie)

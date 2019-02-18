@@ -122,6 +122,9 @@ func (acl ACL) ProcessResponse(res *http.Response) (deny bool) {
 		return acl.processHeader(&res.Header)
 
 	case cookieMatch:
+		if res.Request != nil {
+			return acl.processCookie(&res.Request.Header, &res.Header, "Set-Cookie")
+		}
 		return acl.processCookie(nil, &res.Header, "Set-Cookie")
 
 	case statusMatch:
@@ -133,6 +136,9 @@ func (acl ACL) ProcessResponse(res *http.Response) (deny bool) {
 		}
 
 		if acl.CookieKey != "" {
+			if res.Request != nil {
+				return acl.processCookie(&res.Request.Header, &res.Header, "Set-Cookie")
+			}
 			return acl.processCookie(nil, &res.Header, "Set-Cookie")
 		}
 
