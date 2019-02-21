@@ -3,10 +3,12 @@
  This file is used to list changes made in each major version of Mercury.
 
 ## unreleased
+Feature
+  * Added a garbage collection on reload due to golang bug, also to track memory usage
+
 ## 0.14.2
 Bug:
   * Fixed nil pointer issue in modify cookie
-  * Added a garbage collection on reload due to golang bug, also to track memory usage
 
 ## 0.14.1
 Bug:
