@@ -63,7 +63,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				dnsupdate := &config.ClusterPacketGlobalDNSUpdate{}
 				err := packet.Message(dnsupdate)
 				if err != nil {
-					log.Warn("Unable to parse ClusterGlobalDNSUpdate request: %s", err.Error())
+					log.Warnf("Unable to parse ClusterGlobalDNSUpdate request: %s", err.Error())
 					continue
 				}
 
@@ -75,7 +75,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				dnsremove := &config.ClusterPacketGlobalDNSRemove{}
 				err := packet.Message(dnsremove)
 				if err != nil {
-					log.Warn("Unable to parse ClusterGlobalDNSRemove request: %s", err.Error())
+					log.Warnf("Unable to parse ClusterGlobalDNSRemove request: %s", err.Error())
 					continue
 				}
 
@@ -87,7 +87,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 				su := &config.ClusterPacketGlbalDNSStatisticsUpdate{}
 				err := packet.Message(su)
 				if err != nil {
-					log.Warn("Unable to parse ClusterGlbalDNSStatisticsUpdate request: %s", err.Error())
+					log.Warnf("Unable to parse ClusterGlbalDNSStatisticsUpdate request: %s", err.Error())
 					continue
 				}
 
@@ -109,7 +109,7 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 
 				err := packet.Message(su)
 				if err != nil {
-					log.Warn("Unable to parse ClusterClearProxyStatistics request: %s", err.Error())
+					log.Warnf("Unable to parse ClusterClearProxyStatistics request: %s", err.Error())
 					continue
 				}
 

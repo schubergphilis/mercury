@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/internal/web"
@@ -94,6 +95,9 @@ func Initialize(reload <-chan bool) {
 		select {
 		case <-reload:
 			log.Info("Reloading Manager")
+			stats := new(runtime.MemStats)
+			runtime.ReadMemStats(stats)
+			log.Infof("Memory usage before reload: %5.2fk\n", float64(stats.Alloc)/1024)
 			// Reload log level
 			go logging.Configure(config.Get().Logging.Output, config.Get().Logging.Level)
 			// Create new listeners if any
@@ -113,6 +117,10 @@ func Initialize(reload <-chan bool) {
 			} else {
 				manager.webAuthenticator = config.Get().Web.Auth.Password
 			}
+			// force cargbage collection due to golang map[] memory leakage
+			// https://github.com/golang/go/issues/20135
+			runtime.GC()
+			log.Infof("Memory usage after reload: %5.2fk\n", float64(stats.Alloc)/1024)
 		}
 	}
 }
