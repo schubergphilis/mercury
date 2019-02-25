@@ -4,6 +4,7 @@
 
 ## unreleased
 Feature
+## 0.14.3
   * Added a garbage collection on reload due to golang bug, also to track memory usage
 
 ## 0.14.2
