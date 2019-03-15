@@ -261,14 +261,14 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 		var records []Record
 		records = getRecordsByType(hostName, domainName, q.Qtype)
 		for id, r := range records {
-			clog.WithField("prio", id).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
+			clog.WithField("prio", id).WithField("preference", r.Statistics.Preference).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
 		}
 
 		// If we have no A records, check for CNAME
 		if len(records) == 0 && q.Qtype == dnssrv.TypeA {
 			records = getRecordsByType(hostName, domainName, dnssrv.TypeCNAME)
 			for id, r := range records {
-				clog.WithField("prio", id).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
+				clog.WithField("prio", id).WithField("preference", r.Statistics.Preference).WithField("target", r.Target).WithField("recordtype", r.Type).Debug("DNS Records found")
 			}
 		}
 

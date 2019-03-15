@@ -459,18 +459,22 @@ port = 80
 hostnames = ["topology.glb.example.com"]
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_to.balance]
 #active_passive = "yes"
-method = "firstavailable"
+method = "firstavailable,preference"
+preference = 0#1
 serving_cluster_nodes = 2
 serving_backend_nodes = 1
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_to.dnsentry]
 domain = "glb.example.com"
 hostname = "topology"
+ip = "127.0.0.1"
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_to.nodes]]
 ip = "95.142.102.176"
-port = 81
+port = 80
+preference = 1
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_to.nodes]]
 ip = "95.142.102.175"
 port = 80
+preference = 2
 # [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_to.nodes]]
 # ip = "95.142.102.175"
 # port = 80
@@ -541,7 +545,6 @@ port = 25
 cidrs = ["10.188.28.0/22", "127.0.0.1/8"]
 [loadbalancer.networks.dc2]
 cidrs = ["10.188.24.0/22"]
-
 
 [loadbalancer.pools.INTERNAL_VIP_DNSONLY.listener]
 [loadbalancer.pools.INTERNAL_VIP_DNSONLY.backends.www]

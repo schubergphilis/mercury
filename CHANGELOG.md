@@ -4,6 +4,10 @@
 
 ## unreleased
 Feature
+  * Improved logging on balance selection in debug mode
+  * Improved detailed view of backend
+
+Bug:
 ## 0.14.3
   * Added a garbage collection on reload due to golang bug, also to track memory usage
 
