@@ -160,6 +160,10 @@ func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode st
 			return &BackendNode{}, healthcheck.Offline, fmt.Errorf("Unable to parse balance mode %s for backend %s, err: %s", balancemode, backendpool, err)
 		}
 
+		for order, node := range nodes {
+			log.WithField("order", order).WithField("uuid", node.UUID).WithField("preference", node.Preference).Debug("Online node found")
+		}
+
 		node, err := b.GetBackendNodeByID(nodes[0].UUID)
 		log.WithField("ip", node.IP).WithField("port", node.Port).WithField("uuid", node.UUID).Debug("Returning node for client")
 		if err != nil {

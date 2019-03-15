@@ -65,7 +65,7 @@ build: osx linux
 makeconfig:
 	@echo Making config...
 	cat ./test/$(NAME)-template.toml | sed -e 's/%LOCALIP%/$(LOCALIP)/g' > ./test/$(NAME).toml
-	cat ./test/$(NAME).toml | sed -e 's/port = 9/port = 10/g' -e 's/localhost1/localhost3/' -e 's/localhost2/localhost1/' -e 's/localhost3/localhost2/' -e 's/127.0.0.1:9000/127.0.0.1:8000/' -e 's/127.0.0.1:10000/127.0.0.1:9000/' -e 's/127.0.0.1:8000/127.0.0.1:10000/' > ./test/$(NAME)-secondary.toml
+	cat ./test/$(NAME).toml | sed -e 's/port = 9/port = 10/g' -e 's/localhost1/localhost3/' -e 's/localhost2/localhost1/' -e 's/localhost3/localhost2/' -e 's/127.0.0.1:9000/127.0.0.1:8000/' -e 's/127.0.0.1:10000/127.0.0.1:9000/' -e 's/127.0.0.1:8000/127.0.0.1:10000/' -e 's/preference = 0#1/preference = 1/' -e 's/preference = 1#0/preference = 0/' -e 's/15353/25353/' -e 's/ip = "127.0.0.1"/ip = "127.0.0.2"/' > ./test/$(NAME)-secondary.toml
 
 run: osx makeconfig
 	./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
