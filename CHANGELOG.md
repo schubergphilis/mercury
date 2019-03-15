@@ -5,6 +5,7 @@
 ## unreleased
 Feature
   * Improved logging on balance selection in debug mode
+  * Improved detailed view of backend
 
 Bug:
 ## 0.14.3
