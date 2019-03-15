@@ -18,7 +18,6 @@ BalanceMode: Method: {{.BalanceMode.Method}} Preference: {{.BalanceMode.Preferen
 ConnectMode: {{.ConnectMode}}<br>
 Hostnames: {{.HostNames}}<br>
 UUID: {{.UUID}}<br>
-Crossconnects: {{.Crossconnects}}<br>
 Online: {{.Online}}<br>
 ACLs In: {{.InboundACL}}<br>
 ACLs Out: {{.OutboundACL}}<br>
@@ -26,12 +25,14 @@ Statistics: {{.Stats}}<br>
 {{ end }}
 <br>
 {{ range $nodeid, $node := .Backend.Nodes -}}
-Node: <br>
-IP: {{$node.IP}}:{{$node.Port}}<br>
+Node {{$nodeid}}: <br>
+IP: {{$node.IP}}:{{$node.Port}} ({{$node.Hostname}})<br>
 Cluster: {{$node.ClusterName}}<br>
-Online: {{$node.Online}}<br>
+Status: {{$node.Status}}<br>
 UUID: {{$node.UUID}}<br>
-Statistics: {{$node.Stats}}<br>
+Statistics: {{$node.Statistics}}<br>
+Preference: {{$node.Preference}}<br>
+<br>
 {{- end }}
 
 
