@@ -128,7 +128,7 @@ docker-scratch:
 	docker build -t mercury-scratch -f build/docker/Dockerfile.scratch .
 
 deps: ## Updates the vendored Go dependencies
-	@dep ensure
+	@dep ensure -v
 
 updatedeps: ## Updates the vendored Go dependencies
 	@dep ensure -update
