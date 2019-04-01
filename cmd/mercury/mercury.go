@@ -7,13 +7,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/nightlyone/lockfile"
 	"github.com/schubergphilis/mercury/internal/check"
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/internal/core"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/param"
 
-	"github.com/Wang/pid"
 	// Only enabled for profiling
 	"net/http"
 	"net/http/pprof"
@@ -80,11 +80,25 @@ func main() {
 	}
 
 	logging.Configure(config.Get().Logging.Output, config.Get().Logging.Level)
-	pidValue, err := pid.Create(*param.Get().PidFile)
+
+	lock, err := lockfile.New(*param.Get().PidFile)
 	if err != nil {
+		proc, err := lock.GetOwner()
+		if err == nil {
+			log = log.WithField("pid", proc.Pid)
+		}
 		log.WithField("file", *param.Get().PidFile).WithField("error", err).Fatalf("Create pid failed")
 	}
-	log.WithField("pid", pidValue).Info("New pid")
+	err = lock.TryLock()
+	if err != nil {
+		proc, err := lock.GetOwner()
+		if err == nil {
+			log = log.WithField("pid", proc.Pid)
+		}
+		log.WithField("file", *param.Get().PidFile).WithField("error", err).Fatalf("Create pid failed")
+	}
+
+	defer lock.Unlock()
 
 	reload := make(chan bool, 1)
 	go core.Initialize(reload)

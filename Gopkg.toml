@@ -30,12 +30,8 @@
   name = "github.com/GeertJohan/go.rice"
 
 [[constraint]]
-  name = "github.com/Sirupsen/logrus"
-  version = "0.11.5"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/Wang/pid"
+  name = "github.com/sirupsen/logrus"
+  version = "1.4.0"
 
 [[constraint]]
   name = "github.com/dgrijalva/jwt-go"

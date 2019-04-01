@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
-	lSyslog "github.com/Sirupsen/logrus/hooks/syslog"
+	"github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 )
 
 const (
