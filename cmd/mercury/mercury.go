@@ -40,7 +40,7 @@ func main() {
 
 	addr, ok := os.LookupEnv("PROFILER_ADDR")
 	if ok {
-		log.Info("Starting profiler at http://%s", addr)
+		log.Infof("Starting profiler at http://%s", addr)
 		go EnableProfiler(addr)
 	}
 

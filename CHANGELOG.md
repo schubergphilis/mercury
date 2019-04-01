@@ -8,7 +8,10 @@ Feature
   * Improved detailed view of backend
 
 Bug:
+  * Fix memory leak on non-closing channel (firstbyte received) in the TCP netPipe function used for tcp loadbalancing, when no data was received.
+
 ## 0.14.3
+Bug:
   * Added a garbage collection on reload due to golang bug, also to track memory usage
 
 ## 0.14.2

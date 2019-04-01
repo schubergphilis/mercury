@@ -141,8 +141,12 @@ func (l *Listener) Handler(client net.Conn) {
 	// do the copy of data
 	in, out, firstByte := netPipe(client, remote)
 
-	firstbytetime := firstByte.Sub(starttime)
-	node.Statistics.ResponseTimeAdd(firstbytetime.Seconds())
+	// only add first byte if its non nil
+	if firstByte != nil {
+		firstbytetime := firstByte.Sub(starttime)
+		node.Statistics.ResponseTimeAdd(firstbytetime.Seconds())
+		clog = clog.WithField("firstbyte", firstbytetime)
+	}
 	node.Statistics.ClientsConnectedSub(1)
 	node.Statistics.RXAdd(in)
 	node.Statistics.TXAdd(out)
@@ -150,21 +154,27 @@ func (l *Listener) Handler(client net.Conn) {
 	clog.WithField("statistics", fmt.Sprintf("%+v", node.Statistics)).Debug("Statistics updated")
 
 	transfertime := time.Since(starttime)
-	clog.WithField("connecttime", connecttime.Seconds()).WithField("transfertime", transfertime.Seconds()).WithField("firstbyte", firstbytetime).Info("Forwarding TCP finished")
+	clog.WithField("connecttime", connecttime.Seconds()).WithField("transfertime", transfertime.Seconds()).Info("Forwarding TCP finished")
 }
 
-func copySourceToDestination(src io.ReadWriter, dst io.ReadWriter, datasent chan<- int64, firstbytereceived chan<- time.Time) {
+func copySourceToDestination(src io.ReadWriter, dst io.ReadWriter, datasent chan<- int64, firstbytereceived chan<- *time.Time) {
 	buff := make([]byte, 0xffff)
+	firstbytesReceived := false
 	var sent int64
 	for {
 		n, err := src.Read(buff)
 		if err != nil {
+			if firstbytesReceived == false {
+				firstbytereceived <- nil
+			}
 			break
 		}
 
 		// we got data, register first byte
 		if len(firstbytereceived) == 0 {
-			firstbytereceived <- time.Now()
+			now := time.Now()
+			firstbytereceived <- &now
+			firstbytesReceived = true
 		}
 
 		b := buff[:n]
@@ -172,7 +182,9 @@ func copySourceToDestination(src io.ReadWriter, dst io.ReadWriter, datasent chan
 
 		_, err = dst.Write(b)
 		if err != nil {
-			break
+			if firstbytesReceived == false {
+				firstbytereceived <- nil
+			}
 		}
 	}
 	src.(net.Conn).Close()
@@ -181,12 +193,12 @@ func copySourceToDestination(src io.ReadWriter, dst io.ReadWriter, datasent chan
 }
 
 // netPipe src = client dst = remote, copy data bi-direction
-func netPipe(src, dst io.ReadWriter) (in int64, out int64, firstByte time.Time) {
+func netPipe(src, dst io.ReadWriter) (in int64, out int64, firstByte *time.Time) {
 	toRemoteFinished := make(chan int64)
 	fromRemoteFinished := make(chan int64)
 
-	firstByteFromRemote := make(chan time.Time, 1)
-	firstByteFromClient := make(chan time.Time, 1)
+	firstByteFromRemote := make(chan *time.Time, 1)
+	firstByteFromClient := make(chan *time.Time, 1)
 
 	go copySourceToDestination(src, dst, toRemoteFinished, firstByteFromClient)
 	go copySourceToDestination(dst, src, fromRemoteFinished, firstByteFromRemote)
