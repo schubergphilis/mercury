@@ -14,8 +14,6 @@ import (
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/param"
 
-	//"github.com/Wang/pid"
-
 	// Only enabled for profiling
 	"net/http"
 	"net/http/pprof"
@@ -82,16 +80,9 @@ func main() {
 	}
 
 	logging.Configure(config.Get().Logging.Output, config.Get().Logging.Level)
-	/*pidValue, err := pid.Create(*param.Get().PidFile)
-	if err != nil {
-		log.WithField("file", *param.Get().PidFile).WithField("error", err).Fatalf("Create pid failed")
-	}
-	log.WithField("pid", pidValue).Info("New pid")*/
 
 	lock, err := lockfile.New(*param.Get().PidFile)
 	if err != nil {
-		//fmt.Printf("Cannot init lock. reason: %v", err)
-		//panic(err) // handle properly please!
 		proc, err := lock.GetOwner()
 		if err == nil {
 			log = log.WithField("pid", proc.Pid)
@@ -99,7 +90,6 @@ func main() {
 		log.WithField("file", *param.Get().PidFile).WithField("error", err).Fatalf("Create pid failed")
 	}
 	err = lock.TryLock()
-	// Error handling is essential, as we only try to get the lock.
 	if err != nil {
 		proc, err := lock.GetOwner()
 		if err == nil {
