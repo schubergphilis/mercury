@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/logging"
-	"golang.org/x/net/lex/httplex"
+	"golang.org/x/net/http/httpguts"
 )
 
 // removeHeader removes matching requestHeaders
@@ -325,5 +325,5 @@ func validCookieValueByte(b byte) bool {
 }
 
 func isNotToken(r rune) bool {
-	return !httplex.IsTokenRune(r)
+	return !httpguts.IsTokenRune(r)
 }

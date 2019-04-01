@@ -72,3 +72,88 @@ func TestSplitN(t *testing.T) {
 		t.Errorf("failure to split 510 char long string: %d", len(xs))
 	}
 }
+
+func TestSprintName(t *testing.T) {
+	got := sprintName("abc\\.def\007\"\127@\255\x05\xef\\")
+
+	if want := "abc\\.def\\007\\\"W\\@\\173\\005\\239"; got != want {
+		t.Errorf("expected %q, got %q", got, want)
+	}
+}
+
+func TestSprintTxtOctet(t *testing.T) {
+	got := sprintTxtOctet("abc\\.def\007\"\127@\255\x05\xef\\")
+
+	if want := "\"abc\\.def\\007\"W@\\173\\005\\239\""; got != want {
+		t.Errorf("expected %q, got %q", got, want)
+	}
+}
+
+func TestSprintTxt(t *testing.T) {
+	got := sprintTxt([]string{
+		"abc\\.def\007\"\127@\255\x05\xef\\",
+		"example.com",
+	})
+
+	if want := "\"abc.def\\007\\\"W@\\173\\005\\239\" \"example.com\""; got != want {
+		t.Errorf("expected %q, got %q", got, want)
+	}
+}
+
+func TestRPStringer(t *testing.T) {
+	rp := &RP{
+		Hdr: RR_Header{
+			Name:   "test.example.com.",
+			Rrtype: TypeRP,
+			Class:  ClassINET,
+			Ttl:    600,
+		},
+		Mbox: "\x05first.example.com.",
+		Txt:  "second.\x07example.com.",
+	}
+
+	const expected = "test.example.com.\t600\tIN\tRP\t\\005first.example.com. second.\\007example.com."
+	if rp.String() != expected {
+		t.Errorf("expected %v, got %v", expected, rp)
+	}
+
+	_, err := NewRR(rp.String())
+	if err != nil {
+		t.Fatalf("error parsing %q: %v", rp, err)
+	}
+}
+
+func BenchmarkSprintName(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		got := sprintName("abc\\.def\007\"\127@\255\x05\xef\\")
+
+		if want := "abc\\.def\\007\\\"W\\@\\173\\005\\239"; got != want {
+			b.Fatalf("expected %q, got %q", got, want)
+		}
+	}
+}
+
+func BenchmarkSprintTxtOctet(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		got := sprintTxtOctet("abc\\.def\007\"\127@\255\x05\xef\\")
+
+		if want := "\"abc\\.def\\007\"W@\\173\\005\\239\""; got != want {
+			b.Fatalf("expected %q, got %q", got, want)
+		}
+	}
+}
+
+func BenchmarkSprintTxt(b *testing.B) {
+	txt := []string{
+		"abc\\.def\007\"\127@\255\x05\xef\\",
+		"example.com",
+	}
+
+	for n := 0; n < b.N; n++ {
+		got := sprintTxt(txt)
+
+		if want := "\"abc.def\\007\\\"W@\\173\\005\\239\" \"example.com\""; got != want {
+			b.Fatalf("expected %q, got %q", got, want)
+		}
+	}
+}
