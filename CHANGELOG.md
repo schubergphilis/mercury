@@ -6,6 +6,7 @@
 Feature
   * Improved logging on balance selection in debug mode
   * Improved detailed view of backend
+  * Updated all vendor libraries linked to this project
 
 Bug:
   * Fix memory leak on non-closing channel (firstbyte received) in the TCP netPipe function used for tcp loadbalancing, when no data was received.
