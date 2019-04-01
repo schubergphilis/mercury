@@ -8,3 +8,4 @@ tools/docker/*.key
 test/mercury.toml
 test/mercury-secondary.toml
 internal/core/rice-box.go
+vendor
