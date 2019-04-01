@@ -101,7 +101,7 @@ func checkEntryOnAllLoadbalancers(dnsmanager map[string]dns.Domains) (int, error
 // GLB Checks GLB status
 func GLB() int {
 	log := logging.For("check/glb")
-	log.Debugf("Connecting to https://%s:%s/glb", config.Get().Web.Binding, config.Get().Web.Port)
+	log.Debugf("Connecting to https://%s:%d/glb", config.Get().Web.Binding, config.Get().Web.Port)
 	body, err := GetBody(fmt.Sprintf("https://%s:%d/glb", config.Get().Web.Binding, config.Get().Web.Port))
 	if err != nil {
 		fmt.Printf("Error connecting to Mercury at %s:%d. Is the service running? (error:%s)\n", config.Get().Web.Binding, config.Get().Web.Port, err)

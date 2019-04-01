@@ -99,7 +99,7 @@ func (m *Manager) handlePackets() {
 				select {
 				case m.FromCluster <- packet: // outgoing to client application
 				default:
-					m.log("%s unable to send data to FromCluster channel, channel full!", m.name, packet.DataType)
+					m.log("%s unable to send data to FromCluster channel, channel full!", m.name)
 				}
 
 			}
