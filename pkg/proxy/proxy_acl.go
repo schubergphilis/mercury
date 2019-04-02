@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"time"
@@ -168,4 +169,36 @@ func (acl ACL) ProcessTCPRequest(clientIP string) (deny bool) {
 		return acl.processCIDR(clientIP)
 	}
 	return false
+}
+
+func (acl ACL) String() string {
+	output := fmt.Sprintf("Action: %s", acl.Action)
+	if acl.HeaderKey != "" {
+		output += fmt.Sprintf(" Type:Header Key:%s Value:%s", acl.HeaderKey, acl.HeaderValue)
+	}
+	if acl.CookieKey != "" {
+		output += fmt.Sprintf(" Type:Cookie Key:%s Value:%s Path:%s Expire:%s Secure:%t HttpOnly:%t",
+			acl.CookieKey,
+			acl.CookieValue,
+			acl.CookiePath,
+			acl.CookieExpire,
+			*acl.CookieSecure,
+			*acl.Cookiehttponly)
+	}
+	if acl.URLMatch != "" {
+		output += fmt.Sprintf(" Type:URL Match:%s Rewrite:%s", acl.URLMatch, acl.URLRewrite)
+	}
+	if acl.URLPath != "" {
+		output += fmt.Sprintf(" URLPath:%s", acl.URLPath)
+	}
+	if acl.ConditionType != "" {
+		output += fmt.Sprintf(" ConditionType:%s ConditionMatch:%s", acl.ConditionType, acl.ConditionMatch)
+	}
+	if acl.StatusCode != 0 {
+		output += fmt.Sprintf(" StatusCode:%d", acl.StatusCode)
+	}
+	if len(acl.CIDRS) > 0 {
+		output += fmt.Sprintf(" CIDRS:%v", acl.CIDRS)
+	}
+	return output
 }

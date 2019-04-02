@@ -2,11 +2,13 @@
 
  This file is used to list changes made in each major version of Mercury.
 
-## unreleased
+unreleased
+## 0.14.4
 Feature
   * Improved logging on balance selection in debug mode
   * Improved detailed view of backend
   * Updated all vendor libraries linked to this project
+  * Updated to go1.12
 
 Bug:
   * Fix memory leak on non-closing channel (firstbyte received) in the TCP netPipe function used for tcp loadbalancing, when no data was received.

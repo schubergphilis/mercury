@@ -7,8 +7,14 @@
 VIP: {{.PoolName}}<br>
 {{ with .Pool }}<br>
 Listener: {{.Listener.IP}}:{{.Listener.Port}} {{.Listener.Interface}} Protocol: {{.Listener.Mode}}<br>
-ACLs In: {{.InboundACL}}<br>
-ACLs Out: {{.OutboundACL}}<br>
+ACLs In: <br>
+{{ range $aclid, $acl := .InboundACL -}}
+{{ $acl }}<br>
+{{ end }}<br>
+ACLs Out:<br>
+{{ range $aclid, $acl := .OutboundACL -}}
+{{ $acl }}<br>
+{{ end }}<br>
 {{ end }}<br>
 <br>
 Backend: {{.BackendName}}<br>
@@ -19,8 +25,14 @@ ConnectMode: {{.ConnectMode}}<br>
 Hostnames: {{.HostNames}}<br>
 UUID: {{.UUID}}<br>
 Online: {{.Online}}<br>
-ACLs In: {{.InboundACL}}<br>
-ACLs Out: {{.OutboundACL}}<br>
+ACLs In: <br>
+{{ range $aclid, $acl := .InboundACL -}}
+{{ $acl }}<br>
+{{ end }}<br>
+ACLs Out: <br>
+{{ range $aclid, $acl := .OutboundACL -}}
+{{ $acl }}<br>
+{{ end }}<br>
 Statistics: {{.Stats}}<br>
 {{ end }}
 <br>
