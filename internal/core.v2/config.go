@@ -3,6 +3,7 @@ package core
 import (
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/rdoorn/cluster"
@@ -10,6 +11,23 @@ import (
 	"github.com/schubergphilis/mercury.v2/internal/web"
 	"github.com/schubergphilis/mercury/pkg/dns"
 	yaml "gopkg.in/yaml.v2"
+)
+
+var (
+	// Version of application
+	Version string
+	// VersionBuild number
+	VersionBuild string
+	// VersionSha git commit of build
+	VersionSha string
+	// StartTime of application
+	StartTime time.Time
+	// ReloadTime last time a reload was successfull
+	ReloadTime time.Time
+	// FailedReloadTime last time a reload failed
+	FailedReloadTime time.Time
+	// FailedReloadError last time a reload failed
+	FailedReloadError string
 )
 
 // Config holds your main config
