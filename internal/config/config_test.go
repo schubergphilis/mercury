@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/schubergphilis/mercury/pkg/logging"
-	"github.com/schubergphilis/mercury/pkg/param"
 )
 
 func TestConfig(t *testing.T) {
@@ -26,14 +25,14 @@ func TestConfig(t *testing.T) {
 		t.Errorf("Expected DNS binding to be test-second-config (got:%s)", Get().DNS.Binding)
 	}
 
-	param.SetConfig("../../test/broken-config.toml")
+	//param.SetConfig("../../test/broken-config.toml")
 	ReloadConfig()
 
 	if Get().DNS.Binding != "localhost" {
 		t.Errorf("Expected DNS binding to be test-second-config (got:%s)", Get().DNS.Binding)
 	}
 
-	param.SetConfig("../../test/second-config.toml")
+	//param.SetConfig("../../test/second-config.toml")
 	ReloadConfig()
 
 	Lock()

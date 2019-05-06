@@ -37,27 +37,27 @@ builddir:
 
 osx: builddir rice
 	@echo Building OSX...
-	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercury
+	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercuryd
 	@echo Done.
 
 osx-fast: builddir
 	@echo Building OSX skipping rice...
-	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercury
+	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercuryd
 	@echo Done.
 
 osx-race: builddir rice
 	@echo Building OSX...
-	GOOS=darwin GOARCH=amd64 go build -race -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercury
+	GOOS=darwin GOARCH=amd64 go build -race -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercuryd
 	@echo Done.
 
 osx-static:
 	@echo Building OSX...
-	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags '-s -w --extldflags "-static”  $(LDFLAGS)' ./cmd/mercury
+	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags '-s -w --extldflags "-static”  $(LDFLAGS)' ./cmd/mercuryd
 	@echo Done.
 
 linux: builddir rice
 	@echo Building Linux...
-	GOOS=linux GOARCH=amd64 go build -v -o ./build/linux/$(NAME) -ldflags '-s -w --extldflags "-static”  $(LDFLAGS)' ./cmd/mercury
+	GOOS=linux GOARCH=amd64 go build -v -o ./build/linux/$(NAME) -ldflags '-s -w --extldflags "-static”  $(LDFLAGS)' ./cmd/mercuryd
 	@echo Done.
 
 build: osx linux
@@ -68,25 +68,25 @@ makeconfig:
 	cat ./test/$(NAME).toml | sed -e 's/port = 9/port = 10/g' -e 's/localhost1/localhost3/' -e 's/localhost2/localhost1/' -e 's/localhost3/localhost2/' -e 's/127.0.0.1:9000/127.0.0.1:8000/' -e 's/127.0.0.1:10000/127.0.0.1:9000/' -e 's/127.0.0.1:8000/127.0.0.1:10000/' -e 's/preference = 0#1/preference = 1/' -e 's/preference = 1#0/preference = 0/' -e 's/15353/25353/' -e 's/ip = "127.0.0.1"/ip = "127.0.0.2"/' > ./test/$(NAME)-secondary.toml
 
 run: osx makeconfig
-	./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercuryd.pid
 
 run-linux: linux makeconfig
-	./build/linux/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
+	./build/linux/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercuryd.pid
 
 run-race: osx-race makeconfig
-	./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercuryd.pid
 
 run-secondary: makeconfig
-	./build/osx/$(NAME) --config-file ./test/$(NAME)-secondary.toml --pid-file /tmp/mercury-secondary.pid
+	./build/osx/$(NAME) --config-file ./test/$(NAME)-secondary.toml --pid-file /tmp/mercuryd-secondary.pid
 
 run-noconfig: osx
-	./build/osx/$(NAME) --config-file ./test//$(NAME).toml --pid-file /tmp/mercury.pid
+	./build/osx/$(NAME) --config-file ./test//$(NAME).toml --pid-file /tmp/mercuryd.pid
 
 run-secondary-noconfig:
-	./build/osx/$(NAME) --config-file ./test/$(NAME)-secondary.toml --pid-file /tmp/mercury-secondary.pid
+	./build/osx/$(NAME) --config-file ./test/$(NAME)-secondary.toml --pid-file /tmp/mercuryd-secondary.pid
 
 sudo-run: osx
-	sudo ./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
+	sudo ./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercuryd.pid
 
 test:
 	go test -v ./...
