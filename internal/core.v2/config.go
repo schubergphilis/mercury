@@ -6,10 +6,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/rdoorn/cluster"
-	"github.com/rdoorn/old/glbv2/pkg/tlsconfig"
 	"github.com/schubergphilis/mercury.v2/internal/web"
-	"github.com/schubergphilis/mercury/pkg/dns"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -32,31 +29,16 @@ var (
 
 // Config holds your main config
 type Config struct {
-	Logging  LoggingConfig `toml:"logging" json:"logging"`
-	Cluster  Cluster       `toml:"cluster" json:"cluster"`
-	DNS      dns.Config    `toml:"dns" json:"dns"`
-	Settings Settings      `toml:"settings" json:"settings"`
-	//Loadbalancer Loadbalancer  `toml:"loadbalancer" json:"loadbalancer"`
-	Web web.Config `toml:"web" json:"web"`
-}
-
-// Cluster contains the cluster settings
-type Cluster struct {
-	Binding   ClusterNode         `toml:"binding" json:"binding"`
-	Nodes     []ClusterNode       `toml:"nodes" json:"nodes"`
-	Settings  cluster.Settings    `toml:"settings" json:"settings"`
-	TLSConfig tlsconfig.TLSConfig `toml:"tls" json:"tls"`
-}
-
-// ClusterNode contains the connection details of the cluster node
-type ClusterNode struct {
-	Name    string `toml:"name" json:"name"`
-	Addr    string `toml:"addr" json:"addr"`
-	AuthKey string `toml:"authkey" json:"authkey"`
+	LoggingConfig LoggingConfig      `toml:"logging" json:"logging"`
+	Settings      SettingsConfig     `toml:"settings" json:"settings"`
+	DNSConfig     DNSConfig          `toml:"dns" json:"dns"`                   // see dns.go
+	ClusterConfig ClusterConfig      `toml:"cluster" json:"cluster"`           // see cluster.go
+	Loadbalancer  LoadbalancerConfig `toml:"loadbalancer" json:"loadbalancer"` // see loadbalancer.go
+	Web           web.Config         `toml:"web" json:"web"`
 }
 
 // Settings contains a list of global application settings
-type Settings struct {
+type SettingsConfig struct {
 	ManageNetworkInterfaces string `toml:"manage_network_interfaces"` // do network interface config (e.g. bind ip's)
 	EnableProxy             string `toml:"enable_proxy"`              // start proxies, or let another app handle this
 }

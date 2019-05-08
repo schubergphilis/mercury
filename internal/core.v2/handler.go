@@ -27,8 +27,6 @@ type Handler struct {
 	Reload chan struct{}
 }
 
-type Option func(o *Handler)
-
 // New creates a new handler for the core
 func New(opts ...Option) *Handler {
 	handler := Handler{
@@ -42,40 +40,6 @@ func New(opts ...Option) *Handler {
 	}
 
 	return &handler
-}
-
-func WithLogger(l logging.SimpleLogger) Option {
-	return func(h *Handler) {
-		h.Log = l
-	}
-}
-
-func WithConfigFile(o string) Option {
-	return func(h *Handler) {
-		h.configFile = o
-		var err error
-		if h.config, err = h.loadConfig(); err != nil {
-			h.Log.Fatalf("failed to load config file", "error", err, "file", o)
-		}
-	}
-}
-
-func WithPidFile(o string) Option {
-	return func(h *Handler) {
-		h.pidFile = o
-	}
-}
-
-func WithLogLevel(o string) Option {
-	return func(h *Handler) {
-		h.LogLevel = o
-	}
-}
-
-func WithProfiler(o string) Option {
-	return func(h *Handler) {
-		h.profilerAddr = o
-	}
 }
 
 func (h *Handler) Start() {
@@ -95,9 +59,34 @@ func (h *Handler) Start() {
 		defer p.Stop()
 	}
 
+	// start cluster service
+	cluster := NewCluster(&h.config.ClusterConfig)
+	cluster.WithLogger(h.Log)
+	go cluster.start()        // starts the listener
+	go cluster.connectNodes() // connects to the nodes
+	defer cluster.stop()
+	go cluster.Handler() // starts the handler
+
+	// start dns service
+	dns := NewDNSServer(&h.config.DNSConfig)
+	dns.WithLogger(h.Log)
+	go dns.start()   // starts the listener
+	defer dns.stop() // stop the listener
+
 	// wait for quit signal
 	for {
 		select {
+		case <-h.Reload:
+			// attempt to load the new config
+			new, err := h.loadConfig()
+			if err != nil {
+				h.Log.Fatalf("reload of configuration failed", "error", err)
+				continue
+			}
+
+			// apply config to cluster
+			cluster.reload(&new.ClusterConfig)
+			// do reload action
 		case <-h.Quit:
 			return
 		}
