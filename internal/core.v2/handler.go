@@ -5,6 +5,7 @@ import (
 	"github.com/schubergphilis/mercury.v2/internal/logging"
 	"github.com/schubergphilis/mercury.v2/internal/profiler"
 	"github.com/schubergphilis/mercury.v2/pkg/cluster"
+	"github.com/schubergphilis/mercury/pkg/healthcheck"
 )
 
 // Handler is the core handler
@@ -30,7 +31,8 @@ type Handler struct {
 	Reload chan struct{}
 
 	// interfaces
-	cluster ClusterService
+	cluster     ClusterService
+	healthcheck HealthcheckService
 }
 
 // New creates a new handler for the core
@@ -42,6 +44,7 @@ func New(opts ...Option) *Handler {
 
 		runningConfig: &Config{}, // start with empty config
 		cluster:       cluster.New(),
+		healthcheck:   healthcheck.NewManager(),
 	}
 
 	for _, o := range opts {
@@ -68,8 +71,14 @@ func (h *Handler) Start() {
 		defer p.Stop()
 	}
 
+	// start cluster listener
 	h.startCluster()
 	defer h.stopCluster()
+
+	// start health checks
+	h.startHealthchecks()
+	defer h.stopHealthchecks()
+
 	//h.cluster.Wi
 	// start cluster service
 	/*cluster := h.newCluster(h.cluster, &h.config.ClusterConfig)
@@ -92,6 +101,10 @@ func (h *Handler) Start() {
 	go dns.start()   // starts the listener
 	defer dns.stop() // stop the listener
 
+	// start all handlers
+	go h.clusterReceiverHandler()
+	go h.healthchecksReceiverHandler()
+
 	// wait for quit signal
 	for {
 		select {
@@ -105,13 +118,10 @@ func (h *Handler) Start() {
 
 			// apply config to cluster
 			h.reloadCluster()
+			h.reloadHealthchecks()
 			// do reload action
 		case <-h.Quit:
 			return
-
-			// cluster events
-		case clusterLog := <-h.cluster.ReceivedLogging():
-			h.Log.Debugf(clusterLog)
 		}
 	}
 
@@ -124,4 +134,42 @@ func (h *Handler) getLock() (lock lockfile.Lockfile, err error) {
 		return
 	}
 	return lock, lock.TryLock()
+}
+
+func (h *Handler) clusterReceiverHandler() {
+	// wait for quit signal
+	for {
+		select {
+		case <-h.Quit:
+			return
+
+			// cluster events
+		case clusterLog := <-h.cluster.ReceivedLogging():
+			h.Log.Debugf(clusterLog)
+		case <-h.cluster.ReceivedFromCluster():
+			// application based packet received, take related action
+		case <-h.cluster.ReceivedNodeJoin():
+			//cl.ToNode <- cluster.NodeMessage{Node: node, Message: config.ClusterPacketConfigRequest{}}
+			//manager.dnsdiscard <- node
+			// go clusterDNSUpdateSingleBroadcastAll(cl, node)
+		case <-h.cluster.ReceivedNodeLeave():
+			//go manager.BackendNodeDiscard(node)
+			//manager.dnsoffline <- node
+		}
+
+	}
+}
+
+func (h *Handler) healthcheckReceiverHandler() {
+	// wait for quit signal
+	for {
+		select {
+		case <-h.Quit:
+			return
+
+		case healthcheck := <-h.healthcheck.ReceiveHealthCheckStatus():
+			//
+		}
+
+	}
 }
