@@ -4,6 +4,7 @@ import (
 	"github.com/nightlyone/lockfile"
 	"github.com/schubergphilis/mercury.v2/internal/logging"
 	"github.com/schubergphilis/mercury.v2/internal/profiler"
+	"github.com/schubergphilis/mercury.v2/pkg/cluster"
 )
 
 // Handler is the core handler
@@ -16,6 +17,8 @@ type Handler struct {
 	configFile string
 	// last loaded config
 	config *Config
+	// active config
+	runningConfig *Config
 	// pid file to write
 	pidFile string
 	// profile address
@@ -25,6 +28,9 @@ type Handler struct {
 	Quit chan struct{}
 	// reload is called on reload
 	Reload chan struct{}
+
+	// interfaces
+	cluster ClusterService
 }
 
 // New creates a new handler for the core
@@ -33,6 +39,9 @@ func New(opts ...Option) *Handler {
 		Log:    &logging.Default{},
 		Quit:   make(chan struct{}),
 		Reload: make(chan struct{}),
+
+		runningConfig: &Config{}, // start with empty config
+		cluster:       cluster.New(),
 	}
 
 	for _, o := range opts {
@@ -59,13 +68,23 @@ func (h *Handler) Start() {
 		defer p.Stop()
 	}
 
+	h.startCluster()
+	defer h.stopCluster()
+	//h.cluster.Wi
 	// start cluster service
-	cluster := NewCluster(&h.config.ClusterConfig)
+	/*cluster := h.newCluster(h.cluster, &h.config.ClusterConfig)
 	cluster.WithLogger(h.Log)
-	go cluster.start()        // starts the listener
-	go cluster.connectNodes() // connects to the nodes
+	cluster.start()
 	defer cluster.stop()
-	go cluster.Handler() // starts the handler
+	*/
+	/*
+		cluster := NewCluster(&h.config.ClusterConfig)
+		cluster.WithLogger(h.Log)
+		go cluster.start()        // starts the listener
+		go cluster.connectNodes() // connects to the nodes
+		defer cluster.stop()
+		go cluster.Handler() // starts the handler
+	*/
 
 	// start dns service
 	dns := NewDNSServer(&h.config.DNSConfig)
@@ -76,19 +95,23 @@ func (h *Handler) Start() {
 	// wait for quit signal
 	for {
 		select {
+		// Internal events
 		case <-h.Reload:
 			// attempt to load the new config
-			new, err := h.loadConfig()
-			if err != nil {
+			if err := h.loadConfig(); err != nil {
 				h.Log.Fatalf("reload of configuration failed", "error", err)
 				continue
 			}
 
 			// apply config to cluster
-			cluster.reload(&new.ClusterConfig)
+			h.reloadCluster()
 			// do reload action
 		case <-h.Quit:
 			return
+
+			// cluster events
+		case clusterLog := <-h.cluster.ReceivedLogging():
+			h.Log.Debugf(clusterLog)
 		}
 	}
 

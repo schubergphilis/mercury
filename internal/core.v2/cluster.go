@@ -1,16 +1,13 @@
 package core
 
 import (
-	"log"
-	"os"
-	"os/signal"
+	"errors"
+	"fmt"
 	"reflect"
-	"syscall"
 	"time"
 
-	"github.com/rdoorn/cluster"
-	"github.com/rdoorn/old/glbv2/pkg/tlsconfig"
-	"github.com/schubergphilis/mercury.v2/internal/logging"
+	"github.com/schubergphilis/mercury.v2/pkg/cluster"
+	"github.com/schubergphilis/mercury.v2/pkg/tlsconfig"
 )
 
 // Cluster contains the cluster settings
@@ -37,197 +34,115 @@ type ClusterConfigSettings struct {
 	LogLevel        string        `toml:"log_level" json:"log_level"`               // log level for cluster events
 }
 
-type Cluster struct {
-	log     logging.SimpleLogger
-	manager *cluster.Manager
-	config  *ClusterConfig
-	quit    chan struct{}
-}
-
-func NewCluster(config *ClusterConfig) *Cluster {
-	cluster.ChannelBufferSize = 100
-	manager := cluster.NewManager(config.Binding.Name, config.Binding.AuthKey)
-	return &Cluster{
-		config:  config,
-		manager: manager,
-		quit:    make(chan struct{}),
-	}
-}
-
-func (c *Cluster) WithLogger(l logging.SimpleLogger) {
-	c.log = l
-}
-
-func (c *Cluster) start() {
-	c.log.Infof("starting cluster")
-	// read ssl certificate
-	tlsConfig, err := tlsconfig.LoadCertificate(c.config.TLSConfig)
-	if err != nil {
-		log.Fatal(err)
+func (h *Handler) startCluster() {
+	// only start if we have a config
+	if h.config.ClusterConfig == nil {
+		h.Log.Warnf("custer not started", "error", "no cluster config provided")
 	}
 
-	err = c.manager.ListenAndServeTLS(c.config.Binding.Addr, tlsConfig)
+	// only start if we're not already started
+	if h.runningConfig.ClusterConfig != nil {
+		h.Log.Warnf("custer not started", "error", "cluster is already started")
+	}
+
+	tlsConfig, err := tlsconfig.LoadCertificate(h.config.ClusterConfig.TLSConfig)
 	if err != nil {
-		log.Fatal(err)
+		h.Log.Warnf("custer failed to load ssl config", "error", err)
+	}
+
+	h.cluster.WithKey(h.config.ClusterConfig.Binding.AuthKey)
+	h.cluster.WithName(h.config.ClusterConfig.Binding.Name)
+	h.cluster.WithAddr(h.config.ClusterConfig.Binding.Addr)
+	h.cluster.WithTLS(tlsConfig)
+
+	// start listener
+	h.cluster.Start()
+
+	// add nodes on initial start
+	for _, node := range h.config.ClusterConfig.Nodes {
+		h.cluster.AddNode(node.Name, node.Addr)
 	}
 
 	// tracing only when debug is set
-	if c.config.Settings.LogLevel == "debug" {
-		go c.enableTracing()
+	if h.config.ClusterConfig.Settings.LogLevel == "debug" {
+		go h.enableClusterTracing()
 	}
+
+	h.runningConfig.ClusterConfig = h.config.ClusterConfig
 }
 
-func (c *Cluster) connectNodes() {
-	configured := c.manager.NodesConfigured()
-	for _, node := range c.config.Nodes {
-		if _, ok := configured[node.Name]; ok {
-			delete(configured, node.Name)
-		}
-		// Add newly configured nodes
-		if !c.manager.NodeConfigured(node.Name) {
-			c.manager.AddNode(node.Name, node.Addr)
-		}
+func (h *Handler) stopCluster() {
+	if h.runningConfig.ClusterConfig == nil {
+		h.Log.Warnf("custer not stopped", "error", "no cluster config provided")
 	}
-
-	//  remove old cluster nodes
-	for name := range configured {
-		c.manager.RemoveNode(name)
-	}
+	h.cluster.Stop()
+	h.runningConfig.ClusterConfig = nil
 }
 
-func (c *Cluster) stop() {
-	c.disableTracing()
-	c.manager.Shutdown()
-}
-
-func (c *Cluster) reload(new *ClusterConfig) {
-	if reflect.DeepEqual(c.config, new) {
-		c.log.Infof("no cluster changes in reload")
-	}
-
-	needRestart := false
-	needNodeUpdate := false
-	needLogLevelUpdate := false
-	// if the listener changed, we need to reconnect to all nodes
-	if !reflect.DeepEqual(c.config.Binding, new.Binding) ||
-		c.config.Settings.ConnectInterval != new.Settings.ConnectInterval ||
-		c.config.Settings.ConnectTimeout != new.Settings.ConnectTimeout ||
-		c.config.Settings.JoinDelay != new.Settings.JoinDelay ||
-		c.config.Settings.PingInterval != new.Settings.PingInterval ||
-		c.config.Settings.ReadTimeout != new.Settings.ReadTimeout {
-
-		needRestart = true
-	}
-
-	if c.config.Settings.LogLevel != new.Settings.LogLevel {
-		needLogLevelUpdate = true
-	}
-
-	if !reflect.DeepEqual(c.config.Nodes, new.Nodes) {
-		needNodeUpdate = true
-	}
-
-	// update config and execute actions
-	c.config = new
-	if needRestart {
-		c.stop()
-		c.start()
-		c.connectNodes()
-		return
-	}
-
-	if needNodeUpdate {
-		c.connectNodes()
-	}
-
-	if needLogLevelUpdate {
-		c.enableTracing()
-	}
-
-}
-
-func (c *Cluster) disableTracing() {
+func (h *Handler) disableClusterTracing() {
 	cluster.LogTraffic = false
 }
 
-func (c *Cluster) enableTracing() {
-	if c.config.Settings.LogLevel == "debug" {
-		cluster.LogTraffic = true
-		go func() {
-			for {
-				select {
-				case logEntry := <-c.manager.Log:
-					c.log.Debugf(logEntry)
-				case <-c.quit:
-					return
-				}
-			}
-		}()
-	}
+func (h *Handler) enableClusterTracing() {
+	cluster.LogTraffic = true
 }
 
-func (c *Cluster) Handler() {
-	c.log.Infof("cluster client handler started")
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGUSR1)
+func (h *Handler) reloadCluster() {
+	// if any of these things change, we need to restart the cluster part
+	if h.runningConfig.ClusterConfig.Binding.Addr != h.config.ClusterConfig.Binding.Addr ||
+		h.runningConfig.ClusterConfig.Binding.Name != h.config.ClusterConfig.Binding.Name ||
+		h.runningConfig.ClusterConfig.Binding.AuthKey != h.config.ClusterConfig.Binding.AuthKey ||
+		h.runningConfig.ClusterConfig.Settings.ConnectInterval != h.config.ClusterConfig.Settings.ConnectInterval ||
+		h.runningConfig.ClusterConfig.Settings.ConnectTimeout != h.config.ClusterConfig.Settings.ConnectTimeout ||
+		h.runningConfig.ClusterConfig.Settings.JoinDelay != h.config.ClusterConfig.Settings.JoinDelay ||
+		h.runningConfig.ClusterConfig.Settings.PingInterval != h.config.ClusterConfig.Settings.PingInterval ||
+		h.runningConfig.ClusterConfig.Settings.ReadTimeout != h.config.ClusterConfig.Settings.ReadTimeout ||
+		!reflect.DeepEqual(h.runningConfig.ClusterConfig.TLSConfig, h.config.ClusterConfig.TLSConfig) {
 
-	for {
-		select {
-		case _ = <-signalChan:
+		h.stopCluster()
+		h.startCluster()
+		return
+	}
 
-		case node := <-c.manager.NodeJoin:
-			// discard old config of the node
-			// 	manager.dnsdiscard <- node
+	// if node number changes, collect the changes
+	old := []string{}
+	for _, node := range h.runningConfig.ClusterConfig.Nodes {
+		old = append(old, node.uuid())
+	}
 
-			// send request for remote config to node
-			c.manager.ToNode <- cluster.NodeMessage{Node: node, Message: ClusterPacketConfigRequest{}}
+	new := []string{}
+	for _, node := range h.config.ClusterConfig.Nodes {
+		new = append(new, node.uuid())
+	}
 
-			// send our config to the remote node
-			// TODO
-
-		case node := <-c.manager.NodeLeave:
-
-			c.log.Warnf("node leaving", "node", node)
-			// discard old config of the node
-			// if forced offline (manually) then we discard
-			// manager.dnsdiscard <- node
-
-			// if failed (timeout, other) then we put offline
-			// manager.dnsoffline <- node
-
-		case packet := <-c.manager.FromCluster:
-			switch packet.DataType {
-			case "config.ClusterPacketConfigRequest":
-
-				// send current config to remote node
-				// go clusterDNSUpdateSingleBroadcastAll(cl, packet.Name)
-
-			case "config.ClusterPacketGlobalDNSUpdate":
-				// we received a dns update
-				/*dnsupdate := &config.ClusterPacketGlobalDNSUpdate{}
-				err := packet.Message(dnsupdate)
-				if err != nil {
-					continue
-				}*/
-
-				// update dns
-				//manager.dnsupdates <- dnsupdate
-
-			case "config.ClusterPacketGlobalDNSRemove":
-
-				// remove a dns entry
-
-			case "config.ClusterPacketGlbalDNSStatisticsUpdate":
-
-				// update dns statistics
-
-			case "config.ClusterPacketClearProxyStatistics":
-
-				// clear proxy statistics
-
-			default:
-				c.log.Warnf("received an unknown cluster request", "node", packet.Name, "request", packet.DataType)
-			}
+	added, deleted := sliceAddedAndDeleted(old, new)
+	// delete old nodes first (will also delet enodes who's ip changed)
+	for _, uuid := range deleted {
+		if node, err := h.runningConfig.ClusterConfig.NodeByUUID(uuid); err != nil {
+			h.cluster.RemoveNode(node.Name)
 		}
 	}
+
+	// add new nodes
+	for _, uuid := range added {
+		if node, err := h.config.ClusterConfig.NodeByUUID(uuid); err != nil {
+			h.cluster.AddNode(node.Name, node.Addr)
+		}
+	}
+
+	// TODO: enable/disable tracing
+
+}
+
+func (n *ClusterConfigNode) uuid() string {
+	return fmt.Sprintf("%s__%s__%s", n.Name, n.Addr, n.AuthKey)
+}
+
+func (c *ClusterConfig) NodeByUUID(uuid string) (*ClusterConfigNode, error) {
+	for _, n := range c.Nodes {
+		if n.uuid() == uuid {
+			return &n, nil
+		}
+	}
+	return nil, errors.New("node not found")
 }

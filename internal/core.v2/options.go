@@ -15,8 +15,7 @@ func WithLogger(l logging.SimpleLogger) Option {
 func WithConfigFile(o string) Option {
 	return func(h *Handler) {
 		h.configFile = o
-		var err error
-		if h.config, err = h.loadConfig(); err != nil {
+		if err := h.loadConfig(); err != nil {
 			h.Log.Fatalf("failed to load config file", "error", err, "file", o)
 		}
 	}

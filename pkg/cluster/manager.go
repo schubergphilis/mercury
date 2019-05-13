@@ -48,6 +48,8 @@ type Manager struct {
 	NodeLeave        chan string          // returns string of the node leaving
 	QuorumState      chan bool            // returns the current quorum state
 	useTLS           bool                 // wether or not to use tls
+	addr             string               // binding addr
+	tls              *tls.Config          // tls config for binding addr
 }
 
 var managers = struct {
@@ -265,4 +267,95 @@ func (m *Manager) StateDump() {
 // Name returns the name of a cluster node
 func (m *Manager) Name() string {
 	return m.name
+}
+
+func (m *Manager) ReceivedLogging() chan string {
+	return m.Log
+}
+
+func (m *Manager) ReceivedNodeJoin() chan string {
+	return m.NodeJoin
+}
+
+func (m *Manager) ReceivedNodeLeave() chan string {
+	return m.NodeLeave
+}
+
+func (m *Manager) ReceivedFromCluster() chan Packet {
+	return m.FromCluster
+}
+
+func (m *Manager) ReceivedFromClusterAPI() chan APIRequest {
+	return m.FromClusterAPI
+}
+
+func (m *Manager) SendToCluster() chan interface{} {
+	return m.ToCluster
+}
+
+func (m *Manager) SendToNode() chan NodeMessage {
+	return m.ToNode
+}
+
+func New() *Manager {
+	m := &Manager{
+		settings:         defaultSetting(),
+		configuredNodes:  make(map[string]Node),
+		connectedNodes:   newConnectionPool(),
+		newSocket:        make(chan net.Conn),
+		internalMessage:  make(chan internalMessage, 100),
+		apiRequest:       make(chan APIRequest, 100),
+		incommingPackets: make(chan Packet, 100),
+		quit:             make(chan bool),
+		FromCluster:      make(chan Packet, ChannelBufferSize),
+		FromClusterAPI:   make(chan APIRequest, ChannelBufferSize),
+		ToCluster:        make(chan interface{}, ChannelBufferSize),
+		ToNode:           make(chan NodeMessage, 100),
+		Log:              make(chan string, ChannelBufferSize),
+		NodeJoin:         make(chan string, 10),
+		NodeLeave:        make(chan string, 10),
+		QuorumState:      make(chan bool, 10),
+	}
+	return m
+}
+
+func (m *Manager) WithName(name string) {
+	m.name = name
+}
+
+func (m *Manager) WithKey(key string) {
+	m.authKey = key
+}
+
+func (m *Manager) WithAddr(addr string) {
+	m.addr = addr
+}
+
+func (m *Manager) WithTLS(tls *tls.Config) {
+	m.tls = tls
+}
+
+func (m *Manager) Start() {
+	m.quit = make(chan bool)
+
+	addManager(m.name)
+	/*if APIEnabled {
+		m.addClusterAPI()
+	}*/
+
+	if m.tls == nil {
+		err := m.ListenAndServe(m.addr)
+		if err != nil {
+
+		}
+	} else {
+		err := m.ListenAndServeTLS(m.addr, m.tls)
+		if err != nil {
+
+		}
+	}
+}
+
+func (m *Manager) Stop() {
+	m.Shutdown()
 }

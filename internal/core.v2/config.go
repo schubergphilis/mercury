@@ -32,7 +32,7 @@ type Config struct {
 	LoggingConfig LoggingConfig      `toml:"logging" json:"logging"`
 	Settings      SettingsConfig     `toml:"settings" json:"settings"`
 	DNSConfig     DNSConfig          `toml:"dns" json:"dns"`                   // see dns.go
-	ClusterConfig ClusterConfig      `toml:"cluster" json:"cluster"`           // see cluster.go
+	ClusterConfig *ClusterConfig     `toml:"cluster" json:"cluster"`           // see cluster.go
 	Loadbalancer  LoadbalancerConfig `toml:"loadbalancer" json:"loadbalancer"` // see loadbalancer.go
 	Web           web.Config         `toml:"web" json:"web"`
 }
@@ -49,13 +49,13 @@ type LoggingConfig struct {
 	Output string `toml:"output" json:"output"`
 }
 
-func (h *Handler) loadConfig() (*Config, error) {
+func (h *Handler) loadConfig() error {
 
 	// read file
 	h.Log.Infof("reading config", "type", "core", "file", h.configFile)
 	data, err := ioutil.ReadFile(h.configFile)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// parse file
@@ -65,19 +65,19 @@ func (h *Handler) loadConfig() (*Config, error) {
 	case "toml":
 		_, err = toml.Decode(string(data), config)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	case "yaml":
 		err = yaml.Unmarshal([]byte(data), config)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	// verify details
 	h.Log.Infof("verifying config", "type", "core", "file", h.configFile)
 	if err = config.verify(); err != nil {
-		return nil, err
+		return err
 	}
 
 	/*
@@ -90,7 +90,8 @@ func (h *Handler) loadConfig() (*Config, error) {
 
 		return nil
 	}*/
-	return config, nil
+	h.config = config
+	return nil
 }
 
 func (c Config) verify() error {
