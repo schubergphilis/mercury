@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"sync"
+
+	"github.com/schubergphilis/mercury.v2/internal/logging"
 )
 
 var (
@@ -43,7 +45,7 @@ type Manager struct {
 	FromClusterAPI   chan APIRequest      // data received from cluster via API interface
 	ToCluster        chan interface{}     // data send to cluster
 	ToNode           chan NodeMessage     // data send to specific node
-	Log              chan string          // logging messages go here
+	log              logging.SimpleLogger // logging messages go here
 	NodeJoin         chan string          // returns string of the node joining
 	NodeLeave        chan string          // returns string of the node leaving
 	QuorumState      chan bool            // returns the current quorum state
@@ -60,6 +62,7 @@ var managers = struct {
 
 // NewManager creates a new cluster manager
 func NewManager(name, authKey string) *Manager {
+	log, _ := logging.NewDefault()
 	m := &Manager{
 		name:             name,
 		authKey:          authKey,
@@ -75,10 +78,10 @@ func NewManager(name, authKey string) *Manager {
 		FromClusterAPI:   make(chan APIRequest, ChannelBufferSize),
 		ToCluster:        make(chan interface{}, ChannelBufferSize),
 		ToNode:           make(chan NodeMessage, 100),
-		Log:              make(chan string, ChannelBufferSize),
 		NodeJoin:         make(chan string, 10),
 		NodeLeave:        make(chan string, 10),
 		QuorumState:      make(chan bool, 10),
+		log:              log,
 	}
 	addManager(m.name)
 	if APIEnabled {
@@ -119,7 +122,7 @@ func (m *Manager) addClusterAPI() {
 
 // ListenAndServeTLS starts the TLS listener and serves connections to clients
 func (m *Manager) ListenAndServeTLS(addr string, tlsConfig *tls.Config) (err error) {
-	m.log("%s Starting TLS listener on %s", m.name, addr)
+	m.log.Infof("starting TLS listener", "handler", m.name, "addr", addr)
 	s := newServer(addr, tlsConfig)
 	m.listener, err = s.Listen()
 	if err == nil {
@@ -130,7 +133,7 @@ func (m *Manager) ListenAndServeTLS(addr string, tlsConfig *tls.Config) (err err
 
 // ListenAndServe starts the listener and serves connections to clients
 func (m *Manager) ListenAndServe(addr string) (err error) {
-	m.log("%s Starting listener on %s", m.name, addr)
+	m.log.Infof("starting listener", "handler", m.name, "addr", addr)
 	s := newServer(addr, &tls.Config{})
 	m.listener, err = s.Listen()
 	if err == nil {
@@ -144,7 +147,7 @@ func (m *Manager) start(s *server, tlsConfig *tls.Config) {
 	go m.handleOutgoingConnections(tlsConfig) // creates connections to remote nodes
 	go m.handlePackets()                      // handles all incomming packets
 	go s.Serve(m.newSocket, m.quit)           // accepts new connections and passes them on to the manager
-	m.log("%s Cluster quorum state: %t", m.name, m.quorum())
+	m.log.Infof("initial cluster quorum state", "handler", m.name, "quorum", m.quorum())
 	select {
 	case m.QuorumState <- m.quorum(): // quorum update to client application
 	default:
@@ -154,7 +157,7 @@ func (m *Manager) start(s *server, tlsConfig *tls.Config) {
 
 // Shutdown stops the cluster node
 func (m *Manager) Shutdown() {
-	m.log("%s Stopping listener on %s", m.name, m.listener.Addr())
+	m.log.Infof("stopping listener", "handler", m.name, "addr", m.listener.Addr())
 	// write exit message to remote cluster
 	packet, _ := m.newPacket(&packetNodeShutdown{})
 	m.connectedNodes.writeAll(packet)
@@ -180,7 +183,7 @@ func (m *Manager) quorum() bool {
 }
 
 func (m *Manager) updateQuorum() {
-	m.log("%s Cluster quorum state: %t", m.name, m.quorum())
+	m.log.Warnf("cluster quorum state changed", "handler", m.name, "quorum", m.quorum())
 	select {
 	case m.QuorumState <- m.quorum(): // quorum update to client application
 	default:
@@ -229,7 +232,7 @@ func (m *Manager) NodeConfigured(nodeName string) bool {
 func (m *Manager) RemoveNode(nodeName string) {
 	m.Lock()
 	defer m.Unlock()
-	m.log("%s is removing node %s", m.name, nodeName)
+	m.log.Warnf("removing node", "handler", m.name, "node", nodeName)
 	if _, ok := m.configuredNodes[nodeName]; ok {
 		delete(m.configuredNodes, nodeName)
 	}
@@ -254,23 +257,19 @@ func (m *Manager) getConfiguredNodes() (nodes []Node) {
 
 // StateDump dumps the current state of the cluster to the log
 func (m *Manager) StateDump() {
-	m.log("cluster state:")
+	m.log.Warnf("cluster state:")
 	for _, node := range m.configuredNodes {
-		m.log("configured nodes: %+v", node)
+		m.log.Warnf("configured nodes", "node", node)
 	}
 
 	for _, node := range m.connectedNodes.nodes {
-		m.log("connected nodes: %+v", node)
+		m.log.Warnf("connected nodes", "node", node)
 	}
 }
 
 // Name returns the name of a cluster node
 func (m *Manager) Name() string {
 	return m.name
-}
-
-func (m *Manager) ReceivedLogging() chan string {
-	return m.Log
 }
 
 func (m *Manager) ReceivedNodeJoin() chan string {
@@ -311,10 +310,10 @@ func New() *Manager {
 		FromClusterAPI:   make(chan APIRequest, ChannelBufferSize),
 		ToCluster:        make(chan interface{}, ChannelBufferSize),
 		ToNode:           make(chan NodeMessage, 100),
-		Log:              make(chan string, ChannelBufferSize),
 		NodeJoin:         make(chan string, 10),
 		NodeLeave:        make(chan string, 10),
 		QuorumState:      make(chan bool, 10),
+		log:              &logging.Default{},
 	}
 	return m
 }
@@ -333,6 +332,10 @@ func (m *Manager) WithAddr(addr string) {
 
 func (m *Manager) WithTLS(tls *tls.Config) {
 	m.tls = tls
+}
+
+func (m *Manager) WithLogger(s logging.SimpleLogger) {
+	m.log = s
 }
 
 func (m *Manager) Start() {

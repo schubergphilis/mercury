@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/schubergphilis/mercury.v2/internal/logging"
 	"github.com/schubergphilis/mercury.v2/pkg/cluster"
 	"github.com/schubergphilis/mercury.v2/pkg/tlsconfig"
 )
@@ -37,17 +38,19 @@ type ClusterConfigSettings struct {
 func (h *Handler) startCluster() {
 	// only start if we have a config
 	if h.config.ClusterConfig == nil {
-		h.Log.Warnf("custer not started", "error", "no cluster config provided")
+		h.log.Warnf("custer not started", "error", "no cluster config provided")
 	}
+
+	h.setClusterLog()
 
 	// only start if we're not already started
 	if h.runningConfig.ClusterConfig != nil {
-		h.Log.Warnf("custer not started", "error", "cluster is already started")
+		h.log.Warnf("custer not started", "error", "cluster is already started")
 	}
 
 	tlsConfig, err := tlsconfig.LoadCertificate(h.config.ClusterConfig.TLSConfig)
 	if err != nil {
-		h.Log.Warnf("custer failed to load ssl config", "error", err)
+		h.log.Warnf("custer failed to load ssl config", "error", err)
 	}
 
 	h.cluster.WithKey(h.config.ClusterConfig.Binding.AuthKey)
@@ -73,7 +76,7 @@ func (h *Handler) startCluster() {
 
 func (h *Handler) stopCluster() {
 	if h.runningConfig.ClusterConfig == nil {
-		h.Log.Warnf("custer not stopped", "error", "no cluster config provided")
+		h.log.Warnf("custer not stopped", "error", "no cluster config provided")
 	}
 	h.cluster.Stop()
 	h.runningConfig.ClusterConfig = nil
@@ -131,6 +134,9 @@ func (h *Handler) reloadCluster() {
 	}
 
 	// TODO: enable/disable tracing
+	if h.config.LoggingConfig.ClusterLevel != h.runningConfig.LoggingConfig.ClusterLevel {
+		h.setClusterLog()
+	}
 
 }
 
@@ -145,4 +151,18 @@ func (c *ClusterConfig) NodeByUUID(uuid string) (*ClusterConfigNode, error) {
 		}
 	}
 	return nil, errors.New("node not found")
+}
+
+func (h *Handler) setClusterLog() {
+	// set log level
+	logLevel, err := logging.ToLevel(h.config.LoggingConfig.ClusterLevel)
+	if err != nil {
+		h.log.Fatalf("unkown log level configured for cluster", "level", h.config.LoggingConfig.ClusterLevel, "error", err)
+	}
+	h.log.Infof("cluster log level", "level", h.config.LoggingConfig.ClusterLevel)
+	var prefix []interface{}
+	prefix = append(prefix, "func")
+	prefix = append(prefix, "cluster")
+	h.cluster.WithLogger(&logging.Wrapper{Log: h.LogProvider, Level: logLevel, Prefix: prefix})
+	h.runningConfig.LoggingConfig.ClusterLevel = h.config.LoggingConfig.ClusterLevel
 }

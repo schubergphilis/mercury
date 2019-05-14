@@ -27,7 +27,7 @@ func init() {
 
 // main start
 func main() {
-	logger, err := logging.NewZap()
+	logger, err := logging.NewZap("stdout", "mercury.log")
 	if err != nil {
 		panic(err)
 	}
@@ -66,12 +66,12 @@ func main() {
 	for {
 		select {
 		case <-sigterm:
-			handler.Log.Warnf("Program killed by signal!")
+			handler.LogProvider.Warnf("Program killed by signal!")
 			handler.Quit <- struct{}{}
 			return
 
 		case <-sighup:
-			handler.Log.Warnf("Program received HUP signal!")
+			handler.LogProvider.Warnf("Program received HUP signal!")
 			handler.Reload <- struct{}{}
 		}
 	}

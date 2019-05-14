@@ -1,25 +1,4 @@
-package core
-
-/*
-type ClusterService interface {
-	Start()
-	WithName(name string)
-	WithKey(key string)
-	WithAddr(addr string)
-	WithTLS(tls *tls.Config)
-	Stop()
-
-	AddNode(name, addr string)
-	RemoveNode(name string)
-
-	ReceivedFromCluster() chan cluster.Packet
-	ReceivedNodeJoin() chan string
-	ReceivedNodeLeave() chan string
-	ReceivedLogging() chan string
-
-	SendToCluster() chan interface{}
-	SendToNode() chan cluster.NodeMessage
-}
+package models
 
 type DNSService interface {
 	Start()
@@ -59,20 +38,3 @@ type ProxyService interface {
 	UpdateBackendStatistics(backendUUID string) chan string
 	UpdateNodeStatistics(nodeUUID string) chan string
 }
-
-type HealthcheckService interface {
-	Start()
-	Stop()
-
-	//CreateHealthCheck(check) (uuid string, err error)
-	//UpdateHealthCheck(check, checkUUID) (err error)
-	//DeleteHealthCheck(checkUUID) (err error)
-
-	ReceiveHealthCheckStatus() chan string // receive update of status
-
-	AddHealthcheck(uuid string, check models.Healthcheck)
-	RemoveHealthcheck(uuid string)
-
-	// SendHealthCheckStatus() chan string // force update of status <- handled internally not at library
-}
-*/

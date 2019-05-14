@@ -2,18 +2,21 @@ package core
 
 import (
 	"github.com/nightlyone/lockfile"
+	"github.com/schubergphilis/mercury.v2/internal/healthcheck"
 	"github.com/schubergphilis/mercury.v2/internal/logging"
+	"github.com/schubergphilis/mercury.v2/internal/models"
 	"github.com/schubergphilis/mercury.v2/internal/profiler"
 	"github.com/schubergphilis/mercury.v2/pkg/cluster"
-	"github.com/schubergphilis/mercury/pkg/healthcheck"
 )
 
 // Handler is the core handler
 type Handler struct {
-	// log handler
-	Log logging.SimpleLogger
+	// log provider
+	LogProvider logging.SimpleLogger
+	// local handler
+	log logging.SimpleLogger
 	// log level
-	LogLevel string
+	DefaultLevel string
 	// config file to load from (including reloads)
 	configFile string
 	// last loaded config
@@ -31,34 +34,48 @@ type Handler struct {
 	Reload chan struct{}
 
 	// interfaces
-	cluster     ClusterService
-	healthcheck HealthcheckService
+	cluster     models.ClusterService
+	healthcheck models.HealthcheckService
 }
 
 // New creates a new handler for the core
 func New(opts ...Option) *Handler {
+	logProvider, _ := logging.NewDefault()
 	handler := Handler{
-		Log:    &logging.Default{},
-		Quit:   make(chan struct{}),
-		Reload: make(chan struct{}),
+		LogProvider: logProvider,
+		Quit:        make(chan struct{}),
+		Reload:      make(chan struct{}),
 
 		runningConfig: &Config{}, // start with empty config
 		cluster:       cluster.New(),
 		healthcheck:   healthcheck.NewManager(),
 	}
+	handler.setLogLevel("info")
 
 	for _, o := range opts {
 		o(&handler)
 	}
 
+	// set log level
+	handler.setLogLevel(handler.config.LoggingConfig.Level)
+
 	return &handler
+}
+
+func (h *Handler) setLogLevel(level string) {
+	// set log level
+	logLevel, _ := logging.ToLevel(level)
+	var prefix []interface{}
+	prefix = append(prefix, "func")
+	prefix = append(prefix, "main")
+	h.log = (&logging.Wrapper{Log: h.LogProvider, Level: logLevel, Prefix: prefix})
 }
 
 func (h *Handler) Start() {
 	// get a lock in the lock file
 	lock, err := h.getLock()
 	if err != nil {
-		h.Log.Fatalf("failed to create pid file", "file", h.pidFile, "error", err)
+		h.log.Fatalf("failed to create pid file", "file", h.pidFile, "error", err)
 		close(h.Quit)
 		return
 	}
@@ -97,13 +114,13 @@ func (h *Handler) Start() {
 
 	// start dns service
 	dns := NewDNSServer(&h.config.DNSConfig)
-	dns.WithLogger(h.Log)
+	dns.WithLogger(h.LogProvider)
 	go dns.start()   // starts the listener
 	defer dns.stop() // stop the listener
 
 	// start all handlers
 	go h.clusterReceiverHandler()
-	go h.healthchecksReceiverHandler()
+	go h.healthcheckReceiverHandler()
 
 	// wait for quit signal
 	for {
@@ -112,7 +129,7 @@ func (h *Handler) Start() {
 		case <-h.Reload:
 			// attempt to load the new config
 			if err := h.loadConfig(); err != nil {
-				h.Log.Fatalf("reload of configuration failed", "error", err)
+				h.log.Fatalf("reload of configuration failed", "error", err)
 				continue
 			}
 
@@ -144,8 +161,8 @@ func (h *Handler) clusterReceiverHandler() {
 			return
 
 			// cluster events
-		case clusterLog := <-h.cluster.ReceivedLogging():
-			h.Log.Debugf(clusterLog)
+		//case clusterLog := <-h.cluster.ReceivedLogging():
+		//h.log.Debugf(clusterLog)
 		case <-h.cluster.ReceivedFromCluster():
 			// application based packet received, take related action
 		case <-h.cluster.ReceivedNodeJoin():
@@ -168,6 +185,7 @@ func (h *Handler) healthcheckReceiverHandler() {
 			return
 
 		case healthcheck := <-h.healthcheck.ReceiveHealthCheckStatus():
+			h.log.Infof("Received healhcheck update", "uuid", healthcheck.UUID, "status", healthcheck.Status, "error", healthcheck.ErrorMsg)
 			//
 		}
 

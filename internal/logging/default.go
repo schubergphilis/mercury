@@ -1,6 +1,9 @@
 package logging
 
-import "log"
+import (
+	"log"
+	"os"
+)
 
 type Default struct {
 	Logger *log.Logger
@@ -23,6 +26,10 @@ func (f *Default) Warnf(v ...interface{}) {
 	f.Logger.Println("WARN:", v)
 }
 
+func (f *Default) Errorf(v ...interface{}) {
+	f.Logger.Println("ERROR:", v)
+}
+
 func (f *Default) Fatalf(v ...interface{}) {
 	f.Logger.Println("FATAL:", v)
 }
@@ -32,7 +39,11 @@ func (f *Default) Panicf(v ...interface{}) {
 }
 
 func NewDefault() (*Default, error) {
+	l := &log.Logger{}
+	l.SetOutput(os.Stderr)
 	return &Default{
-		Logger: &log.Logger{},
+		//Logger: log.New(os.Stderr),
+		Logger: l,
 	}, nil
+
 }

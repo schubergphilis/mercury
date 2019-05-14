@@ -6,7 +6,7 @@ import (
 
 func (m *Manager) handleAuthorizedConnection(node *Node) {
 	// add authorized node if its uniq
-	m.log("%s %s attempting to join (%s)", m.name, node.name, node.conn.RemoteAddr())
+	m.log.Debugf("new node joining cluster", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 
 	oldNode, err := m.connectedNodes.nodeAdd(node)
 	if err != nil { // err means we already have a node with this name, node was not added
@@ -29,32 +29,32 @@ func (m *Manager) handleAuthorizedConnection(node *Node) {
 		}
 		// Always kill the 'lower' connection if double, the lower has to timeout before you can connect again
 		if oldConnection < newConnection {
-			m.log("%s we have 2 connections in auth state old:%s (%s) new:%s (%s) removing this one", m.name, oldConnection, oldDirection, newConnection, newDirection)
+			m.log.Debugf("duplicate connections", "handler", m.name, "old", oldConnection, "olddirection", oldDirection, "new", newConnection, "newdirection", newDirection, "disconnecting", newConnection)
 			node.close()
 			return
 		}
 
-		m.log("%s we have 2 connections in auth state old:%s (%s) new:%s (%s) keeping this one", m.name, oldConnection, oldDirection, newConnection, newDirection)
+		m.log.Debugf("duplicate connections", "handler", m.name, "old", oldConnection, "olddirection", oldDirection, "new", newConnection, "newdirection", newDirection, "disconnecting", oldConnection)
 		oldNode.close()
 		m.connectedNodes.nodeRemove(oldNode)    // remove old node from connected list
 		_, err = m.connectedNodes.nodeAdd(node) // again add new node to replace it
 		if err != nil {
-			m.log("%s %s failed to be re-added as the active node: %s", m.name, node.name, err)
+			m.log.Warnf("cluster join failed failed", "handler", m.name, "node", node.name, "error", err)
 		}
 	}
 
-	m.log("%s %s attempting to join (%s) - pending join delay", m.name, node.name, node.conn.RemoteAddr())
+	m.log.Debugf("cluster join is pending join delay", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 	// wait a second before advertizing the node, we might have simultainious connects we need to settle a winner for
 	time.Sleep(m.getDuration("joindelay"))
 	select {
 	case <-node.quit:
-		m.log("%s %s was replaced by another connection. closing the discarded connection (%s)", m.name, node.name, node.conn.RemoteAddr())
+		m.log.Debugf("cluster join replaced by a newer connection, discarding connection", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 		return
 	default:
 	}
 
 	// start pinger in the background
-	m.log("%s %s Starting pinger (%s)", m.name, node.name, node.conn.RemoteAddr())
+	m.log.Debugf("starting pinger", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 	go m.pinger(node)
 
 	// send join
@@ -62,14 +62,14 @@ func (m *Manager) handleAuthorizedConnection(node *Node) {
 	// wait for data till connection is closed
 	m.connectedNodes.setStatus(node.name, StatusOnline)
 	m.connectedNodes.setStatusError(node.name, "")
-	m.log("%s %s joined, started ioReader (%s) (timeout:%v)", m.name, node.name, node.conn.RemoteAddr(), m.getDuration("readtimeout"))
+	m.log.Infof("node joined successfull", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"))
 	err = node.ioReader(m.incommingPackets, m.getDuration("readtimeout"), node.quit)
-	m.log("%s %s ioReader failed (%s) (%s)", m.name, node.name, node.conn.RemoteAddr(), err)
+	m.log.Warnf("node read failed", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"), "error", err)
 	m.connectedNodes.setStatus(node.name, StatusLeaving)
 	m.connectedNodes.setStatusError(node.name, err.Error())
 
 	// remove node from connectionPool
-	m.log("%s %s left, removing from connected list (%s)", m.name, node.name, node.conn.RemoteAddr())
+	m.log.Warnf("node exited", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 	m.connectedNodes.nodeRemove(node)
 	node.close()
 
@@ -81,16 +81,16 @@ func (m *Manager) pinger(node *Node) {
 	for {
 		select {
 		case <-node.quit:
-			m.log("%s Exiting pinger for %s (%s)", m.name, node.name, node.conn.RemoteAddr())
+			m.log.Debugf("exiting pinger", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 			return
 		default:
 		}
 
 		p, _ := m.newPacket(&packetPing{Time: time.Now()})
-		m.log("%s Sending ping to %s (%s)", m.name, node.name, node.conn.RemoteAddr())
+		m.log.Debugf("sending ping", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 		err := m.connectedNodes.writeSocket(node.conn, p)
 		if err != nil {
-			m.log("%s Failed to send ping to %s (%s). Error:%s", m.name, node.name, node.conn.RemoteAddr(), err.Error())
+			m.log.Debugf("sending ping failed", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "error", err)
 			node.close()
 			return
 		}

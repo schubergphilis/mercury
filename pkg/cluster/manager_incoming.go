@@ -4,10 +4,10 @@ func (m *Manager) handleIncommingConnections() {
 	for {
 		select {
 		case conn := <-m.newSocket:
-			m.log("%s new socket from %s", m.name, conn.RemoteAddr())
+			m.log.Infof("new connection", "handler", m.name, "addr", conn.RemoteAddr())
 			packet, err := m.connectedNodes.readSocket(conn)
 			if err != nil {
-				m.log("%s failed while trying to read from socket: %s", conn.RemoteAddr(), err)
+				m.log.Debugf("new connection failed to read from socket", "handler", m.name, "addr", conn.RemoteAddr(), "error", err)
 				conn.Close()
 				continue
 			}
@@ -16,7 +16,7 @@ func (m *Manager) handleIncommingConnections() {
 			err = packet.Message(authRequest)
 			if err != nil {
 				// Unable to decode authRequest, attempt to send an error
-				m.log("%s sent an invalid authentication request: %s", conn.RemoteAddr(), err)
+				m.log.Warnf("new connection failed authentication", "handler", m.name, "addr", conn.RemoteAddr(), "error", err)
 				authRequest, _ := m.newPacket(packetAuthResponse{Status: true, Error: err.Error()})
 				m.connectedNodes.writeSocket(conn, authRequest)
 				conn.Close()
@@ -25,7 +25,7 @@ func (m *Manager) handleIncommingConnections() {
 
 			if authRequest.AuthKey != m.authKey {
 				// auth failed
-				m.log("%s sent an invalid authentication key", conn.RemoteAddr())
+				m.log.Warnf("new connection failed authentication", "handler", m.name, "addr", conn.RemoteAddr(), "error", "invalid authentication key")
 				authRequest, _ := m.newPacket(packetAuthResponse{Status: true, Error: "invalid authentication key"})
 				m.connectedNodes.writeSocket(conn, authRequest)
 				conn.Close()
@@ -35,12 +35,12 @@ func (m *Manager) handleIncommingConnections() {
 			authResponse, _ := m.newPacket(packetAuthResponse{Status: true})
 			err = m.connectedNodes.writeSocket(conn, authResponse)
 			if err != nil {
-				m.log("%s failed while trying to send an authentication response", conn.RemoteAddr())
+				m.log.Warnf("new connection failed authentication", "handler", m.name, "addr", conn.RemoteAddr(), "error", "failed to write authentication response")
 				conn.Close()
 				return
 			}
 
-			m.log("%s incomming auth completed by %s (%s)", m.name, packet.Name, conn.RemoteAddr())
+			m.log.Warnf("new connection authenticated successful", "handler", m.name, "addr", conn.RemoteAddr())
 			node := newNode(packet.Name, conn, true)
 			go m.handleAuthorizedConnection(node)
 		}

@@ -8,7 +8,7 @@ type Option func(o *Handler)
 
 func WithLogger(l logging.SimpleLogger) Option {
 	return func(h *Handler) {
-		h.Log = l
+		h.LogProvider = l
 	}
 }
 
@@ -16,7 +16,7 @@ func WithConfigFile(o string) Option {
 	return func(h *Handler) {
 		h.configFile = o
 		if err := h.loadConfig(); err != nil {
-			h.Log.Fatalf("failed to load config file", "error", err, "file", o)
+			h.log.Fatalf("failed to load config file", "error", err, "file", o)
 		}
 	}
 }
@@ -29,7 +29,7 @@ func WithPidFile(o string) Option {
 
 func WithLogLevel(o string) Option {
 	return func(h *Handler) {
-		h.LogLevel = o
+		h.DefaultLevel = o
 	}
 }
 

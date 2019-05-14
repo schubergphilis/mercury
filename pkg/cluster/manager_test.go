@@ -43,7 +43,7 @@ func TestOneClusterNode(t *testing.T) {
 	}()
 	wg.Wait()
 
-	logs := channelReadStrings(managerONE.Log, 1)
+	/*logs := channelReadStrings(managerONE.Log, 1)
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerONE, but got nothing")
 	}
@@ -52,7 +52,7 @@ func TestOneClusterNode(t *testing.T) {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
-	}
+	}*/
 
 	managerONE.Shutdown()
 
@@ -133,7 +133,7 @@ func TestTwoClusterNode(t *testing.T) {
 		t.Errorf("expected write to managerTHREE.ToCluster to work, but it timedout")
 	}
 
-	logs := channelReadStrings(managerTWO.Log, 1)
+	/*logs := channelReadStrings(managerTWO.Log, 1)
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerTWO, but got nothing")
 	}
@@ -142,7 +142,7 @@ func TestTwoClusterNode(t *testing.T) {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
-	}
+	}*/
 
 	managerTWO.Shutdown()
 
@@ -366,7 +366,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		t.Errorf("expected quorumstate to be true on managerFOUR, but got:%t", quorum)
 	}
 
-	logs := channelReadStrings(managerFOUR.Log, 1)
+	/*logs := channelReadStrings(managerFOUR.Log, 1)
 	if len(logs) == 0 {
 		t.Errorf("expected log output for managerFOUR, but got nothing")
 	}
@@ -375,7 +375,7 @@ func TestTreeNodeCluster(t *testing.T) {
 		for _, log := range logs {
 			t.Log("== LOG: ", log)
 		}
-	}
+	}*/
 }
 
 func TestTWOClusterNodeTLS(t *testing.T) {
@@ -428,16 +428,18 @@ func TestTWOClusterNodeTLS(t *testing.T) {
 		t.Errorf("expected Join on managerTEN to be from managerNINE, but got:%s", node)
 	}
 
-	logs := channelReadStrings(managerNINE.Log, 1)
-	if len(logs) == 0 {
-		t.Errorf("expected log output for managerNINE, but got nothing")
-	}
-
-	if DebugLog == 1 || t.Failed() {
-		for _, log := range logs {
-			t.Log("== LOG managerNINE: ", log)
+	/*
+		logs := channelReadStrings(managerNINE.Log, 1)
+		if len(logs) == 0 {
+			t.Errorf("expected log output for managerNINE, but got nothing")
 		}
-	}
+
+		if DebugLog == 1 || t.Failed() {
+			for _, log := range logs {
+				t.Log("== LOG managerNINE: ", log)
+			}
+		}
+	*/
 }
 
 // channelWriteTimeout writes a message to a channel, or will timeout if failed

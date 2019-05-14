@@ -1,11 +1,13 @@
 package core
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/schubergphilis/mercury.v2/internal/logging"
 	"github.com/schubergphilis/mercury.v2/internal/web"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -45,14 +47,16 @@ type SettingsConfig struct {
 
 // LoggingConfig log config
 type LoggingConfig struct {
-	Level  string `toml:"level" json:"level"`
-	Output string `toml:"output" json:"output"`
+	Level            string `toml:"level" json:"level"`
+	Output           string `toml:"output" json:"output"`
+	HealthcheckLevel string `toml:"healthcheck_level" json:"healthcheck_level"`
+	ClusterLevel     string `toml:"cluster_level" json:"cluster_level"`
 }
 
 func (h *Handler) loadConfig() error {
 
 	// read file
-	h.Log.Infof("reading config", "type", "core", "file", h.configFile)
+	h.log.Infof("reading config", "type", "core", "file", h.configFile)
 	data, err := ioutil.ReadFile(h.configFile)
 	if err != nil {
 		return err
@@ -75,7 +79,7 @@ func (h *Handler) loadConfig() error {
 	}
 
 	// verify details
-	h.Log.Infof("verifying config", "type", "core", "file", h.configFile)
+	h.log.Infof("verifying config", "type", "core", "file", h.configFile)
 	if err = config.verify(); err != nil {
 		return err
 	}
@@ -94,6 +98,29 @@ func (h *Handler) loadConfig() error {
 	return nil
 }
 
-func (c Config) verify() error {
+func (c *Config) verify() error {
+	if err := c.defaultLogging(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) defaultLogging() error {
+	if c.LoggingConfig.ClusterLevel == "" {
+		c.LoggingConfig.ClusterLevel = c.LoggingConfig.Level
+	}
+	if c.LoggingConfig.HealthcheckLevel == "" {
+		c.LoggingConfig.HealthcheckLevel = c.LoggingConfig.Level
+	}
+
+	if _, err := logging.ToLevel(c.LoggingConfig.Level); err != nil {
+		return fmt.Errorf("invalid main log level: %s", c.LoggingConfig.Level)
+	}
+	if _, err := logging.ToLevel(c.LoggingConfig.ClusterLevel); err != nil {
+		return fmt.Errorf("invalid cluster log level: %s", c.LoggingConfig.ClusterLevel)
+	}
+	if _, err := logging.ToLevel(c.LoggingConfig.HealthcheckLevel); err != nil {
+		return fmt.Errorf("invalid healthcheck log level: %s", c.LoggingConfig.HealthcheckLevel)
+	}
 	return nil
 }

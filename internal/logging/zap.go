@@ -53,6 +53,17 @@ func (f *ZapSugar) Warnf(v ...interface{}) {
 	}
 }
 
+func (f *ZapSugar) Errorf(v ...interface{}) {
+	switch v[0].(type) {
+	case string:
+		f.Logger.Errorw(v[0].(string), v[1:]...)
+	case error:
+		f.Logger.Errorw(v[0].(error).Error(), v[1:]...)
+	default:
+		f.Logger.Errorw("Error", v...)
+	}
+}
+
 func (f *ZapSugar) Fatalf(v ...interface{}) {
 	switch v[0].(type) {
 	case string:
@@ -75,11 +86,12 @@ func (f *ZapSugar) Panicf(v ...interface{}) {
 	}
 }
 
-func NewZap() (*ZapSugar, error) {
+func NewZap(dst ...string) (*ZapSugar, error) {
 	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{
-		"stdout",
-		"mercury.log",
+	if len(dst) == 0 {
+		config.OutputPaths = []string{"stdout"}
+	} else {
+		config.OutputPaths = dst
 	}
 	config.DisableCaller = true
 	config.EncoderConfig.LevelKey = "level"

@@ -2,7 +2,7 @@ package core
 
 import (
 	"github.com/schubergphilis/mercury/pkg/balancer"
-	"github.com/schubergphilis/mercury/pkg/healthcheck"
+	"github.com/schubergphilis/mercury.v2/internal/models"
 	"github.com/schubergphilis/mercury/pkg/proxy"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
 )
@@ -25,8 +25,8 @@ type LoadbalancerConfigSettings struct {
 type LoadbalancerConfigPool struct {
 	Name            string                                   `json:"name" toml:"name"`                       // pool name
 	Listener        LoadbalancerConfigListener               `json:"listener" toml:"listener"`               // listener settings
-	HealthChecks    []healthcheck.HealthCheck                `json:"healthcheck" toml:"healthcheck"`         // healthcheck to perform for VIP (e.g. internet connectivity)
-	HealthCheckMode string                                   `json:"healthcheckmode" toml:"healthcheckmode"` // healthcheck mode (all / any)
+	Healthchecks    []models.Healthcheck                `json:"healthcheck" toml:"healthcheck"`         // healthcheck to perform for VIP (e.g. internet connectivity)
+	HealthcheckMode string                                   `json:"healthcheckmode" toml:"healthcheckmode"` // healthcheck mode (all / any)
 	Backends        map[string]LoadbalancerConfigBackendPool `json:"backends" toml:"backends"`               // backend pools
 	Online          bool                                     `json:"online" toml:"online"`                   // is pool online?
 	InboundACL      []proxy.ACL                              `json:"inboundacls" toml:"inboundacls"`         // acls applied on incomming connections to backend
@@ -56,7 +56,7 @@ type LoadbalancerConfigListener struct {
 // BackendNode an cluster node to talk to
 type LoadbalancerConfigBackendNode struct {
 	*proxy.BackendNode
-	Status      healthcheck.Status `json:"status" toml:"status" yaml:"-"`
+	Status      models.Status `json:"status" toml:"status" yaml:"-"`
 	Errors      []string           `json:"error" toml:"error" yaml:"-"`
 	ClusterName string             `json:"clustername" toml:"clustername" yaml:"-"`
 }
@@ -72,8 +72,8 @@ type DNSEntry struct {
 // BackendPool nodes and details
 type LoadbalancerConfigBackendPool struct {
 	Nodes           []*LoadbalancerConfigBackendNode `json:"nodes" toml:"nodes"`                     // backend nodes
-	HealthChecks    []healthcheck.HealthCheck        `json:"healthchecks" toml:"healthchecks"`       // healthchecks to perform on each backend node
-	HealthCheckMode string                           `json:"healthcheckmode" toml:"healthcheckmode"` // healthcheck mode (all / any)
+	Healthchecks    []models.Healthcheck        `json:"healthchecks" toml:"healthchecks"`       // healthchecks to perform on each backend node
+	HealthcheckMode string                           `json:"healthcheckmode" toml:"healthcheckmode"` // healthcheck mode (all / any)
 	DNSEntry        DNSEntry                         `json:"dnsentry" toml:"dnsentry"`               // glb dns entry for this backend
 	Online          bool                             `json:"online" toml:"online"`                   // is backend pool online
 	BalanceMode     LoadbalancerConfigBalanceMode    `json:"balance" toml:"balance"`                 // loadbalance method
@@ -138,7 +138,7 @@ func (l *Loadbalancer) LocalHandler() {
 
 		case healthcheck := <-l.updateHealthcheck:
       l.log.Debugf("update of healthcheck", "packet", healthcheck)
-			// Local HealthCheck update received from local healthcheck workers
+			// Local Healthcheck update received from local healthcheck workers
 			// We only reach this update if a Healthcheck changed state (either up or down)
 			// If Changed we need to:
 			// - update our local config, so we are aware that a node is online/offline

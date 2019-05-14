@@ -33,6 +33,7 @@ authkey = "test"
 [logging]
 level = "debug"
 output = "stdout"
+healthcheck_level = "warn"
 [cluster.settings]
 connection_retry_count = 3
 connection_retry_interval = 10
