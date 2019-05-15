@@ -10,3 +10,4 @@ test/mercury-secondary.toml
 internal/core/rice-box.go
 vendor
 *.log
+*.pprof

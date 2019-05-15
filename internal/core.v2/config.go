@@ -99,13 +99,16 @@ func (h *Handler) loadConfig() error {
 }
 
 func (c *Config) verify() error {
-	if err := c.defaultLogging(); err != nil {
+	if err := c.defaultsLogging(); err != nil {
+		return err
+	}
+	if err := c.defaultsHealthCheck(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Config) defaultLogging() error {
+func (c *Config) defaultsLogging() error {
 	if c.LoggingConfig.ClusterLevel == "" {
 		c.LoggingConfig.ClusterLevel = c.LoggingConfig.Level
 	}
@@ -121,6 +124,32 @@ func (c *Config) defaultLogging() error {
 	}
 	if _, err := logging.ToLevel(c.LoggingConfig.HealthcheckLevel); err != nil {
 		return fmt.Errorf("invalid healthcheck log level: %s", c.LoggingConfig.HealthcheckLevel)
+	}
+	return nil
+}
+
+func (c *Config) defaultsHealthCheck() error {
+	defaultCheckInterval := 10
+	defaultCheckTimeout := 11
+	for poolID, pool := range c.Loadbalancer.Pools {
+		for backendID, backend := range pool.Backends {
+			for hcID, healthcheck := range backend.Healthchecks {
+				if healthcheck.Interval == 0 {
+					c.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks[hcID].Interval = defaultCheckInterval
+				}
+				if healthcheck.Timeout == 0 {
+					c.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks[hcID].Timeout = defaultCheckTimeout
+				}
+			}
+		}
+		for hcID, healthcheck := range pool.Healthchecks {
+			if healthcheck.Interval == 0 {
+				c.Loadbalancer.Pools[poolID].Healthchecks[hcID].Interval = defaultCheckInterval
+			}
+			if healthcheck.Timeout == 0 {
+				c.Loadbalancer.Pools[poolID].Healthchecks[hcID].Timeout = defaultCheckTimeout
+			}
+		}
 	}
 	return nil
 }

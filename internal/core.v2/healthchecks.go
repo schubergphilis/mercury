@@ -54,10 +54,12 @@ func (h *Handler) reloadHealthchecks() {
 	added, deleted := healthcheckAddedAndDeleted(runningHealthchecks, requestedHealthchecks)
 	h.log.Infof("healthchecks monitor starting", "added", len(added), "removed", len(deleted))
 	for uuid := range deleted {
+		h.log.Debugf("deleting check", "uuid", uuid)
 		h.healthcheck.RemoveHealthcheck(uuid)
 	}
 
 	for uuid, check := range added {
+		h.log.Debugf("adding check", "uuid", uuid)
 		h.healthcheck.AddHealthcheck(uuid, check)
 	}
 

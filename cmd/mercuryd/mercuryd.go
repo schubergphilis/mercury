@@ -2,10 +2,15 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"syscall"
 	"time"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/schubergphilis/mercury/internal/core.v2"
 	"github.com/schubergphilis/mercury/internal/logging"
@@ -31,6 +36,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	f, err := os.Create("cpu.pprof")
+	if err != nil {
+		log.Fatal(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	// parse parameters
 	configFile := flag.String("config-file", "../../test/mercury.toml", "path to your mercury toml confg file")

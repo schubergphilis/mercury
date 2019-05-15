@@ -62,14 +62,14 @@ func (m *Manager) handleAuthorizedConnection(node *Node) {
 	// wait for data till connection is closed
 	m.connectedNodes.setStatus(node.name, StatusOnline)
 	m.connectedNodes.setStatusError(node.name, "")
-	m.log.Infof("node joined successfull", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"))
+	m.log.Debugf("node joined successfull", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"))
 	err = node.ioReader(m.incommingPackets, m.getDuration("readtimeout"), node.quit)
-	m.log.Warnf("node read failed", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"), "error", err)
+	m.log.Debugf("node read failed", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr(), "readtimeout", m.getDuration("readtimeout"), "error", err)
 	m.connectedNodes.setStatus(node.name, StatusLeaving)
 	m.connectedNodes.setStatusError(node.name, err.Error())
 
 	// remove node from connectionPool
-	m.log.Warnf("node exited", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
+	m.log.Debugf("node disconnected", "handler", m.name, "node", node.name, "addr", node.conn.RemoteAddr())
 	m.connectedNodes.nodeRemove(node)
 	node.close()
 

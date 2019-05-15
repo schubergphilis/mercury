@@ -40,7 +40,7 @@ func (m *Manager) handleIncommingConnections() {
 				return
 			}
 
-			m.log.Warnf("new connection authenticated successful", "handler", m.name, "addr", conn.RemoteAddr())
+			m.log.Debugf("new connection authenticated successful", "handler", m.name, "addr", conn.RemoteAddr())
 			node := newNode(packet.Name, conn, true)
 			go m.handleAuthorizedConnection(node)
 		}
