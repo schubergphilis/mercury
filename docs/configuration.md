@@ -93,6 +93,7 @@ Key | Option | Default | Values | Description
 [parent.tls] | certificatekey | "" | "/path/to/file" | file containing your ssl key
 [parent.tls] | certificatefile | "" | "/path/to/file" | file containing your ssl certificate file
 [parent.tls] | insecureskipverify | false | true/false | to to true to ignore insecure certificates, usable for self-signed certificates
+[parent.tls] | clientauth | NoClientCert | string | server' policy for client authentication, see https://golang.org/pkg/crypto/tls/#ClientAuthType for details
 
 ### TLS Min/Max version
 

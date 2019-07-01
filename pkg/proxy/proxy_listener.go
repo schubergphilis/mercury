@@ -110,9 +110,6 @@ func (l *Listener) Start() {
 	case "https":
 		proxy := l.NewHTTPProxy()
 
-		// Receive client certificate if provided
-		l.TLSConfig.ClientAuth = tls.RequestClientCert
-
 		l.TLSConfig.GetClientCertificate = func(t *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 			log.Debugf("Client requestinfo: %+v", t)
 			return nil, nil

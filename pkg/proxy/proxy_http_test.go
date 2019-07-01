@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
+	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ const certPEM = "MIIHQDCCBiigAwIBAgIQD9B43Ujxor1NDyupa2A4/jANBgkqhkiG9w0BAQsFADB
 var cert = mustParsePEMCertificate(certPEM)
 
 func TestProcessACLVariables(t *testing.T) {
-	//logging.Configure("stdout", "warning")
+	logging.Configure("stdout", "error")
 
 	acl := []ACL{
 		ACL{
