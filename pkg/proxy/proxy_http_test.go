@@ -60,6 +60,7 @@ func TestGetVariableValue(t *testing.T) {
 	httpRequest := createHTTPRequest()
 	httpsRequest := createHTTPSRequest()
 	httpsRequestWithCertificate := createHTTPSRequestWithClientCertificate()
+	httpsRequestWithMultipleCertificates := createHTTPSRequestWithMultipleClientCertificates()
 
 	var testData = []struct {
 		name          string
@@ -169,6 +170,12 @@ func TestGetVariableValue(t *testing.T) {
 			expectedError: nil,
 			request:       httpsRequestWithCertificate,
 		},
+		{
+			name:          "CLIENT_CERT",
+			expectedValue: certPEM + "," + certPEM,
+			expectedError: nil,
+			request:       httpsRequestWithMultipleCertificates,
+		},
 	}
 
 	for index, data := range testData {
@@ -208,6 +215,15 @@ func createHTTPSRequest() *http.Request {
 func createHTTPSRequestWithClientCertificate() *http.Request {
 	req := createHTTPSRequest()
 	req.TLS.PeerCertificates = []*x509.Certificate{
+		mustParsePEMCertificate(certPEM),
+	}
+	return req
+}
+
+func createHTTPSRequestWithMultipleClientCertificates() *http.Request {
+	req := createHTTPSRequest()
+	req.TLS.PeerCertificates = []*x509.Certificate{
+		mustParsePEMCertificate(certPEM),
 		mustParsePEMCertificate(certPEM),
 	}
 	return req

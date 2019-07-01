@@ -3,6 +3,7 @@ package proxy
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -206,7 +207,7 @@ func getVariableValue(name string, l *Listener, backendnode *BackendNode, req *h
 		return val[0], nil
 
 	case "CLIENT_CERT":
-		return getClientCertPEM(req)
+		return getClientCertValue(req)
 
 	case "UUID":
 		id, uerr := uuid.NewV4() // used for sticky cookies
@@ -220,24 +221,39 @@ func getVariableValue(name string, l *Listener, backendnode *BackendNode, req *h
 	return "", fmt.Errorf("Unknown variable: %v", name)
 }
 
-func getClientCertPEM(req *http.Request) (string, error) {
-	if req.TLS != nil && len(req.TLS.PeerCertificates) > 0 {
-		cert := req.TLS.PeerCertificates[0]
-		block := pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}
-		certPEM := pem.EncodeToMemory(&block)
-		if certPEM == nil {
-			return "", errors.New("Cannot extract certificate content")
-		}
-
-		replacer := strings.NewReplacer("-----BEGIN CERTIFICATE-----", "",
-			"-----END CERTIFICATE-----", "",
-			"\n", "")
-
-		cleanPEM := replacer.Replace(string(certPEM))
-
-		return cleanPEM, nil
+func getClientCertValue(req *http.Request) (string, error) {
+	if req.TLS == nil {
+		return "", nil
 	}
-	return "", nil
+
+	var values []string
+
+	for _, cert := range req.TLS.PeerCertificates {
+		certPEM, err := getCertificatePEM(cert)
+		if err != nil {
+			return "", err
+		}
+		values = append(values, certPEM)
+	}
+
+	return strings.Join(values, ","), nil
+}
+
+func getCertificatePEM(cert *x509.Certificate) (string, error) {
+	block := pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}
+
+	certPEM := pem.EncodeToMemory(&block)
+	if certPEM == nil {
+		return "", errors.New("Cannot extract certificate content")
+	}
+
+	replacer := strings.NewReplacer("-----BEGIN CERTIFICATE-----", "",
+		"-----END CERTIFICATE-----", "",
+		"\n", "")
+
+	cleanPEM := replacer.Replace(string(certPEM))
+
+	return cleanPEM, nil
 }
 
 func addClientSessionID(req *http.Request, res *http.Response, id string) {
