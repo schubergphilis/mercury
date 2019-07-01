@@ -102,13 +102,14 @@ func (manager *Manager) InitializeProxies() {
 				existingProxy.OCSPStapling != pool.Listener.OCSPStapling ||
 				!reflect.DeepEqual(existingTLS.CipherSuites, newTLS.CipherSuites) ||
 				!reflect.DeepEqual(existingTLS.CurvePreferences, newTLS.CurvePreferences) ||
-				!reflect.DeepEqual(existingTLS.Certificates, newTLS.Certificates)
+				!reflect.DeepEqual(existingTLS.Certificates, newTLS.Certificates) ||
+				existingTLS.ClientAuth != newTLS.ClientAuth
 
 			// Has listener changed?
 			if listenerChanged {
 				// Interface changes, we need to restart the proxy, lets stop it
 				certchange := !reflect.DeepEqual(existingTLS.Certificates, newTLS.Certificates)
-				log.WithField("pool", poolname).Debugf("listener changed - mode:%t ip:%t port:%t, maxcon:%t readtimeout:%t writetimeout:%t ocsp:%t cert:%t cypher:%t curve:%t",
+				log.WithField("pool", poolname).Debugf("listener changed - mode:%t ip:%t port:%t, maxcon:%t readtimeout:%t writetimeout:%t ocsp:%t cert:%t cypher:%t curve:%t clientauth:%t",
 					existingProxy.ListenerMode != pool.Listener.Mode,
 					existingProxy.IP != pool.Listener.IP,
 					existingProxy.Port != pool.Listener.Port,
@@ -118,7 +119,8 @@ func (manager *Manager) InitializeProxies() {
 					existingProxy.OCSPStapling != pool.Listener.OCSPStapling,
 					certchange,
 					!reflect.DeepEqual(existingTLS.CipherSuites, newTLS.CipherSuites),
-					!reflect.DeepEqual(existingTLS.CurvePreferences, newTLS.CurvePreferences))
+					!reflect.DeepEqual(existingTLS.CurvePreferences, newTLS.CurvePreferences),
+					existingTLS.ClientAuth != newTLS.ClientAuth)
 				log.WithField("pool", poolname).Info("Restarting existing proxy for new listener settings")
 				existingProxy.Stop()
 				existingProxy.SetListener(pool.Listener.Mode, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
