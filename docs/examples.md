@@ -300,6 +300,46 @@ header_value = "###CLIENT_IP###"
 ```
 This will add the X-Forwarded-For header to all requests towards the backend server, with the IP of the client
 
+## X-Forwarded-Proto header
+To pass the X-Forwarded-Proto header you need to add a inbound ACL
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "add"
+header_key = "X-Forwarded-Proto"
+header_value = "###REQ_PROTO###"
+```
+This will add the X-Forwarded-Proto header to all requests towards the backend server, with the value 'http' or 'https'
+
+## X-Forwarded-Host header
+To pass the X-Forwarded-Host header you need to add a inbound ACL
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "add"
+header_key = "X-Forwarded-Host"
+header_value = "###REQ_HOST###"
+```
+This will add the X-Forwarded-Host header to all requests towards the backend server, with the host value from the incoming request without port number
+
+## X-Forwarded-Port header
+To pass the X-Forwarded-Port header you need to add a inbound ACL
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "add"
+header_key = "X-Forwarded-Port"
+header_value = "###LB_PORT###"
+```
+This will add the X-Forwarded-Port header to all requests towards the backend server, with the port that received the incoming request
+
+## X-Forwarded-Client-Cert header
+To pass the X-Forwarded-Cert header you need to add a inbound ACL
+```
+[[loadbalancer.pools.INTERNAL_VIP_LB.outboundacls]]
+action = "add"
+header_key = "X-Forwarded-Cert"
+header_value = "###CLIENT_CERT###"
+```
+This will add the X-Forwarded-Cert header to all requests towards the backend server, with the base64 PEM encoded client certificate when connection is mTLS
+
 ## Balancing Kerberos tickets
 To forward Kerberos requests you need to create a new TCP VIP, and ensure that the DNS name of this VIP contains the same hostname as the requests its serves.
 so if you have a vip with ip: 1.2.3.4 listening on TCP port 88 and forwarding them to your domain server (your.domain.com) listening on 3.3.3.3

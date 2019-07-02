@@ -58,6 +58,15 @@ var TLSCipherLookup = map[string]uint16{
 	`tls_fallback_scsv`:                       tls.TLS_FALLBACK_SCSV,
 }
 
+// TLSClientAuthLookup is a lookup table for TLS Client Auth
+var TLSClientAuthLookup = map[string]tls.ClientAuthType{
+	`noclientcert`:               tls.NoClientCert,
+	`requestclientcert`:          tls.RequestClientCert,
+	`requireanyclientcert`:       tls.RequireAnyClientCert,
+	`verifyclientcertifgiven`:    tls.VerifyClientCertIfGiven,
+	`requireandverifyclientcert`: tls.RequireAndVerifyClientCert,
+}
+
 // TLSConfig is user definable config for TLS
 type TLSConfig struct {
 	CertificateKey     string   `json:"certificatekey" toml:"certificatekey"`
@@ -68,6 +77,7 @@ type TLSConfig struct {
 	CipherSuites       []string `json:"ciphersuites" toml:"ciphersuites"`
 	CurvePreferences   []string `json:"curvepreferences" toml:"curvepreferences"`
 	InsecureSkipVerify bool     `json:"insecureskipverify" toml:"insecureskipverify"`
+	ClientAuth         string   `json:"clientauth" toml:"clientauth"`
 }
 
 // LoadCertificate loads the user definable config and returns the tls.Config
@@ -119,6 +129,14 @@ func LoadCertificate(t TLSConfig) (c *tls.Config, err error) {
 			return c, err
 		}
 		c.Certificates = []tls.Certificate{cert}
+	}
+
+	if t.ClientAuth != "" {
+		clientAuth, ok := TLSClientAuthLookup[strings.ToLower(t.ClientAuth)]
+		if !ok {
+			return c, fmt.Errorf("Unknown TLSClientAuth: %s", t.ClientAuth)
+		}
+		c.ClientAuth = clientAuth
 	}
 
 	return c, nil
