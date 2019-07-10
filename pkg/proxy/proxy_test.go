@@ -81,11 +81,11 @@ func TestACLHeader(t *testing.T) {
 
 	var TestACLForHeaderResult = []map[string]string{
 		{"testkey": "testvalue"},
-		{"testkey": "testvalue"},                                                                        //  write should have failed on a add when already existing
-		{"testkey": "testvalue2"},                                                                       //  write should work on a replace when existing
-		{"testkey": "testvalue3"},                                                                       //  write should work on a replace match
-		{"secondtestkey": "", "testkey": "testvalue3"},                                                  //  write fail on non existing with replace
-		{"secondtestkey": "secondtestvalue", "testkey": "testvalue3"},                                   //  write should add second header
+		{"testkey": "testvalue"},                                      //  write should have failed on a add when already existing
+		{"testkey": "testvalue2"},                                     //  write should work on a replace when existing
+		{"testkey": "testvalue3"},                                     //  write should work on a replace match
+		{"secondtestkey": "", "testkey": "testvalue3"},                //  write fail on non existing with replace
+		{"secondtestkey": "secondtestvalue", "testkey": "testvalue3"}, //  write should add second header
 		{"thirdtestkey": "thirdtestvalue", "secondtestkey": "secondtestvalue", "testkey": "testvalue3"}, //  write should add third header
 		{"thirdtestkey": "thirdtestvalue", "secondtestkey": "secondtestvalue", "testkey": ""},           //  remove should remove one header
 		{"thirdtestkey": "thirdtestvalue", "secondtestkey": "", "testkey": ""},                          //  remove should remove one header
@@ -259,7 +259,7 @@ func TestTCPProxy(t *testing.T) {
 	// Create a TCP Proxy
 	newProxy := New("UUIDP1", "tcpProxy", 1)
 	newBackendNode := NewBackendNode("UUIDBN1", serverIP, serverIP, serverPort, 1, []string{}, 0, healthcheck.Online)
-	newProxy.SetListener("tcp", proxyIP, proxyPort, 10, &tls.Config{}, 10, 10, 2, "yes")
+	newProxy.SetListener("tcp", "", proxyIP, proxyPort, 10, &tls.Config{}, 10, 10, 2, "yes")
 	newProxy.AddBackend("UUIDB1", "tcpBackend", "leastconnected", "tcp", []string{}, 1, ErrorPage{}, ErrorPage{})
 	newProxy.Backends["tcpBackend"].AddBackendNode(newBackendNode)
 	go newProxy.Start()

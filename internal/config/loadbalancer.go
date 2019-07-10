@@ -40,6 +40,7 @@ type LoadbalancePool struct {
 // LoadbalancerListener is a listener for the loadbalancer
 type LoadbalancerListener struct {
 	IP             string               `json:"ip" toml:"ip"`                                               // ip of listener
+	SourceIP       string               `json:"sourceip" toml:"sourceip"`                                   // ip of listener
 	Port           int                  `json:"port" toml:"port"`                                           // port of listener
 	Hostname       string               `json:"hostname" toml:"hostname"`                                   // hostname of listener
 	Interface      string               `json:"interface" toml:"interface"`                                 // interface of listener

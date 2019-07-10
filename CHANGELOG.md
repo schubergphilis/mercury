@@ -3,6 +3,11 @@
  This file is used to list changes made in each major version of Mercury.
 
 unreleased
+## 0.15.0
+Feature
+  * Allow passing of client certificate using ACLs (lucaslorentz)
+  * Adding a sourceip at the listener pool, will force all outgoing connections on that pool to use that as a source ip (use this to prevent martians when hosts have multiple network routes)
+
 ## 0.14.4
 Feature
   * Improved logging on balance selection in debug mode

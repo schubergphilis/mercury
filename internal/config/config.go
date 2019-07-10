@@ -204,6 +204,9 @@ func (c *Config) ParseConfig() error {
 		for hid, check := range c.Loadbalancer.Pools[poolName].HealthChecks {
 			p := c.Loadbalancer.Pools[poolName]
 			p.HealthChecks[hid] = SetHealthCheckDefault(check)
+			if p.Listener.SourceIP != "" {
+				p.HealthChecks[hid].SourceIP = p.Listener.SourceIP
+			}
 			c.Loadbalancer.Pools[poolName] = p
 		}
 
@@ -253,11 +256,17 @@ func (c *Config) ParseConfig() error {
 					h.BalanceMode.ActivePassive = "no"
 					h.HealthChecks[hid].ActivePassiveID = ""
 				}
+				if p.Listener.SourceIP != "" {
+					h.HealthChecks[hid].SourceIP = p.Listener.SourceIP
+				}
 			}
 
 			// Always have atleast 1 check: tcpconnect
 			if len(c.Loadbalancer.Pools[poolName].Backends[backendName].HealthChecks) == 0 {
 				tcpconnect := SetHealthCheckDefault(healthcheck.HealthCheck{})
+				if p.Listener.SourceIP != "" {
+					tcpconnect.SourceIP = p.Listener.SourceIP
+				}
 				h.HealthChecks = append(h.HealthChecks, tcpconnect)
 			}
 
