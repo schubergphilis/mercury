@@ -123,7 +123,7 @@ func (manager *Manager) InitializeProxies() {
 					existingTLS.ClientAuth != newTLS.ClientAuth)
 				log.WithField("pool", poolname).Info("Restarting existing proxy for new listener settings")
 				existingProxy.Stop()
-				existingProxy.SetListener(pool.Listener.Mode, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
+				existingProxy.SetListener(pool.Listener.Mode, pool.Listener.SourceIP, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
 				go existingProxy.Start()
 			}
 
@@ -161,7 +161,7 @@ func (manager *Manager) InitializeProxies() {
 				}
 			}
 
-			newProxy.SetListener(pool.Listener.Mode, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
+			newProxy.SetListener(pool.Listener.Mode, pool.Listener.SourceIP, pool.Listener.IP, pool.Listener.Port, pool.Listener.MaxConnections, newTLS, pool.Listener.ReadTimeout, pool.Listener.WriteTimeout, pool.Listener.HTTPProto, pool.Listener.OCSPStapling)
 			go newProxy.Start()
 			// Register new proxy
 			proxies.pool[poolname] = newProxy

@@ -71,7 +71,11 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 		// Create workers for pool checks
 		var poolWorkers []*healthcheck.Worker
 		for _, check := range pool.HealthChecks {
-			worker := healthcheck.NewWorker(poolName, "", "", "", check.IP, check.Port, pool.Listener.IP, check, h.Incoming)
+			sourceip := pool.Listener.IP
+			if pool.Listener.SourceIP != "" {
+				sourceip = pool.Listener.SourceIP
+			}
+			worker := healthcheck.NewWorker(poolName, "", "", "", check.IP, check.Port, sourceip, check, h.Incoming)
 			poolWorkers = append(poolWorkers, worker)
 		}
 		for backendName, backend := range config.Get().Loadbalancer.Pools[poolName].Backends {
@@ -79,7 +83,11 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 			// Create workers for backend checks
 			for _, check := range backend.HealthChecks {
 				if check.IP != "" {
-					worker := healthcheck.NewWorker(poolName, backendName, "", "", check.IP, check.Port, pool.Listener.IP, check, h.Incoming)
+					sourceip := pool.Listener.IP
+					if pool.Listener.SourceIP != "" {
+						sourceip = pool.Listener.SourceIP
+					}
+					worker := healthcheck.NewWorker(poolName, backendName, "", "", check.IP, check.Port, sourceip, check, h.Incoming)
 					backendWorkers = append(backendWorkers, worker)
 				}
 			}
@@ -89,8 +97,12 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				// For each node
 				for _, check := range backend.HealthChecks {
 					if check.IP == "" {
+						sourceip := pool.Listener.IP
+						if pool.Listener.SourceIP != "" {
+							sourceip = pool.Listener.SourceIP
+						}
 						// Create workers for node specific checks
-						worker := healthcheck.NewWorker(poolName, backendName, node.Name(), node.UUID, node.IP, node.Port, pool.Listener.IP, check, h.Incoming)
+						worker := healthcheck.NewWorker(poolName, backendName, node.Name(), node.UUID, node.IP, node.Port, sourceip, check, h.Incoming)
 						nodeWorkers = append(nodeWorkers, worker)
 					}
 				}

@@ -500,7 +500,13 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 		InsecureSkipVerify: true,
 	}
 
-	localAddr, errl := net.ResolveIPAddr("ip", l.IP)
+	var localAddr *net.IPAddr
+	var errl error
+	if l.SourceIP != "" {
+		localAddr, errl = net.ResolveIPAddr("ip", l.SourceIP)
+	} else {
+		localAddr, errl = net.ResolveIPAddr("ip", l.IP)
+	}
 	if errl != nil {
 		panic(errl)
 	}

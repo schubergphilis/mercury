@@ -52,6 +52,9 @@ func (l *Listener) TCPProxy(n net.Listener) {
 func (l *Listener) Handler(client net.Conn) {
 	clientip := strings.Split(client.RemoteAddr().String(), ":")
 	log := logging.For("proxy/tcp/handler").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("clientip", clientip[0]).WithField("clientaddr", client.RemoteAddr())
+	if l.SourceIP != "" {
+		log = log.WithField("sourceip", l.SourceIP)
+	}
 	log.Infof("Forwarding TCP client")
 
 	l.Statistics.ClientsConnectsAdd(1)
@@ -110,7 +113,13 @@ func (l *Listener) Handler(client net.Conn) {
 	clog.Debug("Forwarding client to node")
 	starttime := time.Now()
 
-	localAddr, errl := net.ResolveIPAddr("ip", l.IP)
+	var localAddr *net.IPAddr
+	var errl error
+	if l.SourceIP != "" {
+		localAddr, errl = net.ResolveIPAddr("ip", l.SourceIP)
+	} else {
+		localAddr, errl = net.ResolveIPAddr("ip", l.IP)
+	}
 	if errl != nil {
 		clog.WithError(errl).Error("Failed to bind to local ip for outbound connection")
 	}

@@ -24,6 +24,7 @@ const (
 type Listener struct {
 	UUID            string
 	Name            string
+	SourceIP        string
 	IP              string
 	Port            int
 	ListenerMode    string // Protocol the listener expects
@@ -71,6 +72,9 @@ func (l *Listener) AddBackend(uuid string, name string, balancemode string, conn
 // Start the listener
 func (l *Listener) Start() {
 	log := logging.For("proxy/listener/start").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("mode", l.ListenerMode)
+	if l.SourceIP != "" {
+		log = log.WithField("sourceip", l.SourceIP)
+	}
 
 	log.Debug("Starting listener")
 
@@ -251,11 +255,12 @@ func (l *Listener) Stop() {
 }
 
 // SetListener sets all listener config for the proxy
-func (l *Listener) SetListener(mode string, ip string, port int, maxConnections int, tlsConfig *tls.Config, readTimeout int, writeTimeout int, httpProto int, ocspStapling string) {
-	log := logging.For("proxy/setlistener").WithField("mode", mode).WithField("ip", ip).WithField("port", port).WithField("protocolversion", httpProto).WithField("maxconnections", maxConnections)
+func (l *Listener) SetListener(mode string, sourceIP string, ip string, port int, maxConnections int, tlsConfig *tls.Config, readTimeout int, writeTimeout int, httpProto int, ocspStapling string) {
+	log := logging.For("proxy/setlistener").WithField("mode", mode).WithField("sourceip", sourceIP).WithField("ip", ip).WithField("port", port).WithField("protocolversion", httpProto).WithField("maxconnections", maxConnections)
 	log.WithField("readtimeout", readTimeout).WithField("writetimeout", writeTimeout).Debug("Setting Proxy Listener")
 
 	l.ListenerMode = mode
+	l.SourceIP = sourceIP
 	l.IP = ip
 	l.Port = port
 	l.MaxConnections = maxConnections

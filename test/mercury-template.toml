@@ -523,6 +523,7 @@ cidrs = ["10.10.0.197/32", "%LOCALIP%/32"]
 mode = "tcp"
 #ip = "127.0.0.1"
 ip = "%LOCALIP%"
+sourceip = "127.0.0.1"
 port = 9007
 [loadbalancer.pools.INTERNAL_VIP_ONE.backends.example_mx]
 hostnames = ["one.glb.example.com"]
@@ -567,3 +568,23 @@ ttl = 12
 name = "test123"
 type = "A"
 target = "1.2.3.4"
+
+
+
+[loadbalancer.pools.test_tcp.backends.test_lb_dns.balance]
+method = "firstavailable,preference"
+preference = 0
+serving_backend_nodes = 1
+serving_cluster_nodes = 2
+[loadbalancer.pools.test_tcp.backends.test_lb_dns.dnsentry]
+domain = "dnsonly.nl"
+hostname = "test_lb_dns"
+ip = "%LOCALIP%"
+[[loadbalancer.pools.test_tcp.backends.test_lb_dns.nodes]]
+hostname = "server2.local"
+ip = "95.142.102.176"
+port = 80
+[[loadbalancer.pools.test_tcp.backends.test_lb_dns.nodes]]
+hostname = "server1.local"
+ip = "95.142.102.175"
+port = 79
