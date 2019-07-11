@@ -13,6 +13,7 @@ func TestTLSConfig(t *testing.T) {
 		CurvePreferences: []string{"CurveP256"},
 		CertificateKey:   "../../test/ssl/self_signed_certificate.key",
 		CertificateFile:  "../../test/ssl/self_signed_certificate.crt",
+		ClientAuth:       "NoClientCert",
 	}
 	c, err := LoadCertificate(config)
 	if err != nil {
@@ -52,6 +53,13 @@ func TestTLSConfig(t *testing.T) {
 	_, err = LoadCertificate(fail)
 	if err == nil {
 		t.Errorf("Expected File load error")
+	}
+
+	fail = config
+	fail.ClientAuth = "Invalid"
+	_, err = LoadCertificate(fail)
+	if err == nil {
+		t.Errorf("Expected TLS Parsing error for ClientAuth")
 	}
 
 	err = AddCertificate(config, c)

@@ -3,6 +3,9 @@ package proxy
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -30,6 +33,8 @@ type customTransport struct {
 	*http.Transport
 	LocalAddr net.Addr
 }
+
+var variableRegex = regexp.MustCompile("###([A-Z_a-z]+)###")
 
 func customStatusPage(statusCode int, statusMessage string, req *http.Request) *http.Response {
 	var body []byte
@@ -129,66 +134,28 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 func processACLVariables(acl []ACL, l *Listener, backendnode BackendNode, req *http.Request) []ACL {
 	log := logging.For("proxy/aclvariables").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("mode", l.ListenerMode)
 
-	reg, err := regexp.Compile("###([A-Z_a-z]+)###")
-	if err != nil {
-		log.WithField("error", err).Warn("Unable to compile regex")
-		return acl
+	fn := func(m string) string {
+		name := variableRegex.FindStringSubmatch(m)[1]
+		value, err := getVariableValue(name, l, &backendnode, req)
+		if err != nil {
+			log.WithField("variable", name).WithField("error", err).Warn("Unable to get variable value")
+			return name
+		}
+		return value
 	}
 
 	var newACL []ACL
+
 	for _, acl := range acl {
 		// regex conversion
-		fn := func(m string) string {
-			p := reg.FindStringSubmatch(m)
-			switch p[1] {
-			case "NODE_ID":
-				return backendnode.UUID
-
-			case "NODE_IP":
-				return backendnode.IP
-
-			case "LB_IP":
-				return l.IP
-
-			case "REQ_URL":
-				return req.Host + req.URL.Path
-
-			case "REQ_QUERY":
-				return req.URL.RawQuery
-
-			case "REQ_PATH":
-				return req.URL.Path
-
-			case "REQ_HOST":
-				val := strings.Split(req.Host, ":")
-				return val[0]
-
-			case "REQ_IP":
-				val := strings.Split(req.Host, ":")
-				return val[1]
-
-			case "CLIENT_IP":
-				val := strings.Split(req.RemoteAddr, ":")
-				return val[0]
-
-			case "UUID":
-				id, uerr := uuid.NewV4() // used for sticky cookies
-				if uerr == nil {
-					return id.String()
-				}
-				return ""
-			}
-			// return same if no correct match
-			return p[1]
-		}
 		// header value
 		if acl.HeaderValue != "" {
-			newdata := reg.ReplaceAllStringFunc(acl.HeaderValue, fn)
+			newdata := variableRegex.ReplaceAllStringFunc(acl.HeaderValue, fn)
 			acl.HeaderValue = newdata
 		}
 		// cookie value
 		if acl.CookieValue != "" {
-			newdata := reg.ReplaceAllStringFunc(acl.CookieValue, fn)
+			newdata := variableRegex.ReplaceAllStringFunc(acl.CookieValue, fn)
 			acl.CookieValue = newdata
 		}
 		// append new line to acl
@@ -196,6 +163,97 @@ func processACLVariables(acl []ACL, l *Listener, backendnode BackendNode, req *h
 	}
 
 	return newACL
+}
+
+func getVariableValue(name string, l *Listener, backendnode *BackendNode, req *http.Request) (string, error) {
+	switch name {
+	case "NODE_ID":
+		return backendnode.UUID, nil
+
+	case "NODE_IP":
+		return backendnode.IP, nil
+
+	case "LB_IP":
+		return l.IP, nil
+
+	case "LB_PORT":
+		return strconv.Itoa(l.Port), nil
+
+	case "REQ_URL":
+		return req.Host + req.URL.Path, nil
+
+	case "REQ_QUERY":
+		return req.URL.RawQuery, nil
+
+	case "REQ_PATH":
+		return req.URL.Path, nil
+
+	case "REQ_HOST":
+		val := strings.Split(req.Host, ":")
+		return val[0], nil
+
+	case "REQ_IP":
+		val := strings.Split(req.Host, ":")
+		return val[0], nil
+
+	case "REQ_PROTO":
+		if req.TLS != nil {
+			return "https", nil
+		}
+		return "http", nil
+
+	case "CLIENT_IP":
+		val := strings.Split(req.RemoteAddr, ":")
+		return val[0], nil
+
+	case "CLIENT_CERT":
+		return getClientCertValue(req)
+
+	case "UUID":
+		id, uerr := uuid.NewV4() // used for sticky cookies
+		if uerr == nil {
+			return id.String(), nil
+		}
+		return "", uerr
+	}
+
+	// return same if no correct match
+	return "", fmt.Errorf("Unknown variable: %v", name)
+}
+
+func getClientCertValue(req *http.Request) (string, error) {
+	if req.TLS == nil {
+		return "", nil
+	}
+
+	var values []string
+
+	for _, cert := range req.TLS.PeerCertificates {
+		certPEM, err := getCertificatePEM(cert)
+		if err != nil {
+			return "", err
+		}
+		values = append(values, certPEM)
+	}
+
+	return strings.Join(values, ","), nil
+}
+
+func getCertificatePEM(cert *x509.Certificate) (string, error) {
+	block := pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw}
+
+	certPEM := pem.EncodeToMemory(&block)
+	if certPEM == nil {
+		return "", errors.New("Cannot extract certificate content")
+	}
+
+	replacer := strings.NewReplacer("-----BEGIN CERTIFICATE-----", "",
+		"-----END CERTIFICATE-----", "",
+		"\n", "")
+
+	cleanPEM := replacer.Replace(string(certPEM))
+
+	return cleanPEM, nil
 }
 
 func addClientSessionID(req *http.Request, res *http.Response, id string) {
