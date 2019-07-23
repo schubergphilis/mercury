@@ -4,13 +4,16 @@
 
 unreleased
 ## 0.15.0
-Feature
+Feature:
   * Allow passing of client certificate using ACLs (lucaslorentz)
   * Adding a sourceip at the listener pool, will force all outgoing connections on that pool to use that as a source ip (use this to prevent martians when hosts have multiple network routes)
   * Added experimental support for TLS1.3 (enabled using GODEBUG=tls13=1, this will be enabled by default when go1.13 is released)
 
+Bug:
+  * Default netmask for ipv6 is now /128 instead of /32 (affects network interfaces and topology based loadbalancing checks)
+
 ## 0.14.4
-Feature
+Feature:
   * Improved logging on balance selection in debug mode
   * Improved detailed view of backend
   * Updated all vendor libraries linked to this project

@@ -13,7 +13,7 @@ import (
 
 // IfAdd adds a ip to an interface
 func ifaceAdd(iface, ip string) error {
-	if err := exec.Command("ip", "addr", "add", ip+"/32", "dev", iface).Run(); err != nil {
+	if err := exec.Command("ip", "addr", "add", addSubnet(ip), "dev", iface).Run(); err != nil {
 		return err
 	}
 	return nil
@@ -21,7 +21,7 @@ func ifaceAdd(iface, ip string) error {
 
 // IfRemove removes a ip from an interface
 func ifaceRemove(iface, ip string) error {
-	if err := exec.Command("ip", "addr", "del", ip+"/32", "dev", iface).Run(); err != nil {
+	if err := exec.Command("ip", "addr", "del", addSubnet(ip), "dev", iface).Run(); err != nil {
 		return err
 	}
 	return nil

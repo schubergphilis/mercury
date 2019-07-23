@@ -1,7 +1,6 @@
 package balancer
 
 import (
-	"fmt"
 	"net"
 )
 
@@ -15,7 +14,7 @@ func Topology(s []Statistics, ip string) []Statistics {
 			if err != nil {
 				continue
 			}
-			ipB, _, err := net.ParseCIDR(fmt.Sprintf("%s/32", ip))
+			ipB, _, err := net.ParseCIDR(addSubnet(ip))
 			if err != nil {
 				continue
 			}
@@ -48,4 +47,15 @@ func Topology(s []Statistics, ip string) []Statistics {
 		return matches
 	}
 	return s
+}
+
+func addSubnet(ip string) string {
+	ipv := net.ParseIP(ip)
+	if ipv == nil {
+		return ""
+	}
+	if ipv.To4() != nil {
+		return ip + "/32"
+	}
+	return ip + "/128"
 }
