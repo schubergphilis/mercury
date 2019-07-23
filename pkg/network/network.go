@@ -116,3 +116,14 @@ func RemoveListener(iface, ip string) error {
 
 	return nil
 }
+
+func addSubnet(ip string) string {
+	ipv := net.ParseIP(ip)
+	if ipv == nil {
+		return ""
+	}
+	if ipv.To4() != nil {
+		return ip + "/32"
+	}
+	return ip + "/128"
+}
