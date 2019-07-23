@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -32,8 +33,8 @@ func TestWebSocketProxy(t *testing.T) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := echoServer(w, r)
 			if err != nil {
-				assert.Fail(t, err.Error())
-				//log.Printf("echo server: %v", err)
+				//assert.Fail(t, err.Error())
+				log.Printf("echo server: %v", err)
 			}
 		}),
 		ReadTimeout:  time.Second * 15,
