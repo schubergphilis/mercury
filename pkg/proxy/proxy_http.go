@@ -276,7 +276,7 @@ func addClientSessionID(req *http.Request, res *http.Response, id string) {
 }
 
 // NewHTTPProxy Create a HTTP proxy
-func (l *Listener) NewHTTPProxy() *ReverseProxy {
+func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 	log := logging.For("proxy/httpproxy").WithField("pool", l.Name)
 
 	// directory is the main handler,
@@ -544,7 +544,7 @@ func (l *Listener) NewHTTPProxy() *ReverseProxy {
 		}
 	}
 
-	reverseproxy := &ReverseProxy{
+	reverseproxy := &httputil.ReverseProxy{
 		Director:       director,
 		Transport:      transport,
 		ModifyResponse: modifyresponse,

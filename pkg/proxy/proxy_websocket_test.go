@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -21,11 +20,11 @@ import (
 )
 
 func TestWebSocketProxy(t *testing.T) {
-	logging.Configure("stdout", "error")
+	logging.Configure("stdout", "warn")
 
 	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		assert.Fail(t, err.Error())
 	}
 	defer l.Close()
 
@@ -33,7 +32,8 @@ func TestWebSocketProxy(t *testing.T) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := echoServer(w, r)
 			if err != nil {
-				log.Printf("echo server: %v", err)
+				assert.Fail(t, err.Error())
+				//log.Printf("echo server: %v", err)
 			}
 		}),
 		ReadTimeout:  time.Second * 15,
@@ -45,15 +45,14 @@ func TestWebSocketProxy(t *testing.T) {
 	go func() {
 		err := s.Serve(l)
 		if err != http.ErrServerClosed {
-			log.Fatalf("failed to listen and serve: %v", err)
+			assert.Fail(t, err.Error())
+			//log.Fatalf("failed to listen and serve: %v", err)
 		}
 	}()
 
 	wsHost, wsPortStr, err := net.SplitHostPort(l.Addr().String())
 	assert.Nil(t, err)
 	wsPort, _ := strconv.Atoi(wsPortStr)
-
-	fmt.Printf("host: %s port: %d\n", wsHost, wsPort)
 
 	// setup Proxy
 	proxyIP := "127.0.0.1"
@@ -76,12 +75,13 @@ func TestWebSocketProxy(t *testing.T) {
 	//err = client("ws://" + l.Addr().String())
 	err = client("ws://" + fmt.Sprintf("%s:%d", proxyIP, proxyPort))
 	if err != nil {
-		log.Fatalf("client failed: %v", err)
+		assert.Fail(t, err.Error())
+		//log.Fatalf("client failed: %v", err)
 	}
 }
 
 func echoServer(w http.ResponseWriter, r *http.Request) error {
-	log.Printf("serving %v", r.RemoteAddr)
+	//log.Printf("serving %v", r.RemoteAddr)
 
 	c, err := websocket.Accept(w, r, websocket.AcceptOptions{
 		Subprotocols: []string{"echo"},
@@ -162,7 +162,7 @@ func client(url string) error {
 			return err
 		}
 
-		fmt.Printf("received: %+v\n", v)
+		//fmt.Printf("received: %+v\n", v)
 	}
 
 	c.Close(websocket.StatusNormalClosure, "")
