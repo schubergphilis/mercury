@@ -7,6 +7,7 @@ unreleased
 Feature
   * Allow passing of client certificate using ACLs (lucaslorentz)
   * Adding a sourceip at the listener pool, will force all outgoing connections on that pool to use that as a source ip (use this to prevent martians when hosts have multiple network routes)
+  * Added experimental support for TLS1.3 (enabled using GODEBUG=tls13=1, this will be enabled by default when go1.13 is released)
 
 ## 0.14.4
 Feature

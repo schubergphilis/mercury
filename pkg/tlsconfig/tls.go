@@ -22,6 +22,7 @@ var TLSVersionLookup = map[string]uint16{
 	`versiontls10`: tls.VersionTLS10,
 	`versiontls11`: tls.VersionTLS11,
 	`versiontls12`: tls.VersionTLS12,
+	`versiontls13`: tls.VersionTLS13,
 }
 
 // TLSRenegotiateLookup is a lookup table for TLS renegotiate ID
@@ -33,6 +34,7 @@ var TLSRenegotiateLookup = map[string]tls.RenegotiationSupport{
 
 // TLSCipherLookup is a lookup table for TLS Cipher ID
 var TLSCipherLookup = map[string]uint16{
+	// tls 1.2
 	`tls_rsa_with_rc4_128_sha`:                tls.TLS_RSA_WITH_RC4_128_SHA,
 	`tls_rsa_with_3des_ede_cbc_sha`:           tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
 	`tls_rsa_with_aes_128_cbc_sha`:            tls.TLS_RSA_WITH_AES_128_CBC_SHA,
@@ -55,7 +57,18 @@ var TLSCipherLookup = map[string]uint16{
 	`tls_ecdhe_ecdsa_with_aes_256_gcm_sha384`: tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 	`tls_ecdhe_rsa_with_chacha20_poly1305`:    tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
 	`tls_ecdhe_ecdsa_with_chacha20_poly1305`:  tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-	`tls_fallback_scsv`:                       tls.TLS_FALLBACK_SCSV,
+	// tls 1.3
+	`tls_aes_128_gcm_sha256`:       tls.TLS_AES_128_GCM_SHA256,
+	`tls_aes_256_gcm_sha384`:       tls.TLS_AES_256_GCM_SHA384,
+	`tls_chacha20_poly1305_sha256`: tls.TLS_CHACHA20_POLY1305_SHA256,
+	// fallback
+	`tls_fallback_scsv`: tls.TLS_FALLBACK_SCSV,
+}
+
+func init() {
+	// with go 1.2 set the GODEBUG env to tls13=1 to enable tls1.3
+	// with go 1.3 this will be enabled by default
+	// os.Setenv("GODEBUG", os.Getenv("GODEBUG")+",tls13=1")
 }
 
 // TLSClientAuthLookup is a lookup table for TLS Client Auth
