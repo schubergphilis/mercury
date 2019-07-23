@@ -13,7 +13,7 @@ Bug:
   * Default netmask for ipv6 is now /128 instead of /32 (affects network interfaces and topology based loadbalancing checks)
 
 Change:
-  * Removed manual websocket implementation for httputil's reverse proxy. it now supports websockets in the main branch.
+  * Removed manual websocket implementation for httputil's reverse proxy. it now supports websockets in the main branch
 
 ## 0.14.4
 Feature:
