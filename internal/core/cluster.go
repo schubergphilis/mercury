@@ -176,7 +176,14 @@ func (manager *Manager) ClusterClient(cl *cluster.Manager) {
 			}
 
 			// Send update to DNS
-			go manager.sendDNSUpdate(cl, healthcheck.PoolName, healthcheck.BackendName)
+			backend := config.Get().Loadbalancer.Pools[healthcheck.PoolName].Backends[healthcheck.BackendName]
+			if backend.DNSEntry.IPFromNode {
+				// update node specific status when reusing node ip
+				go manager.sendDNSNodeUpdate(cl, healthcheck.PoolName, healthcheck.BackendName, node.UUID, node.IP, healthcheck.ActualStatus)
+			} else {
+				// default send update based on backend status
+				go manager.sendDNSUpdate(cl, healthcheck.PoolName, healthcheck.BackendName)
+			}
 
 		case _ = <-manager.dnsrefresh:
 			// On a reload refresh existing and remove unused dns entries
@@ -232,7 +239,6 @@ func (manager *Manager) dnsRefresh(cl *cluster.Manager) {
 
 // sendDNSUpdate sends dns update to local node, and to the cluster nodes
 func (manager *Manager) sendDNSUpdate(cl *cluster.Manager, poolName string, backendName string) error {
-
 	if _, ok := config.Get().Loadbalancer.Pools[poolName]; !ok {
 		return fmt.Errorf("Pool no longer exists, discarding dns update")
 	}
@@ -252,6 +258,38 @@ func (manager *Manager) sendDNSUpdate(cl *cluster.Manager, poolName string, back
 		BackendUUID: backend.UUID,
 		Status:      getLocalNodeStatus(poolName, backendName),
 	}
+	logging.For("core/senddnsupdate").Debugf("%+v", dnsupdate)
+
+	manager.dnsupdates <- dnsupdate
+	// - send DNS update to cluster nodes
+	go clusterDNSUpdateBroadcast(cl, config.Get().Cluster.Binding.Name, poolName, backendName, backend.DNSEntry, backend.BalanceMode, backend.UUID)
+	return nil
+}
+
+// sendDNSNodeUpdate sends dns update to local node, and to the cluster nodes
+func (manager *Manager) sendDNSNodeUpdate(cl *cluster.Manager, poolName string, backendName string, nodeUUID string, nodeIP string, nodeStatus healthcheck.Status) error {
+
+	if _, ok := config.Get().Loadbalancer.Pools[poolName]; !ok {
+		return fmt.Errorf("Pool no longer exists, discarding dns update")
+	}
+
+	if _, ok := config.Get().Loadbalancer.Pools[poolName].Backends[backendName]; !ok {
+		return fmt.Errorf("Backend of pool no longer exists, discarding dns update")
+	}
+
+	backend := config.Get().Loadbalancer.Pools[poolName].Backends[backendName]
+	// - send DNS updates to local dns servers
+	dnsupdate := &config.ClusterPacketGlobalDNSUpdate{
+		ClusterNode: config.Get().Cluster.Binding.Name,
+		PoolName:    poolName,
+		BackendName: backendName,
+		DNSEntry:    backend.DNSEntry,
+		BalanceMode: backend.BalanceMode,
+		BackendUUID: nodeUUID,
+		Status:      nodeStatus,
+	}
+	dnsupdate.DNSEntry.IP = nodeIP
+	logging.For("core/senddnsnodeupdate").Debugf("%+v", dnsupdate)
 
 	manager.dnsupdates <- dnsupdate
 	// - send DNS update to cluster nodes

@@ -554,7 +554,7 @@ method = "leasttraffic"
 [loadbalancer.pools.INTERNAL_VIP_DNSONLY.backends.www.dnsentry]
 domain = "dnsonly.nl"
 hostname = "www"
-ip = "10.20.30.40"
+ipfromnode = true
 [[loadbalancer.pools.INTERNAL_VIP_DNSONLY.backends.www.nodes]]
 ip = "95.142.102.176"
 port = 80

@@ -107,7 +107,9 @@ func Update(node string, domain string, record Record) {
 	existingid := -1
 	for id, rec := range dnsmanager.node[node].Domains[domain].Records {
 		// match based on record name and type, anything else can be updated
-		if rec.Name == record.Name && rec.Type == record.Type {
+		if rec.UUID == record.UUID {
+			// match records by UUID (which can be backend UUID or node UUID)
+			//if rec.Name == record.Name && rec.Type == record.Type {
 			existingid = id
 		}
 	}

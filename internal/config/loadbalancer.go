@@ -66,10 +66,11 @@ type BackendNode struct {
 
 // DNSEntry for GLB
 type DNSEntry struct {
-	HostName string `json:"hostname" toml:"hostname"`
-	Domain   string `json:"domain" toml:"domain"`
-	IP       string `json:"ip" toml:"ip"`
-	IP6      string `json:"ip6" toml:"ip6"`
+	HostName   string `json:"hostname" toml:"hostname"`
+	Domain     string `json:"domain" toml:"domain"`
+	IP         string `json:"ip" toml:"ip"`
+	IP6        string `json:"ip6" toml:"ip6"`
+	IPFromNode bool   `json:"ipfromnode" toml:"ipfromnode"`
 }
 
 // BackendPool nodes and details

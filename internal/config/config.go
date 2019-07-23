@@ -224,11 +224,11 @@ func (c *Config) ParseConfig() error {
 				h.ConnectMode = c.Loadbalancer.Pools[poolName].Listener.Mode
 			}
 
-			if backend.DNSEntry.IP == "" && c.Loadbalancer.Pools[poolName].Listener.IP == "" {
+			if backend.DNSEntry.IP == "" && c.Loadbalancer.Pools[poolName].Listener.IP == "" && backend.DNSEntry.IPFromNode == false {
 				return fmt.Errorf("No IP defined in either the pool's listener IP or the DNSentry IP for backend:%s", backendName)
 			}
 			// If not DNS Entry IP is set, set the ip to the listener
-			if backend.DNSEntry.IP == "" {
+			if backend.DNSEntry.IP == "" && backend.DNSEntry.IPFromNode == false {
 				h.DNSEntry.IP = c.Loadbalancer.Pools[poolName].Listener.IP
 			}
 
