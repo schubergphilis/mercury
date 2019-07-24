@@ -101,7 +101,7 @@ func echoServer(w http.ResponseWriter, r *http.Request) error {
 	for {
 		err = echo(r.Context(), c, l)
 		if err != nil {
-			return xerrors.Errorf("failed to echo with %v: %w", r.RemoteAddr, err)
+			return xerrors.Errorf("failed to echo with %v: %s", r.RemoteAddr, err)
 		}
 	}
 }
@@ -127,7 +127,7 @@ func echo(ctx context.Context, c *websocket.Conn, l *rate.Limiter) error {
 
 	_, err = io.Copy(w, r)
 	if err != nil {
-		return xerrors.Errorf("failed to io.Copy: %w", err)
+		return xerrors.Errorf("failed to io.Copy: %s", err)
 	}
 
 	err = w.Close()
