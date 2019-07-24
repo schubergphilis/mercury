@@ -43,6 +43,11 @@ func apiWriteData(w http.ResponseWriter, statusCode int, message apiMessage) {
 	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	messageData, err := json.Marshal(message.Data)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("Failed to marshall data on write"))
+	}
+
 	message.Data = string(messageData)
 	data, err := json.Marshal(message)
 	if err != nil {

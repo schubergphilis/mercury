@@ -364,7 +364,7 @@ func TestACLURL(t *testing.T) {
 	assert.Equal(t, false, result, "url should be allowed")
 
 	req, _ = http.NewRequest("GET", "/rewrite", nil)
-	result = acl[2].ProcessRequest(req)
+	_ = acl[2].ProcessRequest(req)
 	assert.Equal(t, "/Xewrite", req.URL.RequestURI(), "url should be rewritten")
 
 }

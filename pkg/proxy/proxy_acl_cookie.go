@@ -12,10 +12,17 @@ import (
 	"golang.org/x/net/http/httpguts"
 )
 
+var (
+	// SERVERCOOKIE is the cookie string set by servers to set cookies on client
+	SERVERCOOKIE = "Set-Cookie"
+	// CLIENTCOOKIE is the cookie string set by clients to send cookies to the server
+	CLIENTCOOKIE = "Cookie"
+)
+
 // removeHeader removes matching requestHeaders
 func removeCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHeader string, match string) {
 	log := logging.For("proxy/removecookie")
-	if cookieHeader == "Set-Cookie" {
+	if cookieHeader == SERVERCOOKIE {
 		cookies := readSetCookies(*responseHeader, cookieHeader)
 
 		if len(cookies) == 0 {
@@ -52,20 +59,20 @@ func addCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHe
 	log := logging.For("proxy/addcookie")
 	if force == false {
 		// if we are setting a response cookie (server -> mercury -[here]-> browser)
-		if cookieHeader == "Set-Cookie" {
+		if cookieHeader == SERVERCOOKIE {
 			// check if we have a request header, we verify if the cookie was already set in the request before adding it again
-			if requestHeader != nil && cookieExists(requestHeader, "Cookie", acl.CookieKey) {
+			if requestHeader != nil && cookieExists(requestHeader, CLIENTCOOKIE, acl.CookieKey) {
 				// cookie key already existed in the request, so browser already has this key, we don't need to add the cookie
 				return
 			}
 			// check if the cookie already exists in the response header
-			if responseHeader != nil && cookieExists(responseHeader, "Set-Cookie", acl.CookieKey) {
+			if responseHeader != nil && cookieExists(responseHeader, SERVERCOOKIE, acl.CookieKey) {
 				// cookie key already existed in the response, so the server already set this key, we are not going to add it again
 				return
 			}
 		} else {
 			// we are settings a request cookie (browser -> mercury -[here]-> server)
-			if requestHeader != nil && cookieExists(requestHeader, "Cookie", acl.CookieKey) {
+			if requestHeader != nil && cookieExists(requestHeader, CLIENTCOOKIE, acl.CookieKey) {
 				// cookie key already existed in the request, so browser already has this key, we don't need to add the cookie
 				return
 			}
@@ -73,7 +80,7 @@ func addCookie(requestHeader *http.Header, responseHeader *http.Header, cookieHe
 	}
 
 	cookie := acl.newCookie()
-	if cookieHeader == "Set-Cookie" {
+	if cookieHeader == SERVERCOOKIE {
 		// Set-Cookies must have their own requestHeader for each cookie, we write them to the request requestHeader
 		responseHeader.Add(cookieHeader, cookie.String())
 
@@ -99,10 +106,10 @@ func modifyCookie(requestHeader *http.Header, responseHeader *http.Header, cooki
 	}
 
 	var cookies []*http.Cookie
-	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
+	if strings.Compare(cookieHeader, SERVERCOOKIE) == 0 {
 		cookies = readSetCookies(*responseHeader, cookieHeader)
 	}
-	if strings.Compare(cookieHeader, "Cookie") == 0 {
+	if strings.Compare(cookieHeader, CLIENTCOOKIE) == 0 {
 		cookies = readSetCookies(*requestHeader, cookieHeader)
 	}
 
@@ -130,7 +137,7 @@ func modifyCookie(requestHeader *http.Header, responseHeader *http.Header, cooki
 		}
 		newCookies = append(newCookies, cookie.String())
 	}
-	if cookieHeader == "Set-Cookie" {
+	if cookieHeader == SERVERCOOKIE {
 		// set cookies are 1 per line (old rfc)
 		responseHeader.Del(cookieHeader)
 		for _, cookie := range newCookies {
@@ -141,12 +148,6 @@ func modifyCookie(requestHeader *http.Header, responseHeader *http.Header, cooki
 		requestHeader.Set(cookieHeader, strings.Join(newCookies, ";"))
 	}
 
-	if strings.Compare(cookieHeader, "Set-Cookie") == 0 {
-		cookies = readSetCookies(*responseHeader, cookieHeader)
-	}
-	if strings.Compare(cookieHeader, "Cookie") == 0 {
-		cookies = readSetCookies(*requestHeader, cookieHeader)
-	}
 	log.WithField("cookie", cookieHeader).Debug("Modify Cookie Called")
 
 }
