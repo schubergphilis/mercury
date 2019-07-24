@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -87,6 +88,21 @@ func TestRecursive(t *testing.T) {
 		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
 	}
 
+	// Check for allowed recursive lookup nu.nl
+	m = new(dnssrv.Msg)
+	m.SetQuestion("www.nu.nl.", dnssrv.TypeA)
+	rcode, _ = parseQuery(m, "192.168.0.2:12345")
+	fmt.Printf("m: %+v", m)
+
+	//if !answerTarget(m, "172.217.19.196") {
+	if !answerType(m, dnssrv.TypeA) {
+		t.Errorf("Expected 1 records, of type A:%t got:%+v", answerType(m, dnssrv.TypeA), m)
+	}
+
+	if rcode != -1 {
+		t.Errorf("Return code incorrect, got:%d expected:%d", rcode, 0)
+	}
+
 	// Check for denied recursive lookup
 	m = new(dnssrv.Msg)
 	m.SetQuestion("www.google.com.", dnssrv.TypeA)
@@ -131,7 +147,7 @@ func answerTarget(m *dnssrv.Msg, chars string) bool {
 
 func answerType(m *dnssrv.Msg, qtype uint16) bool {
 	for _, a := range m.Answer {
-		if a.Header().Class == qtype {
+		if a.Header().Rrtype == qtype {
 			return true
 		}
 	}
