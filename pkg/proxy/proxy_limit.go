@@ -57,7 +57,7 @@ func (l limitListener) Accept() (c net.Conn, err error) {
 	c, err = l.AcceptTCP()
 
 	if err != nil {
-		log.Error("Client failed to connect")
+		log.WithError(err).Error("Client failed to connect")
 		l.release()
 		return
 	}
