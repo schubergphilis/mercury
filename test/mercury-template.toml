@@ -50,7 +50,7 @@ insecureskipverify = true
 [dns]
 binding = "0.0.0.0"
 port = 15353
-allow_forwarding = [ "%LOCALIP%/32", "::1/128" ]
+allow_forwarding = [ "%LOCALIP%/32", "::1/128", "127.0.0.1/32" ]
 #allowed_requests = [ "A", "AAAA" ]
 [dns.domains."domain.nl"]
 ttl = 11

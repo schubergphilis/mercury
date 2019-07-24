@@ -11,22 +11,22 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a356e16e60f11343cb04aff26d84c2afae4035814a412f1c31ba9a8d379828fb"
+  digest = "1:5687fbc1645b88f9cab21657e4b7bfe7093c03b7e8e623efdf4dd5ecf16b6352"
   name = "github.com/GeertJohan/go.rice"
   packages = [
     ".",
     "embedded",
   ]
   pruneopts = ""
-  revision = "b3203a718155cf0303e4db92aa4d1785a566142c"
+  revision = "c880e3cd4dd81db36b423e83dc0aeea4dca93774"
 
 [[projects]]
-  digest = "1:86b9f9c54fcddec313009ef19073bf0124bbdae3701080c32f67c0c8817b3b7c"
+  digest = "1:8e8da6cc8cca12851d4e089d970a0f7387b3a6bcc8c459ff432213b03076a66d"
   name = "github.com/daaku/go.zipexe"
   packages = ["."]
   pruneopts = ""
-  revision = "db7cf2ba330f8c2d28b827826e33d6628ea7e9e0"
-  version = "v1.0.0"
+  revision = "74d766ac1dde7458348221869a7d1e7e5fa0597e"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
@@ -45,6 +45,14 @@
   version = "v3.2.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:01dcbba7c9bda73d046c7312e0634f06e3f8233fbbd7866640d2cad01ac16266"
+  name = "github.com/domainr/dnsr"
+  packages = ["."]
+  pruneopts = ""
+  revision = "1e80e1e3a68e72230de72328614cbb5ede3bb3ea"
+
+[[projects]]
   digest = "1:0f51cee70b0d254dbc93c22666ea2abf211af81c1701a96d04e2284b408621db"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -53,12 +61,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:bd95ada143d11b4711db3cfef17613a19002f3aac1e9740e3babdd10b57171f3"
+  digest = "1:0b6694f306890ddbb69c96a16776510bd24e07436fae3f9b0a4e5b650f1e6fb7"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = ""
-  revision = "73601d4aed9d844322611759d7f3619110b7c88e"
-  version = "v1.1.8"
+  revision = "b13675009d59c97f3721247d9efa8914e1866a5b"
+  version = "v1.1.15"
 
 [[projects]]
   branch = "master"
@@ -85,23 +93,15 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:15f7dbcdd6df4eb6c469f9ad23945b2ece1d21e31e7c171ec6dbecb7cdb7408c"
-  name = "github.com/rdoorn/dnsr"
-  packages = ["."]
-  pruneopts = ""
-  revision = "7ea4e5f385b0fb47b2e9f575ab1c63c6e1f1b186"
-
-[[projects]]
-  digest = "1:b73fe282e350b3ef2c71d8ff08e929e0b9670b1bb5b7fde1d3c1b4cd6e6dc8b1"
+  digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
   name = "github.com/sirupsen/logrus"
   packages = [
     ".",
     "hooks/syslog",
   ]
   pruneopts = ""
-  revision = "dae0fa8d5b0c810a8ab733fbd5510c7cae84eca4"
-  version = "v1.4.0"
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
 
 [[projects]]
   digest = "1:381bcbeb112a51493d9d998bbba207a529c73dbb49b3fd789e48c63fac1f192c"
@@ -112,8 +112,30 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "imports-mangling"
+  digest = "1:0ad8e2a2eee4d7c4d301e216173a3ee73ac70694222ae2f2f908bd86d2c375c2"
+  name = "go.coder.com/go-tools"
+  packages = [
+    "cmd/goimports",
+    "go/ast/astutil",
+    "go/gcexportdata",
+    "go/internal/cgo",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
+    "imports",
+    "internal/fastwalk",
+    "internal/gopathwalk",
+    "internal/module",
+    "internal/semver",
+  ]
+  pruneopts = ""
+  revision = "0c6a35b74a16a7fa4c6d7015943a632a6a6f9c69"
+
+[[projects]]
   branch = "master"
-  digest = "1:36ef1d8645934b1744cc7d8726e00d3dd9d8d84c18617bf7367a3a6d532f3370"
+  digest = "1:086760278d762dbb0e9a26e09b57f04c89178c86467d8d94fae47d64c222f328"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -124,14 +146,24 @@
     "ocsp",
     "poly1305",
     "ssh",
-    "ssh/terminal",
   ]
   pruneopts = ""
-  revision = "a5d413f7728c81fb97d96a2b722368945f651e78"
+  revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
 
 [[projects]]
   branch = "master"
-  digest = "1:adcb9e84ce154ef1d45851b57c40f8a211db3e36373a65b7c4f10c79b7428718"
+  digest = "1:99dc4c94284ccd0d515bc11c906edcc33da407af228c6cf75b6f20e2cd3e6ab6"
+  name = "golang.org/x/lint"
+  packages = [
+    ".",
+    "golint",
+  ]
+  pruneopts = ""
+  revision = "959b441ac422379a43da2230f62be024250818b0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:955694a7c42527d7fb188505a22f10b3e158c6c2cf31fe64b1e62c9ab7b18401"
   name = "golang.org/x/net"
   packages = [
     "bpf",
@@ -146,11 +178,11 @@
     "ipv6",
   ]
   pruneopts = ""
-  revision = "74de082e2cca95839e88aa0aeee5aadf6ce7710f"
+  revision = "ca1201d0de80cfde86cb01aea620983605dfe99b"
 
 [[projects]]
   branch = "master"
-  digest = "1:1b0de777d8ddd63356d5a4d76799ea8f47e811aa9dda85ddc72b2a061c799cc9"
+  digest = "1:8d8dab33e614e3839a47bbb340189458c28c58e60655023d20eeb92b7300768a"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -158,16 +190,18 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "9eb1bfa1ce65ae8a6ff3114b0aaf9a41a6cf3560"
+  revision = "fae7ac547cb717d141c433a2a173315e216b64c4"
 
 [[projects]]
-  digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
+  digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
     "internal/colltab",
     "internal/gen",
+    "internal/language",
+    "internal/language/compact",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
@@ -180,8 +214,46 @@
     "unicode/rangetable",
   ]
   pruneopts = ""
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
+  version = "v0.3.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:9522af4be529c108010f95b05f1022cb872f2b9ff8b101080f554245673466e1"
+  name = "golang.org/x/time"
+  packages = ["rate"]
+  pruneopts = ""
+  revision = "9d24e82272b4f38b78bc8cff74fa936d31ccd8ef"
+
+[[projects]]
+  branch = "master"
+  digest = "1:96063d8b51e4e41c115604e4ff15cd8d316992e3f7390dcc66a212e7be42189b"
+  name = "golang.org/x/tools"
+  packages = [
+    "cmd/stringer",
+    "go/ast/astutil",
+    "go/gcexportdata",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
+    "internal/fastwalk",
+    "internal/gopathwalk",
+    "internal/semver",
+  ]
+  pruneopts = ""
+  revision = "8bb11ff117ca820938b6d899b13b3f2832ef244c"
+
+[[projects]]
+  branch = "master"
+  digest = "1:dbd0a2ffe12d8988e1b5d5cfb518fb8232e3b29bcf7ac06b75f91ab96db6a70f"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = ""
+  revision = "a985d3407aa71f30cf86696ee0a2f409709f22e1"
 
 [[projects]]
   digest = "1:039b95e6ba078fe5a22315dcae7bc9859226ee34672ce9ab01708576bf2abd38"
@@ -207,6 +279,30 @@
   pruneopts = ""
   revision = "7b8349ac747c6a24702b762d2c4fd9266cf4f1d6"
 
+[[projects]]
+  digest = "1:1b1c06707a11d7672019693854e042f0384c4acc6324d03a93047eb698ea122b"
+  name = "mvdan.cc/sh"
+  packages = [
+    "cmd/shfmt",
+    "fileutil",
+    "syntax",
+  ]
+  pruneopts = ""
+  revision = "6ae84988520ab9ea8ad7b2cc327f2261a30e7abf"
+  version = "v2.6.4"
+
+[[projects]]
+  digest = "1:73e68665b3700ab3a15819477c068ff9944d0bb0ddd9563272120a87aae060c3"
+  name = "nhooyr.io/websocket"
+  packages = [
+    ".",
+    "internal/bpool",
+    "wsjson",
+  ]
+  pruneopts = ""
+  revision = "4d72b518f0be0f09b81dd3cef2dac7fdf0251a8b"
+  version = "v1.3.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -215,10 +311,10 @@
     "github.com/GeertJohan/go.rice",
     "github.com/GeertJohan/go.rice/embedded",
     "github.com/dgrijalva/jwt-go",
+    "github.com/domainr/dnsr",
     "github.com/miekg/dns",
     "github.com/nightlyone/lockfile",
     "github.com/nu7hatch/gouuid",
-    "github.com/rdoorn/dnsr",
     "github.com/sirupsen/logrus",
     "github.com/sirupsen/logrus/hooks/syslog",
     "github.com/stretchr/testify/assert",
@@ -228,8 +324,12 @@
     "golang.org/x/net/http2",
     "golang.org/x/net/icmp",
     "golang.org/x/net/ipv4",
+    "golang.org/x/time/rate",
+    "golang.org/x/xerrors",
     "gopkg.in/ldap.v2",
     "gopkg.in/yaml.v2",
+    "nhooyr.io/websocket",
+    "nhooyr.io/websocket/wsjson",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
