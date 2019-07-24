@@ -57,6 +57,10 @@ func WebBackendDetails(w http.ResponseWriter, r *http.Request) {
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Backend Details %s", clusternode, backend)
 	_, username, err := authenticateUser(r)
+	if err != nil {
+		log.Warnf("Error authenticating user: %s", err)
+	}
+
 	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"backenddetails.tmpl", "header.tmpl", "footer.tmpl"}
@@ -86,6 +90,10 @@ func WebClusterStatus(w http.ResponseWriter, r *http.Request) {
 	clusternode := config.Get().Cluster.Binding.Name
 	title := fmt.Sprintf("Mercury %s - Cluster Status", clusternode)
 	_, username, err := authenticateUser(r)
+	if err != nil {
+		log.Warnf("Error authenticating user: %s", err)
+	}
+
 	page := newPage(title, r.RequestURI, username)
 
 	templateNames := []string{"cluster.tmpl", "header.tmpl", "footer.tmpl"}
@@ -137,6 +145,10 @@ func WebProxyStatus(w http.ResponseWriter, r *http.Request) {
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Proxy Status", clusternode)
 		_, username, err := authenticateUser(r)
+		if err != nil {
+			log.Warnf("Error authenticating user: %s", err)
+		}
+
 		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"proxy.tmpl", "header.tmpl", "footer.tmpl"}
@@ -175,6 +187,10 @@ func WebBackendStatus(w http.ResponseWriter, r *http.Request) {
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - Backend Status", clusternode)
 		_, username, err := authenticateUser(r)
+		if err != nil {
+			log.Warnf("Error authenticating user: %s", err)
+		}
+
 		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"backend.tmpl", "header.tmpl", "footer.tmpl"}
@@ -214,6 +230,10 @@ func WebGLBStatus(w http.ResponseWriter, r *http.Request) {
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - GLB Status", clusternode)
 		_, username, err := authenticateUser(r)
+		if err != nil {
+			log.Warnf("Error authenticating user: %s", err)
+		}
+
 		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"glb.tmpl", "header.tmpl", "footer.tmpl"}
@@ -252,6 +272,10 @@ func WebLocalDNSStatus(w http.ResponseWriter, r *http.Request) {
 		clusternode := config.Get().Cluster.Binding.Name
 		title := fmt.Sprintf("Mercury %s - LocalDNS Status", clusternode)
 		_, username, err := authenticateUser(r)
+		if err != nil {
+			log.Warnf("Error authenticating user: %s", err)
+		}
+
 		page := newPage(title, r.RequestURI, username)
 
 		templateNames := []string{"localdns.tmpl", "header.tmpl", "footer.tmpl"}
@@ -290,6 +314,9 @@ func uptime(t time.Duration) string {
 func WebRoot(w http.ResponseWriter, r *http.Request) {
 	log := logging.For("core/webroot").WithField("func", "web")
 	_, username, err := authenticateUser(r)
+	if err != nil {
+		log.Warnf("Error authenticating user: %s", err)
+	}
 	page := newPage("Mercury Global Loadbalancer", r.RequestURI, username)
 
 	templateNames := []string{"root.tmpl", "header.tmpl", "footer.tmpl"}

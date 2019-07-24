@@ -88,9 +88,8 @@ func authenticateUser(r *http.Request) (bool, string, error) {
 				return false, "", fmt.Errorf("token expired")
 			}
 			return true, fmt.Sprintf("%s", claims["username"]), nil
-		} else {
-			return false, "", err
 		}
+		return false, "", err
 	}
 	return false, "", fmt.Errorf("no session token")
 }

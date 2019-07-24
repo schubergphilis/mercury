@@ -129,7 +129,7 @@ func (n BackendNode) SafeName() string {
 	return r.Replace(n.ServerName())
 }
 
-// UpdateStatus updates node status
+// UpdateNodeStatus updates node status
 func UpdateNodeStatus(poolName string, backendName string, nodeUUID string, status healthcheck.Status, err []string) {
 	configLock.Lock()
 	defer configLock.Unlock()

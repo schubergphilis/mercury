@@ -18,6 +18,10 @@ import (
 const (
 	// YES when yes simply isn't enough
 	YES = "yes"
+	// HTTP string
+	HTTP = "http"
+	// HTTPS string
+	HTTPS = "https"
 )
 
 // Listener contains the config for the proxy listener
@@ -93,7 +97,7 @@ func (l *Listener) Start() {
 		}
 		go l.TCPProxy(tcplistener)
 
-	case "http":
+	case HTTP:
 		proxy := l.NewHTTPProxy()
 		httpsrv = &http.Server{
 			ReadTimeout:  time.Duration(l.ReadTimeout) * time.Second,
@@ -111,7 +115,7 @@ func (l *Listener) Start() {
 		l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
 		go httpsrv.Serve(l.socket)
 
-	case "https":
+	case HTTPS:
 		proxy := l.NewHTTPProxy()
 
 		l.TLSConfig.GetClientCertificate = func(t *tls.CertificateRequestInfo) (*tls.Certificate, error) {
@@ -170,10 +174,10 @@ func (l *Listener) Start() {
 				log.Debug("Stopping TCP Proxy on request")
 				tcplistener.Close()
 
-			case "http":
+			case HTTP:
 				fallthrough
 
-			case "https":
+			case HTTPS:
 				log.Debug("Stopping HTTP(s) Proxy on request")
 				err := httpsrv.Shutdown(nil)
 				if err != http.ErrServerClosed {
