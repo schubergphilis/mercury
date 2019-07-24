@@ -434,7 +434,7 @@ func dnsForwarder(m *dnssrv.Msg, q dnssrv.Question) {
 	rrs, err := dnsmanager.Resolver.ResolveErr(q.Name, dnssrv.TypeToString[q.Qtype])
 	// resolve C records to include A records
 	maxResolve := 5
-	for hasOnlyCname(rrs) && err == nil && maxResolve > 0 {
+	for hasOnlyCname(rrs) && len(rrs) > 0 && err == nil && maxResolve > 0 {
 		var rrs2 dnsr.RRs
 		last := rrs[len(rrs)-1]
 		log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).WithField("fname", last.Value).Infof("DNS Forwarding only returned CNAMES")
