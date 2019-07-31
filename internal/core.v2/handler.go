@@ -36,6 +36,9 @@ type Handler struct {
 	// interfaces
 	cluster     models.ClusterService
 	healthcheck models.HealthcheckService
+
+	// state maintainer
+	state models.StateService
 }
 
 // New creates a new handler for the core

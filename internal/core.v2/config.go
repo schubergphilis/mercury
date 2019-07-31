@@ -8,6 +8,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/schubergphilis/mercury.v2/internal/logging"
+	"github.com/schubergphilis/mercury.v2/internal/models"
 	"github.com/schubergphilis/mercury.v2/internal/web"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -131,25 +132,94 @@ func (c *Config) defaultsLogging() error {
 func (c *Config) defaultsHealthCheck() error {
 	defaultCheckInterval := 10
 	defaultCheckTimeout := 11
+
+	defaultCheck := models.Healthcheck{
+		Type:     "tcpconnect",
+		Interval: defaultCheckInterval,
+		Timeout:  defaultCheckTimeout,
+	}
+	// if no health check, set default to tcpconnect
 	for poolID, pool := range c.Loadbalancer.Pools {
 		for backendID, backend := range pool.Backends {
-			for hcID, healthcheck := range backend.Healthchecks {
-				if healthcheck.Interval == 0 {
-					c.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks[hcID].Interval = defaultCheckInterval
-				}
-				if healthcheck.Timeout == 0 {
-					c.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks[hcID].Timeout = defaultCheckTimeout
-				}
-			}
-		}
-		for hcID, healthcheck := range pool.Healthchecks {
-			if healthcheck.Interval == 0 {
-				c.Loadbalancer.Pools[poolID].Healthchecks[hcID].Interval = defaultCheckInterval
-			}
-			if healthcheck.Timeout == 0 {
-				c.Loadbalancer.Pools[poolID].Healthchecks[hcID].Timeout = defaultCheckTimeout
+			if len(backend.Healthchecks) == 0 {
+				checks := c.Loadbalancer.Pools[poolID].Backends[backendID]
+				checks.Healthchecks = append(c.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks, defaultCheck)
+				c.Loadbalancer.Pools[poolID].Backends[backendID] = checks
 			}
 		}
 	}
+
+	for poolID, pool := range c.Loadbalancer.Pools {
+		// if there is a pool healthcheck, it applies to all backends/nodes
+		poolchecks := []models.Healthcheck{}
+		for _, healthcheck := range pool.Healthchecks {
+			if healthcheck.Interval == 0 {
+				healthcheck.Interval = defaultCheckInterval
+			}
+
+			if healthcheck.Timeout == 0 {
+				healthcheck.Timeout = defaultCheckTimeout
+			}
+			poolchecks = append(poolchecks, healthcheck)
+		}
+
+		// source ip is the listener of the pool, unless otherwise specified
+		sourceIP := pool.Listener.IP
+
+		for backendID, backend := range pool.Backends {
+			// collect all nodes we should use the healthcheck(s) for
+			targetBackends := make(map[string]int)
+			for _, node := range backend.Nodes {
+				targetIP := ""
+				if node.IP != "" {
+					targetIP = node.IP // prefer ip over hostname
+				} else {
+					targetIP = node.Hostname
+				}
+				targetBackends[targetIP] = node.Port
+			}
+
+			// expand healthchecks based on nodes
+			finalchecks := []models.Healthcheck{}
+			// add pool checks (if any)
+			finalchecks = append(finalchecks, poolchecks...)
+			for _, healthcheck := range backend.Healthchecks {
+
+				if healthcheck.SourceIP == "" {
+					healthcheck.SourceIP = sourceIP
+				}
+
+				if healthcheck.Interval == 0 {
+					healthcheck.Interval = defaultCheckInterval
+				}
+
+				if healthcheck.Timeout == 0 {
+					healthcheck.Timeout = defaultCheckTimeout
+				}
+
+				if healthcheck.TargetIP == "" {
+					for addr, port := range targetBackends {
+						healthcheck.TargetIP = addr
+						healthcheck.TargetPort = port
+						finalchecks = append(finalchecks, healthcheck)
+					}
+				} else {
+					finalchecks = append(finalchecks, healthcheck)
+				}
+			}
+
+			// add default check if we have none
+			if len(backend.Healthchecks) == 0 {
+				finalchecks = append(finalchecks, defaultCheck)
+			}
+
+			// apply final checks to backend configuration
+			checks := c.Loadbalancer.Pools[poolID].Backends[backendID]
+			checks.Healthchecks = finalchecks
+			c.Loadbalancer.Pools[poolID].Backends[backendID] = checks
+
+		}
+	}
+
 	return nil
 }

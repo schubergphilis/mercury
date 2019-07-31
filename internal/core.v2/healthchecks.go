@@ -25,6 +25,20 @@ func (h *Handler) stopHealthchecks() {
 }
 
 func (h *Handler) reloadHealthchecks() {
+	// update log level if needed
+	if h.config.LoggingConfig.HealthcheckLevel != h.runningConfig.LoggingConfig.HealthcheckLevel {
+		if alternativeLogLevel, err := logging.ToLevel(h.config.LoggingConfig.HealthcheckLevel); err == nil {
+			h.log.Infof("Healtcheck alternative log level", "level", h.config.LoggingConfig.HealthcheckLevel)
+			var prefix []interface{}
+			prefix = append(prefix, "func")
+			prefix = append(prefix, "healthcheck")
+
+			h.healthcheck.WithLogger(&logging.Wrapper{Log: h.LogProvider, Level: alternativeLogLevel, Prefix: prefix})
+			// update running config
+			h.runningConfig.LoggingConfig.HealthcheckLevel = h.config.LoggingConfig.HealthcheckLevel
+		}
+	}
+
 	// health checks we have configured
 	requestedHealthchecks := make(map[string]models.Healthcheck)
 	for _, pool := range h.config.Loadbalancer.Pools {
@@ -63,19 +77,16 @@ func (h *Handler) reloadHealthchecks() {
 		h.healthcheck.AddHealthcheck(uuid, check)
 	}
 
-	// update log level if needed
-	if h.config.LoggingConfig.HealthcheckLevel != h.runningConfig.LoggingConfig.HealthcheckLevel {
-		if alternativeLogLevel, err := logging.ToLevel(h.config.LoggingConfig.HealthcheckLevel); err == nil {
-			h.log.Infof("Healtcheck alternative log level", "level", h.config.LoggingConfig.HealthcheckLevel)
-			var prefix []interface{}
-			prefix = append(prefix, "func")
-			prefix = append(prefix, "healthcheck")
-
-			h.healthcheck.WithLogger(&logging.Wrapper{Log: h.LogProvider, Level: alternativeLogLevel, Prefix: prefix})
-			// update running config
-			h.runningConfig.LoggingConfig.HealthcheckLevel = h.config.LoggingConfig.HealthcheckLevel
+	// for added services:
+	// add them to the running config
+	/*for poolID, pool := range h.config.Loadbalancer.Pools {
+		for backendID := range pool.Backends {
+			b := h.runningConfig.Loadbalancer.Pools[poolID].Backends[backendID]
+			b.Healthchecks = h.config.Loadbalancer.Pools[poolID].Backends[backendID].Healthchecks
+			h.runningConfig.Loadbalancer.Pools[poolID].Backends[backendID] = b
 		}
-	}
+	}*/
+
 }
 
 func healthcheckAddedAndDeleted(old, new map[string]models.Healthcheck) (added map[string]models.Healthcheck, deleted map[string]models.Healthcheck) {
