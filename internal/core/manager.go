@@ -7,6 +7,7 @@ import (
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/internal/web"
 	"github.com/schubergphilis/mercury/pkg/cluster"
+	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
@@ -25,6 +26,7 @@ type Manager struct {
 	dnsoffline                      chan string
 	dnsupdates                      chan *config.ClusterPacketGlobalDNSUpdate
 	dnsremove                       chan *config.ClusterPacketGlobalDNSRemove
+	dnssecKeyUpdate                 chan dns.NewKeyChannel
 	clearStatsProxyBackend          chan *config.ClusterPacketClearProxyStatistics
 	clusterGlbalDNSStatisticsUpdate chan *config.ClusterPacketGlbalDNSStatisticsUpdate
 	addProxyBackend                 chan *config.ProxyBackendNodeUpdate
@@ -43,6 +45,7 @@ func NewManager() *Manager {
 		dnsoffline:                      make(chan string),
 		dnsupdates:                      make(chan *config.ClusterPacketGlobalDNSUpdate),
 		dnsremove:                       make(chan *config.ClusterPacketGlobalDNSRemove),
+		dnssecKeyUpdate:                 make(chan dns.NewKeyChannel),
 		addProxyBackend:                 make(chan *config.ProxyBackendNodeUpdate),
 		removeProxyBackend:              make(chan *config.ProxyBackendNodeUpdate),
 		proxyBackendStatisticsUpdate:    make(chan *config.ProxyBackendStatisticsUpdate),

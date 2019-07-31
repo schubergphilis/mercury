@@ -21,9 +21,7 @@ func addRecord(node string, domain string, record Record) {
 
 	// Create dns domains entry if not there yet
 	if _, ok := dnsmanager.node[node].Domains[domain]; !ok {
-		dnsmanager.node[node].Domains[domain] = Domain{
-			Records: make([]Record, 0),
-		}
+		createDomain(node, domain)
 	}
 
 	y := dnsmanager.node[node].Domains[domain]
@@ -75,11 +73,15 @@ func createNode(name string) {
 }
 
 func createDomain(node, domain string) {
-	dnsmanager.Lock()
-	defer dnsmanager.Unlock()
 	dnsmanager.node[node].Domains[domain] = Domain{
 		Records: make([]Record, 0),
 	}
+}
+
+func CreateDomain(node, domain string) {
+	dnsmanager.Lock()
+	defer dnsmanager.Unlock()
+	createDomain(node, domain)
 }
 
 // Update Updates a dns entry in a node
@@ -94,7 +96,7 @@ func Update(node string, domain string, record Record) {
 
 	// Create dns domains entry if not there yet
 	if _, ok := dnsmanager.node[node].Domains[domain]; !ok {
-		createDomain(node, domain)
+		CreateDomain(node, domain)
 	}
 
 	// This happens if there is no config anymore when removing a update, we remove by uuid

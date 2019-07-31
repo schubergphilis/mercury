@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"net"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/schubergphilis/mercury/pkg/balancer"
 	"github.com/schubergphilis/mercury/pkg/logging"
 
+	"github.com/miekg/dns"
 	dnssrv "github.com/miekg/dns"
 	"github.com/rdoorn/dnsr"
 )
@@ -74,7 +76,17 @@ var dnsmanager = struct {
 	UDPServer       *dnssrv.Server
 	Resolver        *dnsr.Resolver
 	AllowForwarding []*net.IPNet
-}{node: make(map[string]Domains), stop: make(chan bool, 1), AllowedRequests: []string{}, proxyStats: false, TCPServer: &dnssrv.Server{}, UDPServer: &dnssrv.Server{}, Resolver: dnsr.New(0)}
+	KeyStore        *KeyStore
+}{
+	node:            make(map[string]Domains),
+	stop:            make(chan bool, 1),
+	AllowedRequests: []string{},
+	proxyStats:      false,
+	TCPServer:       &dnssrv.Server{},
+	UDPServer:       &dnssrv.Server{},
+	Resolver:        dnsr.New(0),
+	KeyStore:        NewKeyStore(),
+}
 
 // Updates the counter of an dns record which was requested
 func updateCounter(domain string, record Record) {
@@ -215,7 +227,7 @@ func getRecordsByType(hostName string, domainName string, queryType uint16) (rec
 }
 
 // parseQuery parses the clients request, and formulates a reply
-func parseQuery(m *dnssrv.Msg, client string) (int, error) {
+func parseQuery(m *dnssrv.Msg, client string, edns *dnssrv.OPT) (int, error) {
 	log := logging.For("dns/server/parse")
 
 	var clientdata string
@@ -358,6 +370,7 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 			} else {
 				clog.WithField("error", err).WithField("target", record.Target).WithField("recordtype", record.Type).Error("DNS failed to add record")
 			}
+
 		}
 
 		// Authoritive records
@@ -398,6 +411,100 @@ func parseQuery(m *dnssrv.Msg, client string) (int, error) {
 				clog.WithField("error", err).WithField("target", record.Target).WithField("recordtype", record.Type).Error("DNS failed to add additional record")
 
 			}
+		}
+
+		// signing if authorative and dnssec is requested
+		if edns != nil && edns.Do() && m.Authoritative {
+			// we need to sign the records
+
+			switch q.Qtype {
+			case dnssrv.TypeDS:
+				fallthrough
+			case dnssrv.TypeDNSKEY:
+				// we need to return the domains KSK + ZSK, which is basicly all DSKEY records for a domain
+				// we need to sign the KSK with the private key of the KSK (all of them)
+				domainNameDot := domainName + "."
+				if ksks, ok := dnsmanager.KeyStore.KeySigningKeys.Keys[domainNameDot]; ok {
+					for _, ksk := range ksks {
+
+						m.Answer = append(m.Answer, signRecords(KeySigningKey, ksk, domainNameDot, m.Answer)...)
+						m.Ns = append(m.Ns, signRecords(KeySigningKey, ksk, domainNameDot, m.Ns)...)
+
+						/*
+							// Fill in the values of the Sig, before signing
+							dnskey := ksk.DNSKEY(KeySigningKey, domainNameDot)
+							sig := new(dnssrv.RRSIG)
+
+							sig.Expiration = uint32(ksk.Deactivate.Unix()) // date -u '+%s' -d"2011-02-01 04:25:05"
+							sig.Inception = uint32(ksk.Publish.Unix())     // date -u '+%s' -d"2011-01-02 04:25:05"
+							sig.KeyTag = dnskey.KeyTag()                   // Get the keyfrom the Key
+							sig.SignerName = dnskey.Header().Name
+							sig.Algorithm = dnssrv.RSASHA256
+
+							if sig.Sign(ksk.privateKey.(*ecdsa.PrivateKey), m.Answer) == nil {
+								// add sig
+								m.Answer = append(m.Answer, sig)
+							}
+
+							if len(m.Ns) > 0 {
+								if sig.Sign(ksk.privateKey.(*ecdsa.PrivateKey), m.Ns) == nil {
+									// add sig
+									m.Ns = append(m.Ns, sig)
+								}
+							}
+						*/
+					}
+				}
+				/*for _, rr := range m.
+				log.Printf("DNSSEC RQUEST, getting ZSK for %s", domainName)
+				zsks := dnsmanager.KeyStore.Get(ZoneSigningKey, domainName)*/
+			default:
+				// we need to sign this record with the ZSK
+				domainNameDot := domainName + "."
+				if zsks, ok := dnsmanager.KeyStore.ZoneSigningKeys.Keys[domainNameDot]; ok {
+					for _, zsk := range zsks {
+						// Fill in the values of the Sig, before signing
+
+						m.Answer = append(m.Answer, signRecords(ZoneSigningKey, zsk, domainNameDot, m.Answer)...)
+						m.Extra = append(m.Extra, signRecords(ZoneSigningKey, zsk, domainNameDot, m.Extra)...)
+						m.Ns = append(m.Ns, signRecords(ZoneSigningKey, zsk, domainNameDot, m.Ns)...)
+
+						/*
+							dnskey := zsk.DNSKEY(KeySigningKey, domainNameDot)
+							sig := new(dnssrv.RRSIG)
+
+							sig.Expiration = uint32(zsk.Deactivate.Unix()) // date -u '+%s' -d"2011-02-01 04:25:05"
+							sig.Inception = uint32(zsk.Publish.Unix())     // date -u '+%s' -d"2011-01-02 04:25:05"
+							sig.KeyTag = dnskey.KeyTag()                   // Get the keyfrom the Key
+							sig.SignerName = dnskey.Header().Name
+							sig.Algorithm = dnssrv.RSASHA256
+
+							if sig.Sign(zsk.privateKey.(*ecdsa.PrivateKey), m.Answer) == nil {
+								// add sig
+								m.Answer = append(m.Answer, sig)
+							}
+
+							if len(m.Extra) > 0 {
+								if sig.Sign(zsk.privateKey.(*ecdsa.PrivateKey), m.Extra) == nil {
+									// add sig
+									m.Extra = append(m.Extra, sig)
+								}
+							}
+
+							if len(m.Ns) > 0 {
+								if sig.Sign(zsk.privateKey.(*ecdsa.PrivateKey), m.Ns) == nil {
+									// add sig
+									m.Ns = append(m.Ns, sig)
+								}
+							}
+						*/
+					}
+				}
+				/*for _, rr := range m.
+				log.Printf("DNSSEC RQUEST, getting ZSK for %s", domainName)
+				zsks := dnsmanager.KeyStore.Get(ZoneSigningKey, domainName)*/
+			}
+
 		}
 
 		switch q.Qtype {
@@ -460,7 +567,7 @@ func handleDNSRequest(w dnssrv.ResponseWriter, r *dnssrv.Msg) {
 	// go through the message requests
 	switch r.Opcode {
 	case dnssrv.OpcodeQuery:
-		rcode, err := parseQuery(m, w.RemoteAddr().String())
+		rcode, err := parseQuery(m, w.RemoteAddr().String(), r.IsEdns0())
 		if err != nil {
 			// No record found or other error, give server failure so resolv will move to next server for query
 			m.SetRcode(r, dnssrv.RcodeServerFailure)
@@ -645,14 +752,40 @@ func allowedToForward(clientIP net.IP) bool {
 }
 
 func localZone(domainName string) bool {
+	log := logging.For("dns/server/localzone").WithField("domainname", strings.ToLower(domainName))
 	dnsmanager.RLock()
 	defer dnsmanager.RUnlock()
 	searchDomain := strings.ToLower(domainName)
 	for nodeName := range dnsmanager.node {
+
+		log.Warnf("check if domain exists in node: %s", nodeName)
 		if _, ok := dnsmanager.node[nodeName].Domains[searchDomain]; ok {
 			return true
 		}
+		log.Warnf("not found, but got: %+v", dnsmanager.node[nodeName])
 	}
 
 	return false
+}
+
+func signRecords(keyType uint16, ksk *Key, domainNameDot string, rr []dns.RR) (rrsig []dns.RR) {
+
+	if len(rr) == 0 {
+		return
+	}
+	// Fill in the values of the Sig, before signing
+	dnskey := ksk.DNSKEY(KeySigningKey, domainNameDot)
+	sig := new(dnssrv.RRSIG)
+
+	sig.Expiration = uint32(ksk.Deactivate.Unix()) // date -u '+%s' -d"2011-02-01 04:25:05"
+	sig.Inception = uint32(ksk.Publish.Unix())     // date -u '+%s' -d"2011-01-02 04:25:05"
+	sig.KeyTag = dnskey.KeyTag()                   // Get the keyfrom the Key
+	sig.SignerName = dnskey.Header().Name
+	sig.Algorithm = dnssrv.RSASHA256
+
+	if sig.Sign(ksk.privateKey.(*ecdsa.PrivateKey), rr) == nil {
+		// add sig
+		rrsig = append(rrsig, sig)
+	}
+	return
 }

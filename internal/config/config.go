@@ -442,7 +442,7 @@ func SetDefaultDNSConfig(d *dns.Config) {
 
 	if len(d.AllowedRequests) == 0 {
 		// Allow the most common DNS request types
-		d.AllowedRequests = []string{"A", "AAAA", "NS", "MX", "SOA", "TXT", "CAA", "ANY", "CNAME", "MB", "MG", "MR", "WKS", "PTR", "HINFO", "MINFO", "SPF"}
+		d.AllowedRequests = []string{"A", "AAAA", "NS", "MX", "SOA", "TXT", "CAA", "ANY", "CNAME", "MB", "MG", "MR", "WKS", "PTR", "HINFO", "MINFO", "SPF", "DS", "DNSKEY"}
 	}
 
 	for domainName, localDomain := range d.Domains {

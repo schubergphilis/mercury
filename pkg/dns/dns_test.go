@@ -33,7 +33,7 @@ func TestResolving(t *testing.T) {
 	// With both nodes online we should return all records
 	m := new(dnssrv.Msg)
 	m.SetQuestion("www-a.example.com.", dnssrv.TypeA)
-	rcode, _ := parseQuery(m, "127.0.0.1:12345")
+	rcode, _ := parseQuery(m, "127.0.0.1:12345", nil)
 	if !answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 2 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
@@ -46,7 +46,7 @@ func TestResolving(t *testing.T) {
 	// Partially onlne should return 1 record
 	m = new(dnssrv.Msg)
 	m.SetQuestion("www-b.example.com.", dnssrv.TypeA)
-	rcode, _ = parseQuery(m, "127.0.0.1:12345")
+	rcode, _ = parseQuery(m, "127.0.0.1:12345", nil)
 	if answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 1 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
@@ -58,7 +58,7 @@ func TestResolving(t *testing.T) {
 	// Fully offlne should return 2 record
 	m = new(dnssrv.Msg)
 	m.SetQuestion("www-c.example.com.", dnssrv.TypeA)
-	rcode, _ = parseQuery(m, "127.0.0.1:12345")
+	rcode, _ = parseQuery(m, "127.0.0.1:12345", nil)
 	if !answerTarget(m, "127.0.0.1") || !answerTarget(m, "127.0.0.2") {
 		t.Errorf("Expected 2 records, 127.0.0.1:%t 127.0.0.2:%t", answerTarget(m, "127.0.0.1"), answerTarget(m, "127.0.0.2"))
 	}
@@ -76,7 +76,7 @@ func TestRecursive(t *testing.T) {
 	// Check for allowed recursive lookup
 	m := new(dnssrv.Msg)
 	m.SetQuestion("www.google.com.", dnssrv.TypeA)
-	rcode, _ := parseQuery(m, "192.168.0.2:12345")
+	rcode, _ := parseQuery(m, "192.168.0.2:12345", nil)
 
 	//if !answerTarget(m, "172.217.19.196") {
 	if !answerType(m, dnssrv.TypeA) {
@@ -90,7 +90,7 @@ func TestRecursive(t *testing.T) {
 	// Check for denied recursive lookup
 	m = new(dnssrv.Msg)
 	m.SetQuestion("www.google.com.", dnssrv.TypeA)
-	rcode, _ = parseQuery(m, "192.168.230.230:12345")
+	rcode, _ = parseQuery(m, "192.168.230.230:12345", nil)
 
 	if !answerCount(m, 0) {
 		t.Errorf("Expected 0 records for denied recursive lookup, got:%d", len(m.Answer))

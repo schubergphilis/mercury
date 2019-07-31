@@ -9,6 +9,7 @@ import (
 	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
+	"github.com/schubergphilis/mercury/pkg/param"
 )
 
 // DNSHandler handles the DNS
@@ -91,6 +92,7 @@ func (manager Manager) InitializeDNSUpdates() {
 // StartDNSServer starts the dns server
 func (manager Manager) StartDNSServer() {
 	go dns.Server(config.Get().DNS.Binding, config.Get().DNS.Port, config.Get().DNS.AllowedRequests)
+	go dns.InitKeyStore(*param.Get().KeyDir, manager.dnssecKeyUpdate)
 }
 
 // UpdateDNSConfig adds new records, and removes obsolete records

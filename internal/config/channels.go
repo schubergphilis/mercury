@@ -64,3 +64,10 @@ type ClusterPacketClearProxyStatistics struct {
 
 // ClusterPacketConfigRequest is the packet type sent for configuration requests
 type ClusterPacketConfigRequest struct{}
+
+// ClusterPacketGlobalDNSSECUpdate contains a dns update for DNSSEC keys
+type ClusterPacketGlobalDNSSECUpdate struct {
+	ClusterNode string `json:"clusternode"`
+	Domain      string `json:"domain"`
+	Hostname    string `json:"hostname"`
+}

@@ -1,9 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
+	"path"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -11,6 +15,7 @@ import (
 	"github.com/schubergphilis/mercury/internal/check"
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/internal/core"
+	"github.com/schubergphilis/mercury/pkg/dns"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/param"
 
@@ -43,6 +48,10 @@ func main() {
 		log.Infof("Starting profiler at http://%s", addr)
 		go EnableProfiler(addr)
 	}
+	if *param.Get().KeyDir == "" {
+		basedir := path.Dir(*param.Get().ConfigFile)
+		param.Get().KeyDir = &basedir
+	}
 
 	// Default logging before reading the config
 	config.LogTarget = "stdout"
@@ -61,6 +70,14 @@ func main() {
 		return
 	}
 	log.WithField("file", *param.Get().ConfigFile).Debug("Reading config file")
+
+	if *param.Get().CreateKeySigningKey {
+		createKeySigningKey()
+	}
+
+	if *param.Get().ReadSigningKey {
+		readKeySigningKey()
+	}
 
 	err := config.LoadConfig(*param.Get().ConfigFile)
 	if err != nil {
@@ -133,4 +150,79 @@ func EnableProfiler(addr string) {
 	runtime.SetBlockProfileRate(1)
 	runtime.SetMutexProfileFraction(1)
 	http.ListenAndServe(addr, mux)
+}
+
+func createKeySigningKey() {
+	log := logging.For("main/keysigning")
+
+	if *param.Get().KeyDir == "" {
+		log.Errorf("--key-file must be provided when generating keys")
+		os.Exit(255)
+	}
+	if *param.Get().SigningZone == "" {
+		log.Errorf("--signing-zone must be provided when generating keys")
+		os.Exit(255)
+	}
+	keys := dns.NewKeyStore()
+	keys.Load(*param.Get().KeyDir)
+
+	var algorithm uint8
+	switch *param.Get().SigningAlgorithm {
+	case "RSASHA256":
+		algorithm = 8
+	case "RSASHA512":
+		algorithm = 10
+	case "ECDSAP256SHA256":
+		algorithm = 13
+	case "ECDSAP348SHA348":
+		algorithm = 14
+	default:
+		log.Errorf("unknown algorithm: %s", *param.Get().SigningAlgorithm)
+		os.Exit(255)
+	}
+	key, err := dns.NewPrivateKey(dns.KeySigningKey, algorithm)
+	if err != nil {
+		log.Errorf("error creating key: %s", err)
+		os.Exit(255)
+	}
+	keys.SetRollover(dns.KeySigningKey, *param.Get().SigningZone, time.Duration(*param.Get().SigningKeyTTL)*time.Second, key)
+	keys.Save(*param.Get().KeyDir)
+
+	displaySigningKey(keys, *param.Get().SigningZone)
+	/*if err := dns.GenerateKey(dns.KeySigningKey, *param.Get().SigningAlgorithm, *param.Get().SigningZone, *param.Get().KeyDir); err != nil {
+	  	log.Errorf("error creating key: %s", err)
+	  	os.Exit(255)
+	  }
+	*/
+	os.Exit(0)
+}
+
+func readKeySigningKey() {
+	log := logging.For("main/keysigning")
+
+	if *param.Get().SigningZone == "" {
+		log.Errorf("--signing-zone must be provided when generating keys")
+		os.Exit(255)
+	}
+
+	keys := dns.NewKeyStore()
+	keys.Load(*param.Get().KeyDir)
+	displaySigningKey(keys, *param.Get().SigningZone)
+	os.Exit(0)
+}
+
+func displaySigningKey(keys *dns.KeyStore, zone string) {
+	if !strings.HasSuffix(zone, ".") {
+		zone += "."
+	}
+
+	fmt.Printf("The following keys are now available:\n")
+	for z, keys := range keys.KeySigningKeys.Keys {
+		if z == zone {
+			for _, key := range keys {
+				DNSKEY := key.DNSKEY(dns.KeySigningKey, zone)
+				log.Printf("KSK valid till %s, record: %s\n", key.Deactivate, DNSKEY.ToDS(2))
+			}
+		}
+	}
 }
