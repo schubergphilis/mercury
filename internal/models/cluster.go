@@ -3,8 +3,8 @@ package models
 import (
 	"crypto/tls"
 
-	"github.com/schubergphilis/mercury.v2/internal/logging"
-	"github.com/schubergphilis/mercury.v2/pkg/cluster"
+	"github.com/schubergphilis/mercury.v3/internal/logging"
+	"github.com/schubergphilis/mercury.v3/pkg/cluster"
 )
 
 type ClusterService interface {

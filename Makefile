@@ -35,7 +35,7 @@ builddir:
 	@mkdir -p ./build/linux/
 	@mkdir -p ./build/packages/
 
-osx: builddir rice
+osx: builddir
 	@echo Building OSX...
 	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercuryd
 	@echo Done.

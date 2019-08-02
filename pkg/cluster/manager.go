@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/schubergphilis/mercury.v2/internal/logging"
+	"github.com/schubergphilis/mercury.v3/internal/logging"
 )
 
 var (

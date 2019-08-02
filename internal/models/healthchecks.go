@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/cnf/structhash"
-	"github.com/schubergphilis/mercury.v2/internal/logging"
-	"github.com/schubergphilis/mercury.v2/pkg/tlsconfig"
+	"github.com/schubergphilis/mercury.v3/internal/logging"
+	"github.com/schubergphilis/mercury.v3/pkg/tlsconfig"
 )
 
 type HealthcheckService interface {

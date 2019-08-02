@@ -1,3 +1,7 @@
+log_level = "debug"
+log_output = ["stderr"]
+pid_file = "/var/run/mercury.pid"
+
 [settings]
 manage_network_interfaces = "no"
 enable_proxy = "yes"
