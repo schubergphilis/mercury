@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/schubergphilis/mercury/internal/config"
 	"github.com/schubergphilis/mercury/pkg/balancer"
@@ -92,6 +93,7 @@ func (manager Manager) InitializeDNSUpdates() {
 // StartDNSServer starts the dns server
 func (manager Manager) StartDNSServer() {
 	go dns.Server(config.Get().DNS.Binding, config.Get().DNS.Port, config.Get().DNS.AllowedRequests)
+	time.Sleep(1 * time.Second)
 	go dns.InitKeyStore(*param.Get().KeyDir, manager.dnssecKeyUpdate)
 }
 
