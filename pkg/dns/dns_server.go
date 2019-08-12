@@ -12,14 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	// "github.com/rdoorn/tinyresolver"
 	"github.com/rdoorn/tinyresolver"
 	"github.com/schubergphilis/mercury/pkg/balancer"
 	"github.com/schubergphilis/mercury/pkg/logging"
 
 	dnssrv "github.com/miekg/dns"
-	// "github.com/rdoorn/dnsr"
-	//"github.com/domainr/dnsr"
 )
 
 // Domains is a collection of dns domains
