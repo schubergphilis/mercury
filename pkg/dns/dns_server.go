@@ -12,12 +12,14 @@ import (
 	"syscall"
 	"time"
 
+	// "github.com/rdoorn/tinyresolver"
+	"github.com/rdoorn/tinyresolver"
 	"github.com/schubergphilis/mercury/pkg/balancer"
 	"github.com/schubergphilis/mercury/pkg/logging"
 
 	dnssrv "github.com/miekg/dns"
 	// "github.com/rdoorn/dnsr"
-	"github.com/domainr/dnsr"
+	//"github.com/domainr/dnsr"
 )
 
 // Domains is a collection of dns domains
@@ -73,9 +75,9 @@ var dnsmanager = struct {
 	proxyStats      bool
 	TCPServer       *dnssrv.Server
 	UDPServer       *dnssrv.Server
-	Resolver        *dnsr.Resolver
+	Resolver        *tinyresolver.Resolver
 	AllowForwarding []*net.IPNet
-}{node: make(map[string]Domains), stop: make(chan bool, 1), AllowedRequests: []string{}, proxyStats: false, TCPServer: &dnssrv.Server{}, UDPServer: &dnssrv.Server{}, Resolver: dnsr.New(0)}
+}{node: make(map[string]Domains), stop: make(chan bool, 1), AllowedRequests: []string{}, proxyStats: false, TCPServer: &dnssrv.Server{}, UDPServer: &dnssrv.Server{}, Resolver: tinyresolver.New()}
 
 // Updates the counter of an dns record which was requested
 func updateCounter(domain string, record Record) {
@@ -431,44 +433,17 @@ func dnsForwarder(m *dnssrv.Msg, q dnssrv.Question) {
 
 	// Local resolving failed, if we have forwarding enabled, pass the request on
 	log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).Infof("DNS Forwarding")
-	rrs, err := dnsmanager.Resolver.ResolveErr(q.Name, dnssrv.TypeToString[q.Qtype])
-	// resolve C records to include A records
-	maxResolve := 5
-	for hasOnlyCname(rrs) && len(rrs) > 0 && err == nil && maxResolve > 0 {
-		var rrs2 dnsr.RRs
-		last := rrs[len(rrs)-1]
-		log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).WithField("fname", last.Value).Infof("DNS Forwarding only returned CNAMES")
-		rrs2, err = dnsmanager.Resolver.ResolveErr(last.Value, dnssrv.TypeToString[q.Qtype])
-		rrs = append(rrs, rrs2...)
-		maxResolve--
-	}
+	rrs, err := dnsmanager.Resolver.Resolve(q.Name, dnssrv.TypeToString[q.Qtype])
 	log.Debugf("Got forwarded DNS reply: %+v", rrs)
 	if err != nil {
 		log.WithField("name", q.Name).WithField("type", dnssrv.TypeToString[q.Qtype]).Warn("Failed to resolve forwarded dns")
 		return
 	}
 	m.RecursionAvailable = true
-	// Convert records to reply
-	for _, dnsrr := range rrs {
-		log.WithField("string", dnsrr.String()).Debugf("Forwarding request")
-		rr, err := dnssrv.NewRR(dnsrr.String())
-		if err != nil {
-			log.WithField("reply", dnsrr.String()).Warn("Failed to create reply")
-		} else {
-			log.Debugf("Got forwarded DNS reply: %v", rr)
-			m.Answer = append(m.Answer, rr)
-		}
-	}
+	m.Answer = rrs.Answer
+	m.Extra = rrs.Extra
+	m.Ns = rrs.Ns
 
-}
-
-func hasOnlyCname(rrs dnsr.RRs) bool {
-	for _, rs := range rrs {
-		if rs.Type != "CNAME" {
-			return false
-		}
-	}
-	return true
 }
 
 // handleDNSRequest receives queries and sends replies
