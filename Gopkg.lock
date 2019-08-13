@@ -86,11 +86,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7c5fb21d6efd596ed8fad695e81f34fffb0f4e1c6963b6f44463cd3d0c8d53a8"
+  digest = "1:e3b4d4dea6cfad1ba1b5a143337c601f6aaa3b55050aa04479173bafd6da52f6"
   name = "github.com/rdoorn/tinyresolver"
   packages = ["."]
   pruneopts = ""
-  revision = "1b55249c8654b9f4a8d1ae5a86764789af2bb2f9"
+  revision = "88198f82a2bcf6d98507c16d0dae9399fbf67239"
 
 [[projects]]
   digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
