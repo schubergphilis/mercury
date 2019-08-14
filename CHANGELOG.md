@@ -15,6 +15,7 @@ Bug:
 Change:
   * Removed manual websocket implementation for httputil's reverse proxy. it now supports websockets in the main branch
   * DNS forwarder library replaced with one that correctly resolves cnames recursively
+  * Error logging of the http/reverseproxy server is now logged in the log file instead of stderr
 
 ## 0.14.4
 Feature:
