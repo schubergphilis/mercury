@@ -14,7 +14,7 @@ Bug:
 
 Change:
   * Removed manual websocket implementation for httputil's reverse proxy. it now supports websockets in the main branch
-  * DNS forwarder recusively resolved CNAME till we have another record type
+  * DNS forwarder library replaced with one that correctly resolves cnames recursively
 
 ## 0.14.4
 Feature:

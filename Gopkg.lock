@@ -45,14 +45,6 @@
   version = "v3.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:01dcbba7c9bda73d046c7312e0634f06e3f8233fbbd7866640d2cad01ac16266"
-  name = "github.com/domainr/dnsr"
-  packages = ["."]
-  pruneopts = ""
-  revision = "1e80e1e3a68e72230de72328614cbb5ede3bb3ea"
-
-[[projects]]
   digest = "1:0f51cee70b0d254dbc93c22666ea2abf211af81c1701a96d04e2284b408621db"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -91,6 +83,14 @@
   pruneopts = ""
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:51c1fc96ece71d901f95f8191fb118421c613d67c405a6022c1ec08be6b910db"
+  name = "github.com/rdoorn/tinyresolver"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b5d083dc879cbaae62ca4423a7122d1a28c2719a"
 
 [[projects]]
   digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
@@ -182,7 +182,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8d8dab33e614e3839a47bbb340189458c28c58e60655023d20eeb92b7300768a"
+  digest = "1:0b5c2207c72f2d13995040f176feb6e3f453d6b01af2b9d57df76b05ded2e926"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -190,7 +190,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "fae7ac547cb717d141c433a2a173315e216b64c4"
+  revision = "51ab0e2deafac1f46c46ad59cf0921be2f180c3d"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -227,7 +227,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:96063d8b51e4e41c115604e4ff15cd8d316992e3f7390dcc66a212e7be42189b"
+  digest = "1:3f52587092bc722a3c3843989e6b88ec26924dc4b7b9c971095b7e93a11e0eff"
   name = "golang.org/x/tools"
   packages = [
     "cmd/stringer",
@@ -242,7 +242,7 @@
     "internal/semver",
   ]
   pruneopts = ""
-  revision = "8bb11ff117ca820938b6d899b13b3f2832ef244c"
+  revision = "e713427fea3f98cb070e72a058c557a1a560cf22"
 
 [[projects]]
   branch = "master"
@@ -292,7 +292,7 @@
   version = "v2.6.4"
 
 [[projects]]
-  digest = "1:73e68665b3700ab3a15819477c068ff9944d0bb0ddd9563272120a87aae060c3"
+  digest = "1:dbafd82f361ed4e072549d1893e491d5c5143e6e15ad69002a1bf2fabbc3a428"
   name = "nhooyr.io/websocket"
   packages = [
     ".",
@@ -300,8 +300,8 @@
     "wsjson",
   ]
   pruneopts = ""
-  revision = "4d72b518f0be0f09b81dd3cef2dac7fdf0251a8b"
-  version = "v1.3.1"
+  revision = "3a7c15d0ee677ce992db1d6df3a7c7c0ed4a5021"
+  version = "v1.3.3"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -311,10 +311,10 @@
     "github.com/GeertJohan/go.rice",
     "github.com/GeertJohan/go.rice/embedded",
     "github.com/dgrijalva/jwt-go",
-    "github.com/domainr/dnsr",
     "github.com/miekg/dns",
     "github.com/nightlyone/lockfile",
     "github.com/nu7hatch/gouuid",
+    "github.com/rdoorn/tinyresolver",
     "github.com/sirupsen/logrus",
     "github.com/sirupsen/logrus/hooks/syslog",
     "github.com/stretchr/testify/assert",
