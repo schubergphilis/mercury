@@ -549,7 +549,7 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 		Transport:      transport,
 		ModifyResponse: modifyresponse,
 		FlushInterval:  250 * time.Millisecond, // good for streams adn server-sent events
-		ErrorLog:       logging.StandardLog("http/reverseproxy"),
+		ErrorLog:       logging.StandardLog("httpproxy/reverseproxy"),
 
 		// ErrorLog:        logrus not supported as logging until v2 => https://github.com/golang/go/issues/21082
 	}
