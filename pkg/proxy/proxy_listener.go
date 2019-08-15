@@ -104,6 +104,7 @@ func (l *Listener) Start() {
 			WriteTimeout: time.Duration(l.WriteTimeout) * time.Second,
 			Addr:         fmt.Sprintf("%s:%d", l.IP, l.Port),
 			Handler:      proxy,
+			ErrorLog:     logging.StandardLog("listener/http"),
 		}
 
 		listener, err = net.Listen("tcp", httpsrv.Addr)
@@ -139,6 +140,7 @@ func (l *Listener) Start() {
 			Addr:         fmt.Sprintf("%s:%d", l.IP, l.Port),
 			Handler:      proxy,
 			TLSConfig:    l.TLSConfig,
+			ErrorLog:     logging.StandardLog("listener/https"),
 			//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 		}
 
