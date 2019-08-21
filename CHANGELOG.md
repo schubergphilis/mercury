@@ -3,6 +3,13 @@
  This file is used to list changes made in each major version of Mercury.
 
 unreleased
+## 0.15.1
+Feature:
+  * Show golang version used to compile mercury
+
+Bug:
+  * Security fixes in the golang net/http service (recompiled with latest golang vesion)
+
 ## 0.15.0
 Feature:
   * Allow passing of client certificate using ACLs (lucaslorentz)

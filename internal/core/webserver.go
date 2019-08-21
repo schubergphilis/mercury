@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ type processInfo struct {
 	Version           string
 	VersionBuild      string
 	VersionSha        string
+	VersionGo         string
 	StartTime         string
 	Uptime            string
 	ReloadTime        string
@@ -332,6 +334,7 @@ func WebRoot(w http.ResponseWriter, r *http.Request) {
 		strings.TrimSuffix(config.Version, "\""),
 		strings.TrimSuffix(config.VersionBuild, "\""),
 		strings.TrimSuffix(config.VersionSha, "\""),
+		runtime.Version(),
 		FormattedDate(config.StartTime),
 		uptime(time.Since(config.StartTime)),
 		FormattedDate(config.ReloadTime),

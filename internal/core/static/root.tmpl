@@ -1,7 +1,7 @@
 {{define "root"}}
 {{template "header" dict "Page" .Page}}
 <br>
-Version: {{ .ProcessInfo.Version }} Build: {{ .ProcessInfo.VersionBuild }} Sha: {{ .ProcessInfo.VersionSha }} <br>
+Mercury Version: {{ .ProcessInfo.Version }} Build: {{ .ProcessInfo.VersionBuild }}<br>Golang Version: {{ .ProcessInfo.VersionGo }}<br>Sha: {{ .ProcessInfo.VersionSha }}<br>
 <br>
 Up since: {{ .ProcessInfo.StartTime }} (up {{ .ProcessInfo.Uptime }})<br>
 <br>
