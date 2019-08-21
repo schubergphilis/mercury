@@ -57,7 +57,7 @@ func main() {
 	logging.Configure(config.LogTarget, config.LogLevel)
 
 	if *param.Get().Version == true {
-		log.WithField("version", config.Version).WithField("build", config.VersionBuild).WithField("gitsha", config.VersionSha).Info("Mercury version")
+		log.WithField("version", config.Version).WithField("build", config.VersionBuild).WithField("gitsha", config.VersionSha).WithField("golang", runtime.Version()).Info("Mercury version")
 		return
 	}
 	log.WithField("file", *param.Get().ConfigFile).Debug("Reading config file")
