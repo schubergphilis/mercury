@@ -4,6 +4,8 @@
 
 unreleased
 ## 0.15.1
+Important: X-Forwarded-for now gets automaticly added, if you have X-forwarded-for headers in place, you can remove them. if not, you will have multiple entries in your X-Forwarded-for header
+
 Feature:
   * Show golang version used to compile mercury
 
@@ -23,6 +25,7 @@ Change:
   * Removed manual websocket implementation for httputil's reverse proxy. it now supports websockets in the main branch
   * DNS forwarder library replaced with one that correctly resolves cnames recursively
   * Error logging of the http/reverseproxy server is now logged in the log file instead of stderr
+
 
 ## 0.14.4
 Feature:
