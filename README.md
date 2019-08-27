@@ -50,6 +50,7 @@ Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer 
 * Internal DNS server supports most record types
 * HTTP/2 support
 * Web-socket support
+* AD web login integration
 
 ## Installing
 ### Linux
@@ -67,7 +68,8 @@ OSX has no package, but you can run the following to create the binary:
 
     $ make osx
 
-## Documentation
+## Configuration and Documentation
+To configure Mercury please look at the example configurations and the documentation below:
 
 Documentation is are available at [here](https://github.com/schubergphilis/mercury/tree/master/docs)
 
@@ -78,6 +80,11 @@ Examples configuration files are available at [here](https://github.com/schuberg
 a Full list of supported TLS cyphers in the golang tls.Config package is [here](https://golang.org/pkg/crypto/tls/#pkg-constants)
 
 The recommended cyphers are:
+* `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` (tls 1.2 + HTTP/2)
+* `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384` (tls 1.2)
+* `TLS_AES_256_GCM_SHA384` (tls 1.3)
+* `TLS_AES_128_GCM_SHA256` (tls 1.3)
+* `TLS_CHACHA20_POLY1305_SHA256` (tls 1.3)
 
 Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 ```Notice
