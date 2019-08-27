@@ -14,6 +14,7 @@ BUILD := $(shell cat tools/rpm/BUILDNR)
 LDFLAGS := "-X main.version=$(VERSION) -X main.versionBuild=$(BUILD) -X main.versionSha=$(LASTCOMMIT)"
 PENDINGCOMMIT := $(shell git diff-files --quiet --ignore-submodules && echo 0 || echo 1)
 LOCALIP := $(shell ifconfig | grep "inet " | grep broadcast | awk {'print $$2'} | head -1 )
+GODIRS := $(shell go list -f '{{.Dir}}' ./...)
 
 default: build
 
@@ -97,8 +98,9 @@ cover: ## Shows coverage
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi
-	go test ./internal/config -coverprofile=coverage.out
-	go tool cover -html=coverage.out
+	go test $(GODIRS) -coverprofile=coverage.out
+	go tool cover -func=coverage.out
+	#go tool cover -html=coverage.out
 	rm coverage.out
 
 prep_package:

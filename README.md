@@ -2,27 +2,33 @@
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 
-# Mercury
-Mercury is a load balancer with Global Load balance capabilities across multiple Datacenter or Cloud infrastructures.
+# Mercury - Global Loadbalancer
+Mercury is an intelligent software loadbalancer which can distribution of traffic across server resources located in multiple geographies.
+The servers can be on premises in a company’s own data centers, or hosted in a private cloud or the public cloud.
 
-## What is Mercury ?
-Mercury is a Global load balancer, designed to add a dns based load balancing layer on top of its internal load balancer or 3rd party load balancers such as cloud services.
-This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancing solutions in place.
+## Loadbalancing vs Global Loadbalancing
+Traditional Loadbalancers such as HA Proxy or Nginx are great for balancing traffic at a single endpoint, to forward or redirect this traffic to the nodes behind this endpoint in the same region.
+Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
+With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
+
+![loadbalancing example](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png "Global Loadbalancing")
+
+Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
 
 ## Resources
 
 * Binaries: https://github.com/schubergphilis/mercury/releases
+* Documentation: http://mercury-global-loadbalancer.readthedocs.io/en/latest/
 * Chef Cookbook: https://github.com/sbp-cookbooks/mercury
-* Additional Documentation: http://mercury-global-loadbalancer.readthedocs.io/en/latest/
 
-# Requirements
+## Requirements
 * OSX
 * Linux (with iproute 3+)
 
-# Features
+## Features
 * Global Load balancing across multiple datacenter or Cloud infrastructures using DNS based load balancing
 * Web GUI for viewing/managing your host state
-* Seamless configuration updates without interrupting connected clients
+* Seamless configuration updates without interrupting connected clients (e.g. reload your configuration without your clients noticing)
 * Does HealthChecks on local backends, and propagates their availability across other GLB instances
   * HTTP health checks (POST or GET)
   * TCP Connect checks (connects only)
@@ -115,7 +121,7 @@ Checking the Backend nodes
 
 3. Install dependencies:
 
-        $ make get
+        $ make deps
 
 4. Make your changes/patches/fixes, committing appropriately
 5. **Write tests**
