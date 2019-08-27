@@ -27,6 +27,7 @@ Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer 
 
 ## Features
 * Global Load balancing across multiple datacenter or Cloud infrastructures using DNS based load balancing
+* L4 and L7 Loadbalancing support
 * Web GUI for viewing/managing your host state
 * Seamless configuration updates without interrupting connected clients (e.g. reload your configuration without your clients noticing)
 * Does HealthChecks on local backends, and propagates their availability across other GLB instances
