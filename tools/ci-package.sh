@@ -19,7 +19,7 @@ else
 fi
 
 
-major=$(cut -f1 -d. .verison)
+major=$(cut -f1 -d. .version)
 minor=$(cut -f2 -d. .version)
 patch=$(cut -f3 -d. .version | cut -f1 -d-)
 oldversion="${major}.${minor}.${patch}"
