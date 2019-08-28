@@ -34,7 +34,7 @@ rice:
 builddir:
 	@mkdir -p ./build/osx/
 	@mkdir -p ./build/linux/
-	@mkdir -p ./build/packages/
+	@mkdir -p ./build/packages/mercury/
 
 osx: builddir rice
 	@echo Building OSX...
