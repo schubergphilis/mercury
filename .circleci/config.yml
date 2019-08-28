@@ -1,4 +1,4 @@
-# Golang CircleCI 2.0 configuration file
+# Golang CircleCI 2.1 configuration file
 version: 2.1
 
 executors:
@@ -6,7 +6,6 @@ executors:
     docker:
       - image: circleci/golang
     working_directory: /go/src/github.com/schubergphilis/mercury
-
 
 jobs:
   test:
@@ -26,7 +25,7 @@ jobs:
 
       - run: make deps
 
-      - run:.
+      - run:
           name: "Publish Release on GitHub - if merge to master"
           command: ./tools/ci-package.sh
 
@@ -37,7 +36,7 @@ jobs:
 
       - run: make deps
 
-      - run:.
+      - run:
           name: "Publish Release on GitHub - if new golang version"
           command: ./tools/golang-update.sh
 
