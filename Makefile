@@ -110,8 +110,11 @@ prep_package:
 	gem install fpm
 
 committed:
+ifndef CIRCLECI
 ifeq ($(PENDINGCOMMIT), 1)
-	   $(error You have a pending commit, please commit your code before making a package $(PENDINGCOMMIT))
+	git diff
+	$(error You have a pending commit, please commit your code before making a package $(PENDINGCOMMIT))
+endif
 endif
 
 linux-package: builddir linux committed
