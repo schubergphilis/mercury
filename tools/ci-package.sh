@@ -22,7 +22,7 @@ fi
 major=$(cat .version | cut -f1 -d.)
 minor=$(cat .version | cut -f2 -d.)
 patch=$(cat .version | cut -f3 -d. | cut -f1 -d-)
-oldverison="${major}.${minor}.${patch}"
+oldversion="${major}.${minor}.${patch}"
 case "${REF}" in
     bugfix:*|bug:*|fix:*|automatic-patch:*)
         patch=$((patch+1))
