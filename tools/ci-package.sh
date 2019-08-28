@@ -19,9 +19,9 @@ else
 fi
 
 
-major=$(cat .version | cut -f1 -d.)
-minor=$(cat .version | cut -f2 -d.)
-patch=$(cat .version | cut -f3 -d. | cut -f1 -d-)
+major=$(cut -f1 -d. .verison)
+minor=$(cut -f2 -d. .version)
+patch=$(cut -f3 -d. .version | cut -f1 -d-)
 oldversion="${major}.${minor}.${patch}"
 case "${REF}" in
     bugfix:*|bug:*|fix:*|automatic-patch:*)
