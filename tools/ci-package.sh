@@ -1,7 +1,5 @@
 #!/bin/bash -e
 
-env
-
 #REF=$(git log --graph  --pretty=format:%D -1 | cut -f2 -d, | sed -e 's/.*\///g')
 #echo "ref: ${REF}"
 git describe --tags --always > .version
