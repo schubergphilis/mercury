@@ -87,6 +87,8 @@ The recommended cyphers are:
 * `TLS_AES_128_GCM_SHA256` (tls 1.3)
 * `TLS_CHACHA20_POLY1305_SHA256` (tls 1.3)
 
+This combined with the mercury default settings, will make the SSLLabs checks give you an A+ in regards to security on SSL enabled web sites
+
 Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 ```Notice
 Note that this has to be the first cipher in the list!
@@ -117,11 +119,19 @@ There are 2 checks which you can execute, and implement them in your monitoring 
 
 Checking the Global Load balancing
 
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb
+    OK: All checks are fine!
+```
 
 Checking the Backend nodes
 
     $ mercury -config-file /etc/mercury/mercury.toml -check-backend
+
+Exitcodes are nagios/sensu compatible:
+0. All is fine
+1. Warning
+2. Critical
 
 ## Contributing
 
@@ -142,6 +152,8 @@ Checking the Backend nodes
 6. Run tests
 
         $ make test
+
+7. Please start your PR comment with bug: fix: or feature: accordingly. this will sort the automated versioning.
 
 # License & Authors
         - Author: Ronald Doorn (<rdoorn@schubergphilis.com>)
