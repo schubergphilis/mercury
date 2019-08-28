@@ -153,8 +153,6 @@ Exitcodes are nagios/sensu compatible:
 
         $ make test
 
-7. Please start your PR comment with bug: fix: or feature: accordingly. this will sort the automated versioning.
-
 # License & Authors
         - Author: Ronald Doorn (<rdoorn@schubergphilis.com>)
 
