@@ -96,11 +96,17 @@ HTTP/2 also requires CurveP256 to be supported
 
 ## Web
 You can browse to the web server within Mercury on the default url `http://localhost:9001`
+In the web interface you can view all the global (cluster wide) and local vips, health checks, status and dns entries served.
+
+Screenshot:
+![mercury web ui](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_web_screenshot.png "Mercury Web UI")
 
 Alternatively you can use curl to read the status
 
     $ curl http://localhost:9001/backend
     $ curl http://localhost:9001/glb
+
+Ready to use for monitoring with nagios/sensu.
 
 for json output pass the following option:
 
