@@ -34,7 +34,7 @@ rice:
 builddir:
 	@mkdir -p ./build/osx/
 	@mkdir -p ./build/linux/
-	@mkdir -p ./build/packages/mercury/
+	@mkdir -p ./build/packages/$(NAME)/
 
 osx: builddir rice
 	@echo Building OSX...
@@ -118,10 +118,12 @@ endif
 endif
 
 linux-package: builddir linux committed
+	mkdir -p ./build/packages/$(NAME)/
 	cp -a ./tools/rpm/$(NAME)/* ./build/packages/$(NAME)/
 	cp ./build/linux/$(NAME) ./build/packages/$(NAME)/usr/sbin/
 	cp ./tools/html/* ./build/packages/$(NAME)/var/$(NAME)/
 	fpm -s dir -t rpm -C ./build/packages/$(NAME) --name $(NAME) --rpm-os linux --version $(VERSION) --iteration $(BUILD) --exclude "*/.keepme"
+	rm -rf ./build/packages/$(NAME)/
 	mv $(NAME)-$(VERSION)*.rpm build/packages/
 
 docker-scratch:
