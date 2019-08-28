@@ -2,27 +2,34 @@
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 
-# Mercury
-Mercury is a load balancer with Global Load balance capabilities across multiple Datacenter or Cloud infrastructures.
+# Mercury - Global Loadbalancer
+Mercury is an intelligent software loadbalancer which can distribution of traffic across server resources located in multiple geographies.
+The servers can be on premises in a company’s own data centers, or hosted in a private cloud or the public cloud.
 
-## What is Mercury ?
-Mercury is a Global load balancer, designed to add a dns based load balancing layer on top of its internal load balancer or 3rd party load balancers such as cloud services.
-This makes mercury able to load balance across multiple cloud environments using dns, while keeping existing cloud load balancing solutions in place.
+## Loadbalancing vs Global Loadbalancing
+Traditional Loadbalancers such as HA Proxy or Nginx are great for balancing traffic at a single endpoint, to forward or redirect this traffic to the nodes behind this endpoint in the same region.
+Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
+With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
+
+![loadbalancing example](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png "Global Loadbalancing")
+
+Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
 
 ## Resources
 
 * Binaries: https://github.com/schubergphilis/mercury/releases
+* Documentation: http://mercury-global-loadbalancer.readthedocs.io/en/latest/
 * Chef Cookbook: https://github.com/sbp-cookbooks/mercury
-* Additional Documentation: http://mercury-global-loadbalancer.readthedocs.io/en/latest/
 
-# Requirements
+## Requirements
 * OSX
 * Linux (with iproute 3+)
 
-# Features
+## Features
 * Global Load balancing across multiple datacenter or Cloud infrastructures using DNS based load balancing
+* L4 and L7 Loadbalancing support
 * Web GUI for viewing/managing your host state
-* Seamless configuration updates without interrupting connected clients
+* Seamless configuration updates without interrupting connected clients (e.g. reload your configuration without your clients noticing)
 * Does HealthChecks on local backends, and propagates their availability across other GLB instances
   * HTTP health checks (POST or GET)
   * TCP Connect checks (connects only)
@@ -44,6 +51,7 @@ This makes mercury able to load balance across multiple cloud environments using
 * Internal DNS server supports most record types
 * HTTP/2 support
 * Web-socket support
+* AD web login integration
 
 ## Installing
 ### Linux
@@ -61,7 +69,8 @@ OSX has no package, but you can run the following to create the binary:
 
     $ make osx
 
-## Documentation
+## Configuration and Documentation
+To configure Mercury please look at the example configurations and the documentation below:
 
 Documentation is are available at [here](https://github.com/schubergphilis/mercury/tree/master/docs)
 
@@ -72,6 +81,11 @@ Examples configuration files are available at [here](https://github.com/schuberg
 a Full list of supported TLS cyphers in the golang tls.Config package is [here](https://golang.org/pkg/crypto/tls/#pkg-constants)
 
 The recommended cyphers are:
+* `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` (tls 1.2 + HTTP/2)
+* `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384` (tls 1.2)
+* `TLS_AES_256_GCM_SHA384` (tls 1.3)
+* `TLS_AES_128_GCM_SHA256` (tls 1.3)
+* `TLS_CHACHA20_POLY1305_SHA256` (tls 1.3)
 
 Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 ```Notice
@@ -115,7 +129,7 @@ Checking the Backend nodes
 
 3. Install dependencies:
 
-        $ make get
+        $ make deps
 
 4. Make your changes/patches/fixes, committing appropriately
 5. **Write tests**
