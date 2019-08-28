@@ -8,7 +8,7 @@
 export PATH := $(PATH):$(GOPATH)/bin
 
 NAME := mercury
-VERSION := $(shell cat VERSION)
+VERSION := $(shell [ -f .version ] && cat .version || echo "pipeline-test")
 LASTCOMMIT := $(shell git rev-parse --verify HEAD)
 BUILD := $(shell cat tools/rpm/BUILDNR)
 LDFLAGS := "-X main.version=$(VERSION) -X main.versionBuild=$(BUILD) -X main.versionSha=$(LASTCOMMIT)"
