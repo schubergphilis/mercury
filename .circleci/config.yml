@@ -16,7 +16,6 @@ jobs:
       - run: make deps
       - run: make test
       - run: make coverage
-      - run: make build
 
   release:
     executor: golang
