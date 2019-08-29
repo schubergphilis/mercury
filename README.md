@@ -1,8 +1,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-success?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/schubergphilis/mercury/total.svg)()
 
-# Mercury - Global Loadbalancer
+![Mercury](https://github.com/schubergphilis/mercury/blob/master/web/images/mercury_logo_background_color_header.png "Mercury: global loadbalancer")
+---
 Mercury is an intelligent software loadbalancer which can distribution of traffic across server resources located in multiple geographies.
 The servers can be on premises in a company’s own data centers, or hosted in a private cloud or the public cloud.
 
@@ -12,7 +15,6 @@ Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS t
 With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
 
 ![loadbalancing example](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png "Global Loadbalancing")
-
 Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
 
 ## Resources
