@@ -72,7 +72,7 @@ if [ $changelogaltered -eq 0 ]; then
         echo "change log:"
         git log ${oldversion}...${newversion} --pretty=%B
         lastcommittext=$(git log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | true)
-        if [ "${lastcommittext}" == "" ]; then.
+        if [ "${lastcommittext}" == "" ]; then
             lastcommittext="misc: $(git log ${oldversion}...${newversion} --pretty=%B)"
         fi
         echo -e "# ${newversion}\n\n${lastcommittext}\n" > CHANGELOG.md.tmp
@@ -82,7 +82,7 @@ if [ $changelogaltered -eq 0 ]; then
         mv CHANGELOG.md.tmp CHANGELOG.md
         echo -e "${BENDER_KEY}" >> ~/.ssh/id_bender
         chmod 600 ~/.ssh/id_bender
-        export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender -F /dev/null -o IdentitiesOnly=yes".
+        export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender -F /dev/null -o IdentitiesOnly=yes"
         git config --global user.name "Bender"
         git config --global user.email "bender1729@ixxi.io"
         git add CHANGELOG.md
