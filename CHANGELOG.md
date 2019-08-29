@@ -1,3 +1,7 @@
+# 0.15.4
+
+misc: fix: correct copied dots in ci (#104)
+
 # 0.15.1
 Important: X-Forwarded-for now gets automaticly added, if you have X-forwarded-for headers in place, you can remove them. if not, you will have multiple entries in your X-Forwarded-for header
 
