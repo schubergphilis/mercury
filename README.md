@@ -73,11 +73,11 @@ OSX has no package, but you can run the following to create the binary:
     $ make osx
 
 ## Configuration and Documentation
-To configure Mercury please look at the example configurations and the documentation below:
+To configure Mercury please look at the documentation described at [ReadTheDocs:Mercury](https://mercury-global-loadbalancer.readthedocs.io/en/latest/configuration/)
 
-Documentation is are available at [here](https://github.com/schubergphilis/mercury/tree/master/docs)
+<p align="center"><a href="https://mercury-global-loadbalancer.readthedocs.io/en/latest/configuration/"><img width="95%" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_read_the_docs.png"></a></p>
 
-Examples configuration files are available at [here](https://github.com/schubergphilis/mercury/tree/master/examples)
+You will find all possible configuration items documented here, including examples on a few specific use cases.
 
 ## TLS & HTTP/2
 
@@ -118,18 +118,28 @@ for json output pass the following option:
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
 
 ## Checks
-There are 2 checks which you can execute, and implement them in your monitoring system
+There are a few checks which you can execute, and implement them in your monitoring system
 
-Checking the Global Load balancing
+Checking all of the Global Load balancing and cluster nodes in a single check
 
 ```
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb
     OK: All checks are fine!
 ```
 
-Checking the Backend nodes
+Checking all of the Backend nodes
 
     $ mercury -config-file /etc/mercury/mercury.toml -check-backend
+
+You can seperate the checks using additional parameters
+* Checking a specific pool/backend
+    $ mercury -config-file /etc/mercury/mercury.toml -check-backend -pool-name example_https_443 -backend-name www_example_com
+
+* Checking the Cluster nodes specificly
+    $ mercury -config-file /etc/mercury/mercury.toml -check-glb -cluster-only
+
+* Checking a specific glb entry
+    $ mercury -config-file /etc/mercury/mercury.toml -check-glb -dns-name www.example.com
 
 Exitcodes are nagios/sensu compatible:
 0. All is fine
