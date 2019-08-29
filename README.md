@@ -1,8 +1,11 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-informational?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
+[![GitHub All Releases](https://img.shields.io/github/downloads/schubergphilis/mercury/total?color=informational)]()
 
-# Mercury - Global Loadbalancer
+![Mercury](https://github.com/schubergphilis/mercury/blob/master/web/images/mercury_logo_background_color_header.png "Mercury: global loadbalancer")
+---
 Mercury is an intelligent software loadbalancer which can distribution of traffic across server resources located in multiple geographies.
 The servers can be on premises in a company’s own data centers, or hosted in a private cloud or the public cloud.
 
@@ -11,7 +14,7 @@ Traditional Loadbalancers such as HA Proxy or Nginx are great for balancing traf
 Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
 With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
 
-![loadbalancing example](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png "Global Loadbalancing")
+<p align="center"><img width="627" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png"></p>
 
 Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
 
@@ -55,7 +58,9 @@ Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer 
 
 ## Installing
 ### Linux
-For Linux we can make a RHEL/Centos RPM package. To do so run the following:
+For Linux there is a release package available on GitHub release tab [here](https://github.com/schubergphilis/mercury/releases)
+
+You can also compile the latest version your self with the following commands:
 
     $ make linux-package
     $ rpm -i builds/packages/mercury-${version}.rpm
@@ -70,11 +75,11 @@ OSX has no package, but you can run the following to create the binary:
     $ make osx
 
 ## Configuration and Documentation
-To configure Mercury please look at the example configurations and the documentation below:
+To configure Mercury please look at the documentation described at [ReadTheDocs:Mercury](https://mercury-global-loadbalancer.readthedocs.io/en/latest/configuration/)
 
-Documentation is are available at [here](https://github.com/schubergphilis/mercury/tree/master/docs)
+<p align="center"><a href="https://mercury-global-loadbalancer.readthedocs.io/en/latest/configuration/"><img width="95%" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_read_the_docs.png"></a></p>
 
-Examples configuration files are available at [here](https://github.com/schubergphilis/mercury/tree/master/examples)
+You will find all possible configuration items documented here, including examples on a few specific use cases.
 
 ## TLS & HTTP/2
 
@@ -115,20 +120,34 @@ for json output pass the following option:
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
 
 ## Checks
-There are 2 checks which you can execute, and implement them in your monitoring system
+There are a few checks which you can execute, and implement them in your monitoring system
 
-Checking the Global Load balancing
+Checking all of the Global Load balancing and cluster nodes in a single check
 
 ```
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb
     OK: All checks are fine!
 ```
 
-Checking the Backend nodes
-
+Checking all of the Backend nodes
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-backend
-
+```
+You can seperate the checks using additional parameters
+* Checking a specific pool/backend
+```
+    $ mercury -config-file /etc/mercury/mercury.toml -check-backend -pool-name example_https_443 -backend-name www_example_com
+```
+* Checking the Cluster nodes specificly
+```
+    $ mercury -config-file /etc/mercury/mercury.toml -check-glb -cluster-only
+```
+* Checking a specific glb entry
+```
+    $ mercury -config-file /etc/mercury/mercury.toml -check-glb -dns-name www.example.com
+```
 Exitcodes are nagios/sensu compatible:
+
 0. All is fine
 1. Warning
 2. Critical
