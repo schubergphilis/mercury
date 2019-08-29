@@ -2,7 +2,7 @@
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-informational?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
-![GitHub All Releases](https://img.shields.io/github/downloads/schubergphilis/mercury/total?color=informational)
+[![GitHub All Releases](https://img.shields.io/github/downloads/schubergphilis/mercury/total?color=informational)]()
 
 ![Mercury](https://github.com/schubergphilis/mercury/blob/master/web/images/mercury_logo_background_color_header.png "Mercury: global loadbalancer")
 ---
