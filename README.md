@@ -1,4 +1,4 @@
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-informational?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
@@ -58,7 +58,9 @@ Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer 
 
 ## Installing
 ### Linux
-For Linux we can make a RHEL/Centos RPM package. To do so run the following:
+For Linux there is a release package available on GitHub release tab [here](https://github.com/schubergphilis/mercury/releases)
+
+You can also compile the latest version your self with the following commands:
 
     $ make linux-package
     $ rpm -i builds/packages/mercury-${version}.rpm
@@ -128,20 +130,24 @@ Checking all of the Global Load balancing and cluster nodes in a single check
 ```
 
 Checking all of the Backend nodes
-
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-backend
-
+```
 You can seperate the checks using additional parameters
 * Checking a specific pool/backend
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-backend -pool-name example_https_443 -backend-name www_example_com
-
+```
 * Checking the Cluster nodes specificly
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb -cluster-only
-
+```
 * Checking a specific glb entry
+```
     $ mercury -config-file /etc/mercury/mercury.toml -check-glb -dns-name www.example.com
-
+```
 Exitcodes are nagios/sensu compatible:
+
 0. All is fine
 1. Warning
 2. Critical
