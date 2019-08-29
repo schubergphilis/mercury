@@ -59,3 +59,34 @@ VERSION=$(cat .version)
 go version > ./build/packages/golang.version
 
 ghr -soft -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -n "${CIRCLE_PROJECT_REPONAME^} v${VERSION}" ${VERSION} ./build/packages/
+
+# at this time we are already master
+changelogaltered=$(git diff --name-status HEAD^1 | grep -c CHANGELOG.md || true)
+if [ $changelogaltered -eq 0 ]; then
+    git fetch
+    versionexists=$(grep -c "^# ${newversion}$" CHANGELOG.md | true)
+    if [ ${versionexists} -ne 0 ]; then
+        echo "change log update has already been done, version already here"
+    else
+        echo "change log was not updated, doing so automaticly..."
+        echo "change log:"
+        git log ${oldversion}...${newversion} --pretty=%B
+        lastcommittext=$(git log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | true)
+        if [ "${lastcommittext}" == "" ]; then.
+            lastcommittext="misc: $(git log ${oldversion}...${newversion} --pretty=%B)"
+        fi
+        echo -e "# ${newversion}\n\n${lastcommittext}\n" > CHANGELOG.md.tmp
+        if [ -f CHANGELOG.md ]; then
+            cat CHANGELOG.md >> CHANGELOG.md.tmp
+        fi
+        mv CHANGELOG.md.tmp CHANGELOG.md
+        echo -e "${BENDER_KEY}" >> ~/.ssh/id_bender
+        chmod 600 ~/.ssh/id_bender
+        export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender -F /dev/null -o IdentitiesOnly=yes".
+        git config --global user.name "Bender"
+        git config --global user.email "bender1729@ixxi.io"
+        git add CHANGELOG.md
+        git commit -m 'updating change log with latest commit'
+        git push
+    fi
+fi
