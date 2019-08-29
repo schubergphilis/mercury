@@ -14,7 +14,8 @@ Traditional Loadbalancers such as HA Proxy or Nginx are great for balancing traf
 Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
 With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
 
-![loadbalancing example](https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png "Global Loadbalancing")
+<p align="center"><img width="627" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png"></p>
+
 Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
 
 ## Resources
