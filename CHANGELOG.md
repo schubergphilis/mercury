@@ -1,3 +1,14 @@
+# 0.15.5
+
+misc: fix: bump cookbook on new release (#106)
+
+
+Update readme (#105)
+
+* improve readme
+* fix image
+updating change log with latest commit
+
 # 0.15.4
 
 misc: fix: correct copied dots in ci (#104)
