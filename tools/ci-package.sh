@@ -90,3 +90,15 @@ if [ $changelogaltered -eq 0 ]; then
         git push
     fi
 fi
+
+# automaticly update mercury cookbook too
+echo -e "${BENDER_KEY2}" >> ~/.ssh/id_bender2
+chmod 600 ~/.ssh/id_bender2
+export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender2 -F /dev/null -o IdentitiesOnly=yes"
+cd /tmp
+git clone git@github.com:sbp-cookbooks/mercury.git
+cd mercury
+sed -e "s/mercury\['package'\]\['version'\] = '.*'/mercury['package']['version'] = '${newversion}'/" -i attributes/mercury.rb
+git add attributes/mercury.rb
+git commit -m "automatic-patch: ${CIRCLE_PROJECT_REPONAME^} version update to ${newversion}"
+git push
