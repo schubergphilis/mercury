@@ -20,8 +20,8 @@ Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer 
 
 ## Enhancing your existing loadbalancers
 
-Add GLB capabilities to your existing loadbalancers by letting Mercury take care of your DNS requests. Mercury will test the state of your existing loadbalancers, and redirect the clients to whichever loadbalancer is available.
-In this example Mercury serves the DNS requests, while the L4/L7 traffic is handled by another loadbalancer which does not support global loadbalancing: HAProxy
+Add GLB capabilities to your existing loadbalancers by letting Mercury take care of your DNS requests. Mercury will test the state of your existing loadbalancers, and redirect the clients to the best geographic region available.
+In this example Mercury serves the DNS requests, while the L4/L7 traffic is handled by another loadbalancer which does not support global loadbalancing.
 
 <p align="center"><img width="627" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme_extlb.png"></p>
 
