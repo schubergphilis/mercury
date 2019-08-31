@@ -132,7 +132,7 @@ for json output pass the following option:
 
 The web interface is mostly used for viewing the status of Mercury, however when you enable login, you can enable/disable backends if the correct credentials are provided.
 
-:warning: It is adviced to *NOT* expose the web interface to the public internet. The world wide web has no reason to view your load balancer status.
+:warning: Advice: please do *NOT* expose the web interface to the public internet. The world wide web has no reason to view your load balancer status.
 
 ## Checks
 There are a few checks which you can execute, and implement them in your monitoring system
