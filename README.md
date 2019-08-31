@@ -109,8 +109,8 @@ This combined with the mercury default settings, will make the SSLLabs checks gi
 When enabling HTTP/2 you must include the following cypher as the *first* cypher:
 `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 
-and curve256 has to be enabled:
-`CurveP256` (default)
+curve256 also has to be enabled:
+`CurveP256` (enabled by default)
 
 ## Web
 You can browse to the web server within Mercury on the default url `http://localhost:9001`
