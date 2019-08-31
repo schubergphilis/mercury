@@ -108,8 +108,9 @@ This combined with the mercury default settings, will make the SSLLabs checks gi
 ### HTTP/2.0
 When enabling HTTP/2 you must include the following cypher as the *first* cypher:
 `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
-and curve256 has to be enabled (default):
-`CurveP256`
+
+and curve256 has to be enabled:
+`CurveP256` (default)
 
 ## Web
 You can browse to the web server within Mercury on the default url `http://localhost:9001`
@@ -130,8 +131,8 @@ for json output pass the following option:
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
 
 The web interface is mostly used for viewing the status of Mercury, however when you enable login, you can enable/disable backends if the correct credentials are provided.
-:warning: It is adviced not to expose the web interface to the public internet.
 
+:warning: It is adviced to *NOT* expose the web interface to the public internet. The world wide web has no reason to view your load balancer status.
 
 ## Checks
 There are a few checks which you can execute, and implement them in your monitoring system
