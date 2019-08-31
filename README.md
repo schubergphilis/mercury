@@ -1,31 +1,31 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d2c4dff7ca2b4279a57e245d1059b6ff)](https://www.codacy.com/app/schubergphilis/mercury?utm_source=github.com&utm_medium=referral&utm_content=schubergphilis/mercury&utm_campaign=badger)
 [![CircleCI](https://circleci.com/gh/schubergphilis/mercury/tree/master.svg?style=shield&circle-token=86c89af895bb11c86e53256b9c1cca7c93d47c46)](https://circleci.com/gh/schubergphilis/mercury/tree/master)
 [![ReadTheDocs](https://readthedocs.org/projects/mercury-global-loadbalancer/badge/?version=latest)](http://mercury-global-loadbalancer.readthedocs.io/en/latest/)
-[![Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-informational?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
-[![GitHub All Releases](https://img.shields.io/github/downloads/schubergphilis/mercury/total?color=informational)]()
+[![Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-informational?style=flat)](https://github.com/schubergphilis/mercury/blob/master/LICENSE)
+[![GitHub-Downloads](https://img.shields.io/github/downloads/schubergphilis/mercury/total?color=informational)]()
 
 ![Mercury](https://github.com/schubergphilis/mercury/blob/master/web/images/mercury_logo_background_color_header.png "Mercury: global loadbalancer")
 ---
-Mercury is an intelligent software loadbalancer which can distribution of traffic across server resources located in multiple geographies.
+Mercury is an intelligent software load balancer which can distribution of traffic across server resources located in multiple geographies.
 The servers can be on premises in a company’s own data centers, or hosted in a private cloud or the public cloud.
 
-## Loadbalancing vs Global Loadbalancing
-Traditional Loadbalancers such as HA Proxy or Nginx are great for balancing traffic at a single endpoint, to forward or redirect this traffic to the nodes behind this endpoint in the same region.
-Globabl Loadbalancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
-With Mercury you have the power of a Global Loadbalancer, and its totally free and opensource!
+## Load balancing vs. Global Load balancing
+Traditional load balancers such as HA Proxy or Nginx are great for balancing traffic at a single endpoint, to forward or redirect this traffic to the nodes behind this endpoint in the same region.
+Global load balancers such as F5 BigIP or Nginx Plus balance traffic using DNS techniques, which allow you to direct traffic to multiple regions. However these products are expensive and in some cases require specific hardware.
+With Mercury, you have the power of a global load balancer, and its totally free and open source!
 
 <p align="center"><img width="627" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme.png"></p>
 
-Besides a Global loadbalancer, you can also user Mercury as normal Loadbalancer within your domain
+Besides a global load balancer, you can also use Mercury as normal load balancer within your domain.
 
-## Enhancing your existing loadbalancers
+## Enhance your existing load balancers
 
-Add GLB capabilities to your existing loadbalancers by letting Mercury take care of your DNS requests. Mercury will test the state of your existing loadbalancers, and redirect the clients to the best geographic region available.
-In this example Mercury serves the DNS requests, while the L4/L7 traffic is handled by another loadbalancer which does not support global loadbalancing.
+Add GLB capabilities to your existing load balancers by letting Mercury take care of your DNS requests. Mercury will test the state of your existing load balancers, and redirect the clients to the best geographic region available.
+In this example Mercury serves the DNS requests, while the L4/L7 traffic is handled by another load balancer which does not support global load balancing.
 
 <p align="center"><img width="627" src="https://github.com/schubergphilis/mercury/blob/master/docs/images/mercury_lb_readme_extlb.png"></p>
 
-This makes it easy to add GLB capabilities without changing any configuration in your existing loadbalancers
+This makes it easy to add GLB capabilities without changing any configuration in your existing load balancers.
 
 ## Resources
 
@@ -35,11 +35,11 @@ This makes it easy to add GLB capabilities without changing any configuration in
 
 ## Requirements
 * OSX
-* Linux (with iproute 3+)
+* Linux (with iproute 3+ when letting mercury manage your network interfaces, which is optional)
 
 ## Features
-* Global Load balancing across multiple datacenter or Cloud infrastructures using DNS based load balancing
-* L4 and L7 Loadbalancing support
+* Global Load balancing across multiple data center or Cloud infrastructures using DNS based load balancing
+* L4 and L7 Load balancing support
 * Web GUI for viewing/managing your host state
 * Seamless configuration updates without interrupting connected clients (e.g. reload your configuration without your clients noticing)
 * Does HealthChecks on local backends, and propagates their availability across other GLB instances
@@ -54,7 +54,7 @@ This makes it easy to add GLB capabilities without changing any configuration in
   * Round robin based load balancing for the most balanced setup
   * LeastConnected based load balancing for the host with the least connections
   * LeastTraffic based load balancing for the host with the least traffic
-  * Response time based load balancing for the host with the quickest response time
+  * Response time based load balancing for the host with the quickest response time (experimental)
   * Random based load balancing for when you can't choose
   * Sticky based load balancing for client sticky cookies
 * Is a full load balancer using the supported balancing methods
@@ -67,7 +67,7 @@ This makes it easy to add GLB capabilities without changing any configuration in
 
 ## Installing
 ### Linux
-For Linux there is a release package available on GitHub release tab [here](https://github.com/schubergphilis/mercury/releases)
+For RPM managed Linux ssytems, there is a release package available on GitHub release tab [here](https://github.com/schubergphilis/mercury/releases)
 
 You can also compile the latest version your self with the following commands:
 
@@ -77,6 +77,8 @@ You can also compile the latest version your self with the following commands:
 For other distributions:
 
     $ make linux
+
+    When make is finished, you can find the binary at: ./build/linux/mercury
 
 ### OSX
 OSX has no package, but you can run the following to create the binary:
@@ -103,12 +105,16 @@ The recommended cyphers are:
 
 This combined with the mercury default settings, will make the SSLLabs checks give you an A+ in regards to security on SSL enabled web sites
 
-Required for HTTP/2 is `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
-```Notice
-Note that this has to be the first cipher in the list!
-```
-
-HTTP/2 also requires CurveP256 to be supported
+<div class="panel panel-success">
+**HTTP/2.0**
+{: .panel-heading}
+<div class="panel-body">
+When enabling HTTP/2 you must include the following cypher as the *first* cypher:
+`TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
+and curve256 has to be enabled (default):
+`CurveP256`
+</div>
+</div>
 
 ## Web
 You can browse to the web server within Mercury on the default url `http://localhost:9001`
@@ -127,6 +133,16 @@ Ready to use for monitoring with nagios/sensu.
 for json output pass the following option:
 
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
+
+<div class="panel panel-gitlab-orange">
+**Recommendation**
+{: .panel-heading}
+<div class="panel-body">
+The web interface is mostly used for viewing the status of Mercury, however when you enable login, you can enable/disable backends if the correct credentials are provided.
+It is adviced not to expose the web interface to the public internet.
+</div>
+</div>
+
 
 ## Checks
 There are a few checks which you can execute, and implement them in your monitoring system
