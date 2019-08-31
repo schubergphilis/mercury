@@ -105,16 +105,11 @@ The recommended cyphers are:
 
 This combined with the mercury default settings, will make the SSLLabs checks give you an A+ in regards to security on SSL enabled web sites
 
-<div class="panel panel-success">
-**HTTP/2.0**
-{: .panel-heading}
-<div class="panel-body">
+### HTTP/2.0
 When enabling HTTP/2 you must include the following cypher as the *first* cypher:
 `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` see [RFC](https://tools.ietf.org/html/rfc7540#section-9.2.2)
 and curve256 has to be enabled (default):
 `CurveP256`
-</div>
-</div>
 
 ## Web
 You can browse to the web server within Mercury on the default url `http://localhost:9001`
@@ -134,14 +129,8 @@ for json output pass the following option:
 
     $ curl http://localhost:9001/backend -H 'Content-Type: application/json'
 
-<div class="panel panel-gitlab-orange">
-**Recommendation**
-{: .panel-heading}
-<div class="panel-body">
 The web interface is mostly used for viewing the status of Mercury, however when you enable login, you can enable/disable backends if the correct credentials are provided.
-It is adviced not to expose the web interface to the public internet.
-</div>
-</div>
+:warning: It is adviced not to expose the web interface to the public internet.
 
 
 ## Checks
