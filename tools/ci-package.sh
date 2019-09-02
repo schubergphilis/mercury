@@ -1,7 +1,5 @@
 #!/bin/bash -e
 
-#REF=$(git log --graph  --pretty=format:%D -1 | cut -f2 -d, | sed -e 's/.*\///g')
-#echo "ref: ${REF}"
 git describe --tags --always > .version
 echo "path: ${PWD} version: $(cat .version)"
 
@@ -11,7 +9,7 @@ if [ "${CIRCLE_BRANCH}" != "master" ]; then
 fi
 
 if [ "$1" == "" ]; then
-    REF=$(git log -1 --pretty=%B)
+    REF=$(git --no-pager log -1 --pretty=%B)
     echo "Last commit subject: ${REF}"
 else
     REF="$@"
@@ -61,7 +59,7 @@ go version > ./build/packages/golang.version
 ghr -soft -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -n "${CIRCLE_PROJECT_REPONAME^} v${VERSION}" ${VERSION} ./build/packages/
 
 # at this time we are already master
-changelogaltered=$(git diff --name-status HEAD^1 | grep -c CHANGELOG.md || true)
+changelogaltered=$(git --no-pager diff --name-status HEAD^1 | grep -c CHANGELOG.md || true)
 if [ $changelogaltered -eq 0 ]; then
     git fetch
     versionexists=$(grep -c "^# ${newversion}$" CHANGELOG.md | true)
@@ -70,10 +68,10 @@ if [ $changelogaltered -eq 0 ]; then
     else
         echo "change log was not updated, doing so automaticly..."
         echo "change log:"
-        git log ${oldversion}...${newversion} --pretty=%B
-        lastcommittext=$(git log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | true)
+        git --no-pager log ${oldversion}...${newversion} --pretty=%B
+        lastcommittext=$(git --no-pager log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | true)
         if [ "${lastcommittext}" == "" ]; then
-            lastcommittext="misc: $(git log ${oldversion}...${newversion} --pretty=%B)"
+            lastcommittext="misc: $(git --no-pager log ${oldversion}...${newversion} --pretty=%B)"
         fi
         echo -e "# ${newversion}\n\n${lastcommittext}\n" > CHANGELOG.md.tmp
         if [ -f CHANGELOG.md ]; then
