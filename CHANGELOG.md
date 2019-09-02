@@ -1,3 +1,11 @@
+# 0.15.7
+
+misc: fix: prevent paging in ci scripts (#110)
+
+* more instances to fix
+
+* fix codacy issue
+
 # 0.15.5
 
 misc: fix: bump cookbook on new release (#106)
