@@ -158,6 +158,9 @@ func (c *Config) ParseConfig() error {
 	if c.Loadbalancer.Settings.DefaultLoadBalanceMethod == "" {
 		c.Loadbalancer.Settings.DefaultLoadBalanceMethod = "roundrobin"
 	}
+
+	ipportmap := make(map[string]string)
+
 	// Ensure a default in all backends
 	for poolName, pool := range c.Loadbalancer.Pools {
 		if pool.ErrorPage.File != "" {
@@ -179,6 +182,23 @@ func (c *Config) ParseConfig() error {
 
 		if p.Listener.Mode == "" {
 			p.Listener.Mode = "tcp"
+		}
+
+		var protocol string
+		switch p.Listener.Mode {
+		case "tcp", "http", "https":
+			protocol = "tcp"
+		case "udp":
+			protocol = "udp"
+		}
+
+		if p.Listener.IP != "" {
+			portmap := fmt.Sprintf("%s_%d_%s", p.Listener.IP, p.Listener.Port, protocol)
+			if conflict, ok := ipportmap[portmap]; ok {
+				return fmt.Errorf("Duplicate ip/port configuration: both pools are using the same ip/port: %s and %s use %s:%d (%s/%s)", poolName, conflict, p.Listener.IP, p.Listener.Port, protocol, p.Listener.Mode)
+			} else {
+				ipportmap[portmap] = poolName
+			}
 		}
 
 		if p.Listener.OCSPStapling == "" {

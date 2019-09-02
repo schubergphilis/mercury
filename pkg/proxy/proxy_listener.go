@@ -153,6 +153,7 @@ func (l *Listener) Start() {
 
 		if err != nil {
 			log.WithField("error", err).Error("Error starting HTTPS proxy listener")
+			return
 		}
 
 		l.socket = limitListenerConnections(listener.(*net.TCPListener), l.MaxConnections)
