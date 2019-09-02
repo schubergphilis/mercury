@@ -195,7 +195,7 @@ func (c *Config) ParseConfig() error {
 		if p.Listener.IP != "" {
 			portmap := fmt.Sprintf("%s_%d_%s", p.Listener.IP, p.Listener.Port, protocol)
 			if conflict, ok := ipportmap[portmap]; ok {
-				return fmt.Errorf("Duplicate ip/port configuration: both pools are using the same port/protocol: %s and %s use %s:%d (%s/%s)", poolName, conflict, p.Listener.IP, p.Listener.Port, protocol, p.Listener.Mode)
+				return fmt.Errorf("Duplicate ip/port configuration: both pools are using the same ip/port: %s and %s use %s:%d (%s/%s)", poolName, conflict, p.Listener.IP, p.Listener.Port, protocol, p.Listener.Mode)
 			} else {
 				ipportmap[portmap] = poolName
 			}
