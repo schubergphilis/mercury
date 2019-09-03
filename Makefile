@@ -9,6 +9,7 @@ export PATH := $(PATH):$(GOPATH)/bin
 
 NAME := mercury
 VERSION := $(shell [ -f .version ] && cat .version || echo "pipeline-test")
+GITTAG := $(shell git describe --tags --always --abbrev=0)
 LASTCOMMIT := $(shell git rev-parse --verify HEAD)
 BUILD := $(shell cat tools/rpm/BUILDNR)
 LDFLAGS := "-X main.version=$(VERSION) -X main.versionBuild=$(BUILD) -X main.versionSha=$(LASTCOMMIT)"
@@ -126,16 +127,18 @@ linux-package: builddir linux committed
 	rm -rf ./build/packages/$(NAME)/
 	mv $(NAME)-$(VERSION)*.rpm build/packages/
 
-docker-scratch:
-	if [ -a /System/Library/Keychains/SystemRootCertificates.keychain ] ; \
-	then \
-		security find-certificate /System/Library/Keychains/SystemRootCertificates.keychain > build/docker/ca-certificates.crt; \
-	fi;
-	if [ -a /etc/ssl/certs/ca-certificates.crt ] ; \
-	then \
-		cp /etc/ssl/certs/ca-certificates.crt build/docker/ca-certificates.crt; \
-	fi;
-	docker build -t mercury-scratch -f build/docker/Dockerfile.scratch .
+docker-alpine:
+	docker build -t mercury-alpine:$(GITTAG) . -f Dockerfile.alpine
+
+docker:
+	docker build -t mercury:$(GITTAG) . -f Dockerfile.scratch
+
+docker-upload:
+	# docker login
+	# docker tag xxxyyyzzz rdoorn/mercury:$(GITTAG)
+	# docker push rdoorn/mercury:$(GITTAG)
+	# docker tag rdoorn/mercury:$(GITTAG) rdoorn/mercury:latest
+	# docker push rdoorn/mercury:latest
 
 deps: ## Updates the vendored Go dependencies
 	@dep ensure -v

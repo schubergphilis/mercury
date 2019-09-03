@@ -1,0 +1,21 @@
+version: '3.4'
+services:
+  apache1:
+    image: httpd:${TAG:-latest}
+    ports:
+      - "8180:80"
+  apache2:
+    image: httpd:${TAG:-latest}
+    ports:
+      - "8181:80"
+  laodbalancer:
+    image: rdoorn/mercury:${TAG:-latest}
+    environment:
+      HOST_DOCKER_INTERNAL: host.docker.internal
+    ports:
+      - "9001:9001"
+      - "80:80"
+    depends_on:
+      - apache1
+      - apache2
+
