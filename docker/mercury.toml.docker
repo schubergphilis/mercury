@@ -1,0 +1,89 @@
+[settings]
+manage_network_interfaces = "no"
+enable_proxy = "yes"
+[web]
+binding = "0.0.0.0"
+port = 9001
+path = "tools/html"
+[web.tls]
+certificatekey = "/etc/mercury/ssl/self_signed_certificate.key"
+certificatefile = "/etc/mercury/ssl/self_signed_certificate.crt"
+minversion = "VersionTLS12"
+ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256"]
+curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
+[web.auth.password.users]
+#test = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+[cluster.binding]
+name = "localhost1"
+addr = "0.0.0.0:9000"
+authkey = "test"
+[logging]
+level = "debug"
+output = "stdout"
+[cluster.settings]
+connection_retry_count = 3
+connection_retry_interval = 10
+connection_timeout = 10
+ping_interval = 5
+ping_timeout =  11
+port = 9000
+[cluster.tls]
+certificatekey = "/etc/mercury/ssl/self_signed_certificate.key"
+certificatefile = "/etc/mercury/ssl/self_signed_certificate.crt"
+minversion = "VersionTLS12"
+ciphersuites = ["TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_AES_256_CBC_SHA"]
+curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
+insecureskipverify = true
+[dns]
+binding = "0.0.0.0"
+port = 53
+allow_forwarding = [ "::1/128", "127.0.0.1/32" ]
+[dns.domains."example.com"]
+ttl = 12
+[[dns.domains."example.com".records]]
+name = "www"
+type = "CNAME"
+target = "www.glb.example.com"
+[dns.domains."glb.example.com"]
+ttl = 12
+[dns.domains."glb.example.com".soa]
+email = "hostmaster.glb.example.com"
+expire = 3600
+minimum = 10
+refresh = 30
+retry = 30
+[loadbalancer.pools.INTERNAL_VIP.backends.example]
+hostnames = ["default", "www.glb.example.com"]
+connectmode="http"
+[loadbalancer.pools.INTERNAL_VIP.backends.example.balance]
+method = "leastconnected"
+[loadbalancer.pools.INTERNAL_VIP.backends.example.dnsentry]
+domain = "glb.example.com"
+hostname = "www"
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthchecks]]
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.healthchecks]]
+interval = 10
+httpstatus = 200
+httprequest = "http://www.example.com"
+retries = 2
+timeout = 10
+type = "httpget"
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.nodes]]
+ip = "host.docker.internal"
+port = 8180
+hostname = "httpd1"
+[[loadbalancer.pools.INTERNAL_VIP.backends.example.nodes]]
+ip = "host.docker.internal"
+port = 8181
+hostname = "httpd2"
+[loadbalancer.pools.INTERNAL_VIP.listener]
+mode = "http"
+ip = "0.0.0.0"
+port = 80
+[[loadbalancer.pools.INTERNAL_VIP.outboundacls]]
+action = "add"
+cookie_key = "stky"
+cookie_value = "###NODE_ID###"
+cookie_expire = "24h"
+#cookie_secure = false
+cookie_httponly = true

@@ -1,0 +1,23 @@
+FROM golang:alpine as builder
+RUN apk add --no-cache git
+ENV GOPATH /go/
+ENV GOBIN /go/bin
+RUN go get -u github.com/golang/dep/cmd/dep
+RUN go get -u github.com/GeertJohan/go.rice/rice
+RUN mkdir -p /go/src/github.com/schubergphilis
+WORKDIR /go/src/github.com/schubergphilis/
+RUN git clone https://github.com/schubergphilis/mercury.git
+WORKDIR /go/src/github.com/schubergphilis/mercury/internal/core
+RUN rice embed-go
+WORKDIR /go/src/github.com/schubergphilis/mercury/
+RUN dep ensure
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.version=$(git describe --tags --always --abbrev=0) -X main.versionBuild=1 -X main.versionSha=$(git rev-parse --verify HEAD) -extldflags '-static'" -o build/linux/mercury cmd/mercury/mercury.go
+FROM scratch
+COPY --from=builder /go/src/github.com/schubergphilis/mercury/build/linux/mercury /app/
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY  mercury.toml.docker /etc/mercury/mercury.toml
+COPY  self_signed_certificate.key /etc/mercury/ssl/
+COPY  self_signed_certificate.crt /etc/mercury/ssl/
+WORKDIR /app
+EXPOSE 9000 9001 80 443
+ENTRYPOINT ["/app/mercury", "--config-file", "/etc/mercury/mercury.toml", "--pid-file", "/app/mercury.pid"]
