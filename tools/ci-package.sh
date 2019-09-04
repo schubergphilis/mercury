@@ -69,7 +69,7 @@ if [ $changelogaltered -eq 0 ]; then
         echo "change log was not updated, doing so automaticly..."
         echo "change log:"
         git --no-pager log ${oldversion}...${newversion} --pretty=%B
-        lastcommittext=$(git --no-pager log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | true)
+        lastcommittext=$(git --no-pager log ${oldversion}...${newversion} --pretty=%B | grep -v '^$' | grep : | tr -d '\r' | true)
         if [ "${lastcommittext}" == "" ]; then
             lastcommittext="misc: $(git --no-pager log ${oldversion}...${newversion} --pretty=%B)"
         fi
