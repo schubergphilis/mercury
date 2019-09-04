@@ -29,7 +29,7 @@ var (
 	configLock sync.RWMutex
 )
 
-func init() {
+func Init() {
 	c := Config{
 		ConfigFile:   flag.String("config-file", "../../test/mercury.toml", "path to your mercury toml confg file"),
 		PidFile:      flag.String("pid-file", "/run/mercury.pid", "path to your pid file"),

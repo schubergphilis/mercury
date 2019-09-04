@@ -10,6 +10,7 @@ import (
 func TestConfig(t *testing.T) {
 	t.Logf("TestConfig...")
 	logging.Configure("stdout", "error")
+	param.Init()
 	if err := LoadConfig("nonexistantfile"); err == nil {
 		t.Errorf("Expected error on loading false config (got:%s)", err)
 	}

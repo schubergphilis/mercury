@@ -35,6 +35,7 @@ func init() {
 // main start
 func main() {
 	logging.Configure("stdout", "info")
+	param.Init()
 
 	log := logging.For("main")
 
