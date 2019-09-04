@@ -128,17 +128,31 @@ linux-package: builddir linux committed
 	mv $(NAME)-$(VERSION)*.rpm build/packages/
 
 docker-alpine:
-	docker build -t mercury-alpine:$(GITTAG) . -f Dockerfile.alpine
+	cd docker && docker build --no-cache -t mercury-alpine:$(GITTAG) . -f Dockerfile.alpine
 
-docker:
-	docker build -t mercury:$(GITTAG) . -f Dockerfile.scratch
+docker-scratch:
+	cd docker && docker build --no-cache -t mercury:$(GITTAG) . -f Dockerfile.scratch
 
-docker-upload:
-	# docker login
-	# docker tag xxxyyyzzz rdoorn/mercury:$(GITTAG)
-	# docker push rdoorn/mercury:$(GITTAG)
-	# docker tag rdoorn/mercury:$(GITTAG) rdoorn/mercury:latest
-	# docker push rdoorn/mercury:latest
+docker: docker-scratch
+
+docker-prep:
+	docker login
+
+docker-upload-scratch: docker-scratch docker-prep
+	$(eval DOCKERTAG = $(shell docker images mercury:$(GITTAG) --format "{{.ID}}"))
+	echo "tag: $(DOCKERTAG)"
+	docker tag $(DOCKERTAG) rdoorn/mercury:$(GITTAG)
+	docker push rdoorn/mercury:$(GITTAG)
+	docker tag rdoorn/mercury:$(GITTAG) rdoorn/mercury:latest
+	docker push rdoorn/mercury:latest
+
+docker-upload-alpine: docker-alpine docker-prep
+	$(eval DOCKERTAG = $(shell docker images mercury-alpine:$(GITTAG) --format "{{.ID}}"))
+	echo "tag: $(DOCKERTAG)"
+	docker tag $(DOCKERTAG) rdoorn/mercury-alpine:$(GITTAG)
+	docker push rdoorn/mercury-alpine:$(GITTAG)
+	docker tag rdoorn/mercury-alpine:$(GITTAG) rdoorn/mercury-alpine:latest
+	docker push rdoorn/mercury-alpine:latest
 
 deps: ## Updates the vendored Go dependencies
 	@dep ensure -v
