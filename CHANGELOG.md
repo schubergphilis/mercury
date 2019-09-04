@@ -1,3 +1,26 @@
+# 0.15.8
+
+misc: add security policy (#113)
+
+* add security policy
+
+* add notice for automation
+
+change auto-build time to earlier on the day (#112)
+
+
+misc: add docker files, examples and update documentation (#111)
+
+* add docker files, examples and update documentation
+
+* fix codacy issues
+
+fix: changes to fix tests in golang 1.13 - params not in init anymore
+
+* make codacy a happy tester
+
+updating change log with latest commit
+
 # 0.15.7
 
 misc: fix: prevent paging in ci scripts (#110)
