@@ -58,6 +58,9 @@ go version > ./build/packages/golang.version
 
 ghr -soft -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -n "${CIRCLE_PROJECT_REPONAME^} v${VERSION}" ${VERSION} ./build/packages/
 
+git config --global user.name "Bender"
+git config --global user.email "bender1729@ixxi.io"
+
 # at this time we are already master
 changelogaltered=$(git --no-pager diff --name-status HEAD^1 | grep -c CHANGELOG.md || true)
 if [ $changelogaltered -eq 0 ]; then
@@ -81,8 +84,6 @@ if [ $changelogaltered -eq 0 ]; then
         echo -e "${BENDER_KEY}" >> ~/.ssh/id_bender
         chmod 600 ~/.ssh/id_bender
         export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender -F /dev/null -o IdentitiesOnly=yes"
-        git config --global user.name "Bender"
-        git config --global user.email "bender1729@ixxi.io"
         git add CHANGELOG.md
         git commit -m 'updating change log with latest commit'
         git push
