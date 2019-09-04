@@ -1,44 +1,24 @@
+# 1.0.0
+
+misc: After 2 years of running in production, its time to bump Mercury to a stable version number: 1.0.0 
+      this version is fully backwards compatible with the previous version, and is only a cosmetic version change.
+
 # 0.15.8
 
+feat: TLS 1.3 is now enabled by default on all tls listeners
 misc: add security policy (#113)
-
-* add security policy
-
-* add notice for automation
-
-change auto-build time to earlier on the day (#112)
-
-
 misc: add docker files, examples and update documentation (#111)
-
-* add docker files, examples and update documentation
-
-* fix codacy issues
-
 fix: changes to fix tests in golang 1.13 - params not in init anymore
-
-* make codacy a happy tester
-
-updating change log with latest commit
 
 # 0.15.7
 
 misc: fix: prevent paging in ci scripts (#110)
-
-* more instances to fix
-
-* fix codacy issue
+misc: fix codacy issue
 
 # 0.15.5
 
 misc: fix: bump cookbook on new release (#106)
-
-
-Update readme (#105)
-
-* improve readme
-* fix image
-updating change log with latest commit
+misc: improve readme
 
 # 0.15.4
 
