@@ -13,6 +13,7 @@ jobs:
     steps:
       - checkout
 
+      - run: go version
       - run: make deps
       - run: make test
       - run: make coverage

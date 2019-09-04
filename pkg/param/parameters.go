@@ -29,7 +29,8 @@ var (
 	configLock sync.RWMutex
 )
 
-func init() {
+// Init needs to be called at the start of a program (used to be init, but the conflicts with go.1.13)
+func Init() {
 	c := Config{
 		ConfigFile:   flag.String("config-file", "../../test/mercury.toml", "path to your mercury toml confg file"),
 		PidFile:      flag.String("pid-file", "/run/mercury.pid", "path to your pid file"),
