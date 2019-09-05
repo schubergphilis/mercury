@@ -104,7 +104,7 @@ Docker images are available, you can run a standalone mercury based on scratch T
 ```
 create a directory to place your mercury.toml and possible certificates (/home/user/mercury in the example below)
 
-docker run -d -p 9001:9001 -p 80:80 -p 443:443 -v /home/user/mercury/:/etc/mercury/ mercury:latest
+docker run -d -p 9001:9001 -p 80:80 -p 443:443 -v /home/user/mercury/:/etc/mercury/ rdoorn/mercury:latest
 ```
 
 once its running you can connect to the web service of mercury on port 9001 with https (e.g. <https://localhost:9001>)
@@ -120,6 +120,7 @@ you might want to use the docker-alpine image if you need to troubleshoot connec
 
 Included is a docker composer config which will start mercury with 2 web services running httpd
 
+from the `docker` directory
 ```
 docker-compose -f docker-compose.yml up
 ```
