@@ -1,3 +1,12 @@
+# 1.0.1
+
+misc: update readme for docker containers
+
+group docker files in dir, and fix version reporting of docker containers (#115)
+
+
+set git details even if we don't update change log
+
 # 1.0.0
 
 misc: After 2 years of running in production, its time to bump Mercury to a stable version number: 1.0.0 
