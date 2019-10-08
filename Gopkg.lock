@@ -11,14 +11,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5687fbc1645b88f9cab21657e4b7bfe7093c03b7e8e623efdf4dd5ecf16b6352"
+  digest = "1:0f4e17a2bb500524852bcb891f1501fa6bc94e6765aba0db20d0d2ee36f4968b"
   name = "github.com/GeertJohan/go.rice"
   packages = [
     ".",
     "embedded",
   ]
   pruneopts = ""
-  revision = "c880e3cd4dd81db36b423e83dc0aeea4dca93774"
+  revision = "48f549fe0543eb09c1209e39dda95ef6ca371ee1"
 
 [[projects]]
   digest = "1:8e8da6cc8cca12851d4e089d970a0f7387b3a6bcc8c459ff432213b03076a66d"
@@ -53,12 +53,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:0b6694f306890ddbb69c96a16776510bd24e07436fae3f9b0a4e5b650f1e6fb7"
+  digest = "1:ca72b92cc810c3477d9958edb414a4b76c9946070617a0dbf5972f9f244fc70a"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = ""
-  revision = "b13675009d59c97f3721247d9efa8914e1866a5b"
-  version = "v1.1.15"
+  revision = "1e224ff5dead8366ed6fcdcb832794be42e73f0e"
+  version = "v1.1.22"
 
 [[projects]]
   branch = "master"
@@ -86,11 +86,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:51c1fc96ece71d901f95f8191fb118421c613d67c405a6022c1ec08be6b910db"
+  digest = "1:2c6d0453b97102c37a05ce32480659b90e5b900b8ec6c620faba03d713f42fa7"
   name = "github.com/rdoorn/tinyresolver"
   packages = ["."]
   pruneopts = ""
-  revision = "b5d083dc879cbaae62ca4423a7122d1a28c2719a"
+  revision = "0320b16ed71ee2b07f03678a7e726967774971d0"
 
 [[projects]]
   digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
@@ -104,38 +104,16 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:381bcbeb112a51493d9d998bbba207a529c73dbb49b3fd789e48c63fac1f192c"
+  digest = "1:f7b541897bcde05a04a044c342ddc7425aab7e331f37b47fbb486cd16324b48e"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   pruneopts = ""
-  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
-  version = "v1.3.0"
-
-[[projects]]
-  branch = "imports-mangling"
-  digest = "1:0ad8e2a2eee4d7c4d301e216173a3ee73ac70694222ae2f2f908bd86d2c375c2"
-  name = "go.coder.com/go-tools"
-  packages = [
-    "cmd/goimports",
-    "go/ast/astutil",
-    "go/gcexportdata",
-    "go/internal/cgo",
-    "go/internal/gcimporter",
-    "go/internal/packagesdriver",
-    "go/packages",
-    "go/types/typeutil",
-    "imports",
-    "internal/fastwalk",
-    "internal/gopathwalk",
-    "internal/module",
-    "internal/semver",
-  ]
-  pruneopts = ""
-  revision = "0c6a35b74a16a7fa4c6d7015943a632a6a6f9c69"
+  revision = "221dbe5ed46703ee255b1da0dec05086f5035f62"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:086760278d762dbb0e9a26e09b57f04c89178c86467d8d94fae47d64c222f328"
+  digest = "1:b4305df2444548cf8f171cd377e19bc7021eaa195aaa78367b3a371d2d6b9ae1"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -148,22 +126,11 @@
     "ssh",
   ]
   pruneopts = ""
-  revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
+  revision = "34f69633bfdcf9db92f698f8487115767eebef81"
 
 [[projects]]
   branch = "master"
-  digest = "1:99dc4c94284ccd0d515bc11c906edcc33da407af228c6cf75b6f20e2cd3e6ab6"
-  name = "golang.org/x/lint"
-  packages = [
-    ".",
-    "golint",
-  ]
-  pruneopts = ""
-  revision = "959b441ac422379a43da2230f62be024250818b0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:955694a7c42527d7fb188505a22f10b3e158c6c2cf31fe64b1e62c9ab7b18401"
+  digest = "1:3b22c4b2a448ff2c35e1740c7968afd9053f065d2252726a36ff7b96bf8b4cb1"
   name = "golang.org/x/net"
   packages = [
     "bpf",
@@ -178,11 +145,11 @@
     "ipv6",
   ]
   pruneopts = ""
-  revision = "ca1201d0de80cfde86cb01aea620983605dfe99b"
+  revision = "72f939374954d0a1b2a1e27dcda950e2724dd5c1"
 
 [[projects]]
   branch = "master"
-  digest = "1:0b5c2207c72f2d13995040f176feb6e3f453d6b01af2b9d57df76b05ded2e926"
+  digest = "1:a8266488eb6ecc85c48cc604c0c0ccd32d9de7933eef15f8f1ff308e337a5c21"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -190,7 +157,7 @@
     "windows",
   ]
   pruneopts = ""
-  revision = "51ab0e2deafac1f46c46ad59cf0921be2f180c3d"
+  revision = "543471e840be449c53d44b32c7adf1261ad67e37"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -219,30 +186,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9522af4be529c108010f95b05f1022cb872f2b9ff8b101080f554245673466e1"
+  digest = "1:1290297b5048f051e77948812e93c4f09a914d02c8fb02cf2dfdaf23d73a5805"
   name = "golang.org/x/time"
   packages = ["rate"]
   pruneopts = ""
-  revision = "9d24e82272b4f38b78bc8cff74fa936d31ccd8ef"
-
-[[projects]]
-  branch = "master"
-  digest = "1:3f52587092bc722a3c3843989e6b88ec26924dc4b7b9c971095b7e93a11e0eff"
-  name = "golang.org/x/tools"
-  packages = [
-    "cmd/stringer",
-    "go/ast/astutil",
-    "go/gcexportdata",
-    "go/internal/gcimporter",
-    "go/internal/packagesdriver",
-    "go/packages",
-    "go/types/typeutil",
-    "internal/fastwalk",
-    "internal/gopathwalk",
-    "internal/semver",
-  ]
-  pruneopts = ""
-  revision = "e713427fea3f98cb070e72a058c557a1a560cf22"
+  revision = "c4c64cad1fd0a1a8dab2523e04e61d35308e131e"
 
 [[projects]]
   branch = "master"
@@ -273,35 +221,24 @@
 
 [[projects]]
   branch = "v2"
-  digest = "1:60ccede33d50c82c86e907255319a6f40dca4ac395e5ee143638176d3b871069"
+  digest = "1:06972867fb169c2b9886d666e38bb895a514a1424241e1c1c988977ab430b18e"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = ""
-  revision = "7b8349ac747c6a24702b762d2c4fd9266cf4f1d6"
+  revision = "970885f01c8bc1fecb7ab1c8ce8e7609bda45530"
 
 [[projects]]
-  digest = "1:1b1c06707a11d7672019693854e042f0384c4acc6324d03a93047eb698ea122b"
-  name = "mvdan.cc/sh"
-  packages = [
-    "cmd/shfmt",
-    "fileutil",
-    "syntax",
-  ]
-  pruneopts = ""
-  revision = "6ae84988520ab9ea8ad7b2cc327f2261a30e7abf"
-  version = "v2.6.4"
-
-[[projects]]
-  digest = "1:dbafd82f361ed4e072549d1893e491d5c5143e6e15ad69002a1bf2fabbc3a428"
+  digest = "1:87027bcf405247211be82a8f4b3267fee7382d6aded8fc4385a7927b855aa820"
   name = "nhooyr.io/websocket"
   packages = [
     ".",
     "internal/bpool",
+    "internal/wsjs",
     "wsjson",
   ]
   pruneopts = ""
-  revision = "3a7c15d0ee677ce992db1d6df3a7c7c0ed4a5021"
-  version = "v1.3.3"
+  revision = "dfce1fcd26e92af35bf6bc7154968a5992ab30ba"
+  version = "v1.6.5"
 
 [solve-meta]
   analyzer-name = "dep"
