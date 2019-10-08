@@ -1,3 +1,13 @@
+# 1.0.2
+
+misc: fix: better cname handling with latest resolver update (#116)
+
+* update deps to get improved resolver, aswell as improvements in other dependencies
+
+* fix websocket test with new parameters
+
+updating change log with latest commit
+
 # 1.0.1
 
 misc: update readme for docker containers
