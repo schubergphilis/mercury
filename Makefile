@@ -6,6 +6,7 @@
 .PHONY: update clean build build-all run package deploy test authors dist
 
 export PATH := $(PATH):$(GOPATH)/bin
+export GO111MODULE=auto
 
 NAME := mercury
 VERSION := $(shell [ -f .version ] && cat .version || echo "pipeline-test")
@@ -155,11 +156,12 @@ docker-upload-alpine: docker-alpine docker-prep
 	docker push rdoorn/mercury-alpine:latest
 
 deps: ## Updates the vendored Go dependencies
-	@dep ensure -v
+	go mod download
+	go mod vendor
 
 updatedeps: ## Updates the vendored Go dependencies
-	@dep ensure -update
-
+	go get -u ./...
+	go mod vendor
 
 #authors:
 #	@git log --format='%aN <%aE>' | LC_ALL=C.UTF-8 sort | uniq -c | sort -nr | sed "s/^ *[0-9]* //g" > AUTHORS
