@@ -6,6 +6,7 @@
 .PHONY: update clean build build-all run package deploy test authors dist
 
 export PATH := $(PATH):$(GOPATH)/bin
+# Since go 1.13 GO111MODULE can be used even in GOPATH
 export GO111MODULE=auto
 
 NAME := mercury
