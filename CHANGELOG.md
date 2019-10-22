@@ -1,3 +1,12 @@
+# 1.0.3
+
+misc: Replaced godep with the native version for go modules (#117) (ilijamt)
+
+* Replaced godep with the native version for go modules
+* Update Makefile comment
+
+updating change log with latest commit
+
 # 1.0.2
 
 misc: fix: better cname handling with latest resolver update (#116)
