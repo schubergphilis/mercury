@@ -20,6 +20,7 @@ import (
 	"golang.org/x/net/http2"
 
 	uuid "github.com/nu7hatch/gouuid"
+	"github.com/rdoorn/gorule"
 
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
@@ -353,6 +354,14 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 		}
 		clog.WithField("backendip", backendnode.IP).WithField("backendport", backendnode.Port).Debug("Forwarding HTTP request to backend")
 
+		// apply inbound rules if any
+		for _, rule := range l.Backends[backendname].InboundRule {
+			err := gorule.Parse(map[string]interface{}{"request": req}, []byte(rule))
+			if err != nil {
+				clog.WithError(err).Warnf("error in inbound rule")
+			}
+		}
+
 		acl := processACLVariables(l.Backends[backendname].InboundACL, l, *backendnode, req)
 		aclAllows := l.Backends[backendname].InboundACL.CountActions("allow")
 		aclDenies := l.Backends[backendname].InboundACL.CountActions("deny")
@@ -424,6 +433,18 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 				localerror = true
 			default:
 				if backendname != "localhost" && backendname != "" {
+
+					// apply outbound rules if any
+					for _, rule := range l.Backends[backendname].OutboundRule {
+						err := gorule.Parse(map[string]interface{}{
+							"request":  res.Request,
+							"response": res,
+						}, []byte(rule))
+						if err != nil {
+							log.WithError(err).Warnf("error outbound rule")
+						}
+					}
+
 					// Get ACL's
 					acls := l.Backends[backendname].OutboundACL
 					node, err := l.Backends[backendname].GetBackendNodeByID(nodeid)

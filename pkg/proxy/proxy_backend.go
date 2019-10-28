@@ -18,6 +18,8 @@ type Backend struct {
 	ConnectMode     string
 	InboundACL      ACLS
 	OutboundACL     ACLS
+	InboundRule     []string
+	OutboundRule    []string
 	Statistics      *balancer.Statistics
 	Nodes           []*BackendNode
 	Hostname        []string
@@ -195,6 +197,19 @@ func (b *Backend) SetACL(direction string, acl []ACL) {
 
 	case "out":
 		b.OutboundACL = acl
+	}
+}
+
+// SetRules adds Rules to the backend
+func (b *Backend) SetRules(direction string, rule []string) {
+	b.sync.Lock()
+	defer b.sync.Unlock()
+	switch direction {
+	case "in":
+		b.InboundRule = rule
+
+	case "out":
+		b.OutboundRule = rule
 	}
 }
 

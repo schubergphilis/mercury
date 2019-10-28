@@ -291,9 +291,6 @@ minversion = "VersionTLS12"
 ciphersuites = ["TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384","TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256","TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
 curvepreferences = ["CurveP521", "CurveP384", "CurveP256"]
 ocspstapling = true
-[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc]
-hostnames = ["leastconnected.glb.example.com"]
-connectmode = "https"
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc.tls]
 certificatekey = "test/ssl/self_signed_certificate.key"
 certificatefile = "test/ssl/self_signed_certificate.crt"
@@ -384,7 +381,21 @@ header_value = "nosniff"
 # leasttraffic
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt]
 hostnames = ["leasttraffic.glb.example.com"]
-connectmode = "http"
+connectmode = "https"
+inboundrules = [
+  '''
+  if $(request.host) regex example.com {
+    request.host = "www.ghostbox.org"
+  }
+  '''
+]
+outboundrules = [
+  '''
+    response.header.x-custom = "customer header by outbound rule"
+  '''
+]
+[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt.tls]
+insecureskipverify = true
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt.balance]
 method = "leasttraffic"
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt.dnsentry]
@@ -392,10 +403,10 @@ domain = "glb.example.com"
 hostname = "leasttraffic"
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt.nodes]]
 ip = "95.142.102.176"
-port = 80
+port = 443
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lt.nodes]]
 ip = "95.142.102.175"
-port = 80
+port = 443
 
 # preference
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_pr]

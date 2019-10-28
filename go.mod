@@ -10,6 +10,7 @@ require (
 	github.com/miekg/dns v1.1.22
 	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+	github.com/rdoorn/gorule v0.0.0-20191028142911-03d8545710ac
 	github.com/rdoorn/tinyresolver v0.0.0-20191008124230-0320b16ed71e
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
