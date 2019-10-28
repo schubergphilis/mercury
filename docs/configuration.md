@@ -241,18 +241,30 @@ To use ALLOW/DENY, you must use the INBOUND acl. you cannot mix allow and deny A
 
 Rules can be applied in the form of scripts, the script can work with some basic testing
 
-Scripts support the following functions: Funcion | Parameters --------- | -------------------------------------------------------- if | _value1 ("string" or number e.g. 12345) |_ equator for strings: ==, !=, regex / for numbers: ==, <=, >=, != | * value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng" | if a value needs to be parsed, enclose it like: $(value1) or $(value2) | the statement if followed by curly brackets {...} to form the block which is executed if true | example: | ``` if $(request.host) == "example.com" {
+Scripts support the following functions:
+Funcion | Parameters
+--------- | --------------------------------------------------------
+if        | * value1 ("string" or number e.g. 12345)
+          | * equator for strings: ==, !=, regex  / for numbers: ==, <=, >=, !=
+          | * value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"
+          | if a value needs to be parsed, enclose it like: $(value1) or $(value2)
+          | the statement if followed by curly brackets {...} to form the block which is executed if true
+          | example:
+          | ```
+            if $(request.host) == "example.com" {
 
-````
-        } ifelse $(request.host) == "domain.org" {
+            } ifelse $(request.host) == "domain.org" {
 
-        } else {
-          // do something
-        }
-        ```
-````
+            } else {
+              // do something
+            }
+            ```
+ifelse    | see if
+else      | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
+var       | create a new variable, followe by a value:
+          | * paramname (name of parameter)
+          | * value (can be "string" or number)
 
-ifelse | see if else | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true var | create a new variable, followe by a value: | _paramname (name of parameter) |_ value (can be "string" or number)
 
 ### Examples
 
