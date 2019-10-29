@@ -387,6 +387,13 @@ inboundrules = [
   if $(request.host) regex example.com {
     request.host = "www.ghostbox.org"
   }
+  ''',
+  '''
+  if $(request.url.path) regex "/user/(.*)" {
+    request.url.path = "/client/$1"
+    response.header.location = $(request.url)
+    response.statuscode = 301
+  }
   '''
 ]
 outboundrules = [

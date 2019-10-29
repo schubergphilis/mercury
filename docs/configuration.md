@@ -237,35 +237,6 @@ ACL's can be set to add/replace/modify headers, or to allow/deny requests based 
 
 To use ALLOW/DENY, you must use the INBOUND acl. you cannot mix allow and deny ACL's together, this will result in only the allow beeing processed.
 
-## Rules Script
-
-Rules can be applied in the form of scripts, the script can work with some basic testing
-
-Scripts support the following functions:
-Funcion | Parameters
---------- | --------------------------------------------------------
-if        | * value1 ("string" or number e.g. 12345)
-          | * equator for strings: ==, !=, regex  / for numbers: ==, <=, >=, !=
-          | * value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"
-          | if a value needs to be parsed, enclose it like: $(value1) or $(value2)
-          | the statement if followed by curly brackets {...} to form the block which is executed if true
-          | example:
-          | ```
-            if $(request.host) == "example.com" {
-
-            } ifelse $(request.host) == "domain.org" {
-
-            } else {
-              // do something
-            }
-            ```
-ifelse    | see if
-else      | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
-var       | create a new variable, followe by a value:
-          | * paramname (name of parameter)
-          | * value (can be "string" or number)
-
-
 ### Examples
 
 - deny all clients which user-agent specifies Macintosh
@@ -349,6 +320,79 @@ rewrite all urls behind "/old/path" to "/new"
 action = "rewrite"
 urlmatch = "/old/path/(.*)$"
 urlreplace = "/new/$1"
+```
+
+## Rules Script
+
+Rules can be applied in the form of scripts, the script can work with some basic testing
+
+Scripts support the following functions:
+
+Funcion   | Parameters | description
+--------- | ---------- | -----------------------------------------------------------------------------------------------------------
+if        | 3          | * value1 ("string" or number e.g. 12345)
+          |            | * equator for strings: ==, !=, regex / for numbers: ==, <=, >=, !=
+          |            | * value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"
+          |            | if a value needs to be parsed, enclose it like: $(value1) or $(value2)
+          |            | the statement if followed by curly brackets {...} to form the block which is executed if true
+ifelse    | 3          | see if
+else      | 0          | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
+var       | 2          | create a new variable, followed by a value:
+          |            | * param (name of parameter)
+          |            | * value (can be "string" or number)
+log       | 1          | log specified output to stdout
+          |            | * value to log ("string" or $(parameter))
+parameter | 2          | * equator (=)
+          |            | * new value (string or number or $(parameter))
+// #      | 0          | comments
+
+note that when reading a variable you use `$(variable.name)` when you set a variable you use `variable.name`
+
+### Rule Examples:
+
+the following is an exmple to rewrite some fiels in the request header
+
+note that you can change/read all fields as defined in the golang
+
+- request: [http.request][<https://github.com/golang/go/blob/master/src/net/http/request.go#L108>] type
+- response: [http.response][<https://github.com/golang/go/blob/master/src/net/http/response.go#L35>] type
+
+```
+if $(request.host) == "example.com" {
+  // setting this only has effect on inbound rule
+  request.host = "another.host.com"
+} ifelse $(request.host) == "domain.org" {
+  // on an inbound rule, this gets send to the backend server
+  request.header.x-api-key = "abcdefghijklmnop"
+} else {
+  // do something
+}
+```
+
+#### Client certificate verification
+
+```
+if $(request.tls.peercertificates.0.Signature) != "11:22:33:44:55:66:77:88" {
+  response.statuscode = 404
+}
+```
+
+#### Path rewrite before sending to backend
+
+```
+if $(request.url.path) regex "/user/(.*)" {
+  request.url.path = "/client/$1"
+}
+```
+
+#### Path rewrite with redirect
+
+```
+if $(request.url.path) regex "/user/(.*)" {
+  request.url.path = "/client/$1"
+  response.header.location = $(request.url)
+  response.statuscode = 301
+}
 ```
 
 ## ErrorPage Attributes

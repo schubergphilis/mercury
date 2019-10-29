@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -353,13 +354,42 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 			return
 		}
 		clog.WithField("backendip", backendnode.IP).WithField("backendport", backendnode.Port).Debug("Forwarding HTTP request to backend")
-
-		// apply inbound rules if any
-		for _, rule := range l.Backends[backendname].InboundRule {
-			err := gorule.Parse(map[string]interface{}{"request": req}, []byte(rule))
-			if err != nil {
-				clog.WithError(err).Warnf("error in inbound rule")
+		if len(l.Backends[backendname].InboundRule) > 0 {
+			response := &http.Response{
+				Proto:      "HTTP/1.1",
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+				Header:     http.Header{},
+				Request:    req,
 			}
+			originalresponse := &http.Response{
+				Proto:      "HTTP/1.1",
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+				Header:     http.Header{},
+				Request:    req,
+			}
+			// apply inbound rules if any
+			for _, rule := range l.Backends[backendname].InboundRule {
+				err := gorule.Parse(map[string]interface{}{
+					"request":  req,
+					"response": response,
+				}, []byte(rule))
+				if err != nil {
+					clog.WithError(err).Warnf("error in inbound rule")
+				}
+			}
+
+			if !reflect.DeepEqual(response, originalresponse) {
+				// add empty body
+				nbody := &bytes.Buffer{}
+				nbody.Write([]byte{})
+				response.Body = ioutil.NopCloser(nbody)
+				req.URL.Scheme = "error//" + backendname + "403//Access denied - matched DENY ACL"
+
+				// eehhh how to pass response ?!?!?! RDOORN
+			}
+
 		}
 
 		acl := processACLVariables(l.Backends[backendname].InboundACL, l, *backendnode, req)
