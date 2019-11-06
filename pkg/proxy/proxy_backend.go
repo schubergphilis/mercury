@@ -18,6 +18,7 @@ type Backend struct {
 	ConnectMode     string
 	InboundACL      ACLS
 	OutboundACL     ACLS
+	PreInboundRule  []string
 	InboundRule     []string
 	OutboundRule    []string
 	Statistics      *balancer.Statistics
@@ -205,6 +206,9 @@ func (b *Backend) SetRules(direction string, rule []string) {
 	b.sync.Lock()
 	defer b.sync.Unlock()
 	switch direction {
+	case "prein":
+		b.PreInboundRule = rule
+
 	case "in":
 		b.InboundRule = rule
 

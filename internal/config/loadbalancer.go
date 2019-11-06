@@ -33,6 +33,7 @@ type LoadbalancePool struct {
 	Stats           *balancer.Statistics      `json:"stats" toml:"stats" yaml:"-"`            // statis
 	InboundACL      []proxy.ACL               `json:"inboundacls" toml:"inboundacls"`         // acls applied on incomming connections to backend
 	OutboundACL     []proxy.ACL               `json:"outboundacls" toml:"outboundacls"`       // acl's applied on outgoing connections to client
+	PreInboundRule  []string                  `json:"preinboundrules" toml:"preinboundrules"` // script based rules applied on incomming connections before passed to the proxy service
 	InboundRule     []string                  `json:"inboundrules" toml:"inboundrules"`       // script based rules applied on incomming connections to backend
 	OutboundRule    []string                  `json:"outboundrules" toml:"outboundrules"`     // script based rules applied on outgoing connections to client
 	ErrorPage       proxy.ErrorPage           `json:"errorpage" toml:"errorpage"`             // alternative error page to show
@@ -86,6 +87,7 @@ type BackendPool struct {
 	ConnectMode     string                    `json:"connectmode" toml:"connectmode"`         // protocol to use when connecting to backend
 	InboundACL      []proxy.ACL               `json:"inboundacls" toml:"inboundacls"`         // acl's to apply on requests sent to server
 	OutboundACL     []proxy.ACL               `json:"outboundacls" toml:"outboundacls"`       // acl's to apply on replies to client
+	PreInboundRule  []string                  `json:"preinboundrules" toml:"preinboundrules"` // script based rules applied on incomming connections before passed to the proxy service
 	InboundRule     []string                  `json:"inboundrules" toml:"inboundrules"`       // script based rules applied on incomming connections to backend
 	OutboundRule    []string                  `json:"outboundrules" toml:"outboundrules"`     // script based rules applied on outgoing connections to client
 	HostNames       []string                  `json:"hostnames" toml:"hostnames"`             // hostnames requests we reply to on http

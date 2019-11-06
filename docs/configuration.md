@@ -345,17 +345,30 @@ log       | 1          | log specified output to stdout
 parameter | 2          | * equator (=)
           |            | * new value (string or number or $(parameter))
 // #      | 0          | comments
+unset     | 1          | removes a specific variable, or set it to empty
 
 note that when reading a variable you use `$(variable.name)` when you set a variable you use `variable.name`
 
-### Rule Examples:
+### Rule Types:
 
-the following is an exmple to rewrite some fiels in the request header
+The following rule types exist:
 
-note that you can change/read all fields as defined in the golang
+- Pre-Inbound Rules - these are applied to the incoming connection from the client, before being processed by the proxy
+- Inbound Rules - these are applied right before contacting the backend node of your pool, setting a response here will prevent the connection to the backend node
+- Outbound Rules - these are applied after getting a reply from the backend node, before sending the response back to the client
+
+### Modifiable attributes
+
+You can change/read all fields as defined in the Golang
 
 - request: [http.request][<https://github.com/golang/go/blob/master/src/net/http/request.go#L108>] type
 - response: [http.response][<https://github.com/golang/go/blob/master/src/net/http/response.go#L35>] type
+
+### Rule Examples:
+
+#### Pre-Inbound Rule: rewrite request to proxy:
+
+the following is an example to rewrite some field in the request header
 
 ```
 if $(request.host) == "example.com" {
@@ -369,7 +382,16 @@ if $(request.host) == "example.com" {
 }
 ```
 
-#### Client certificate verification
+#### Pre-Inbound Rule: force specific clients to use a specific backend(s)
+
+```
+if $(client.ip) match_net "10.10.10.0/24" {
+  backend.node = "10.10.10.1,10.10.10.2"
+  backend.port = 12345
+}
+```
+
+#### Inbound Rule: deny clients based on Client certificate verification
 
 ```
 if $(request.tls.peercertificates.0.Signature) != "11:22:33:44:55:66:77:88" {
@@ -377,22 +399,28 @@ if $(request.tls.peercertificates.0.Signature) != "11:22:33:44:55:66:77:88" {
 }
 ```
 
-#### Path rewrite before sending to backend
+#### Inbound Rule: Advanced Path rewrite before sending to backend
 
 ```
-if $(request.url.path) regex "/user/(.*)" {
-  request.url.path = "/client/$1"
+if $(request.url.path) match_regex "/user/(.*)" {
+  request.url.path match "/user/(.*)/" replace "/client/\\1/"
 }
 ```
 
-#### Path rewrite with redirect
+#### Inbound Rule: Path rewrite with redirect
 
 ```
-if $(request.url.path) regex "/user/(.*)" {
+if $(request.url.path) match_regex "/user/(.*)" {
   request.url.path = "/client/$1"
   response.header.location = $(request.url)
   response.statuscode = 301
 }
+```
+
+#### Outbound Rule: Remove Server Header
+
+```
+  unset response.header.server
 ```
 
 ## ErrorPage Attributes

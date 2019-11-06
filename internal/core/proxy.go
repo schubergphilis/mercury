@@ -241,10 +241,14 @@ func (manager *Manager) InitializeProxies() {
 			}
 
 			// Use backend to attach rules
+			var preinboundrules []string
 			var inboundrules []string
 			var outboundrules []string
 
 			// Add pool rules
+			for _, acl := range pool.PreInboundRule {
+				preinboundrules = append(preinboundrules, acl)
+			}
 			for _, acl := range pool.InboundRule {
 				inboundrules = append(inboundrules, acl)
 			}
@@ -252,6 +256,9 @@ func (manager *Manager) InitializeProxies() {
 				outboundrules = append(outboundrules, acl)
 			}
 			// Add backend rules
+			for _, acl := range backendpool.PreInboundRule {
+				preinboundrules = append(preinboundrules, acl)
+			}
 			for _, acl := range backendpool.InboundRule {
 				inboundrules = append(inboundrules, acl)
 			}
@@ -260,6 +267,12 @@ func (manager *Manager) InitializeProxies() {
 			}
 
 			// Replace existing rules with new one
+			if !reflect.DeepEqual(backend.PreInboundRule, preinboundrules) {
+				for _, rule := range preinboundrules {
+					plog.WithField("backend", backendname).WithField("rule", fmt.Sprintf("%s", rule)).Debug("Setting pre-inbound Rule")
+				}
+				backend.SetRules("prein", inboundrules)
+			}
 			if !reflect.DeepEqual(backend.InboundRule, inboundrules) {
 				for _, rule := range inboundrules {
 					plog.WithField("backend", backendname).WithField("rule", fmt.Sprintf("%s", rule)).Debug("Setting inbound Rule")

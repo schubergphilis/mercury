@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -34,6 +33,7 @@ const (
 type customTransport struct {
 	*http.Transport
 	LocalAddr net.Addr
+	Listener  *Listener
 }
 
 var variableRegex = regexp.MustCompile("###([A-Z_a-z]+)###")
@@ -75,7 +75,9 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 	// Errors are generated if no backend could be found
 	// Internal is done for ACL-only connections (such as redirect)
 	// Default is all other http connections to a remote host
+
 	scheme := strings.Split(req.URL.Scheme, "//")
+
 	switch scheme[0] {
 	case "error":
 		log.WithField("errorcode", scheme[1]).WithField("error", scheme[2]).Infof("Could not proxy client request")
@@ -102,15 +104,32 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 
 	default: // http/https
 		req.URL.Scheme = scheme[0]
-		res, err = t.Transport.RoundTrip(req)
+
+		// process inbound rules only on requests that are passed to the server
+		err = t.Listener.ProcessInboundRules(t.Listener.Backends[scheme[1]].InboundRule, req, res)
 		if err != nil {
-			// We have an error, generate a 500
-			res = customStatusPage(500, err.Error(), req)
+			log.WithError(err).WithField("backend", scheme[1]).Warnf("failed to process inbound rule")
+			return
+		}
+
+		if res != nil {
+			res, err = t.Transport.RoundTrip(req)
+			if err != nil {
+				// We have an error, generate a 500
+				res = customStatusPage(500, err.Error(), req)
+			}
 		}
 
 		log = log.WithField("scheme", req.URL.Scheme)
 	}
 	// At this point res can never by nil
+
+	// process outbound rules for all requests, you can modify all response aspects
+	err = t.Listener.ProcessOutboundRules(t.Listener.Backends[scheme[1]].InboundRule, req, res)
+	if err != nil {
+		log.WithError(err).WithField("backend", scheme[1]).Warnf("failed to process outbound rule")
+		return
+	}
 
 	// Add clientid (mercid) cookie to logging
 	if clientid, cerr := req.Cookie(sessionIDCookie); cerr == nil {
@@ -354,42 +373,12 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 			return
 		}
 		clog.WithField("backendip", backendnode.IP).WithField("backendport", backendnode.Port).Debug("Forwarding HTTP request to backend")
-		if len(l.Backends[backendname].InboundRule) > 0 {
-			response := &http.Response{
-				Proto:      "HTTP/1.1",
-				ProtoMajor: 1,
-				ProtoMinor: 1,
-				Header:     http.Header{},
-				Request:    req,
-			}
-			originalresponse := &http.Response{
-				Proto:      "HTTP/1.1",
-				ProtoMajor: 1,
-				ProtoMinor: 1,
-				Header:     http.Header{},
-				Request:    req,
-			}
-			// apply inbound rules if any
-			for _, rule := range l.Backends[backendname].InboundRule {
-				err := gorule.Parse(map[string]interface{}{
-					"request":  req,
-					"response": response,
-				}, []byte(rule))
-				if err != nil {
-					clog.WithError(err).Warnf("error in inbound rule")
-				}
-			}
 
-			if !reflect.DeepEqual(response, originalresponse) {
-				// add empty body
-				nbody := &bytes.Buffer{}
-				nbody.Write([]byte{})
-				response.Body = ioutil.NopCloser(nbody)
-				req.URL.Scheme = "error//" + backendname + "403//Access denied - matched DENY ACL"
-
-				// eehhh how to pass response ?!?!?! RDOORN
-			}
-
+		err = l.ProcessPreInboundRules(l.Backends[backendname].InboundRule, req)
+		if err != nil {
+			req.URL.Scheme = "error//" + backendname + "//500//Error processing pre-inbound rules"
+			clog.WithError(err).Warnf("failed to process pre-inbound rule")
+			return
 		}
 
 		acl := processACLVariables(l.Backends[backendname].InboundACL, l, *backendnode, req)
@@ -584,6 +573,7 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 			MaxIdleConns:          100,
 			ExpectContinueTimeout: 1 * time.Second,
 		},
+		Listener: l,
 	}
 
 	// Websockets are not supported using HTTP/2, so if you use that, force HTTP/1.X
