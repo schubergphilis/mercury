@@ -66,8 +66,8 @@ func customStatusPage(statusCode int, statusMessage string, req *http.Request) *
 
 // RoundTrip does the actual http sending and receiving for the proxy
 func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	remoteAddr := strings.Split(req.RemoteAddr, ":")
-	log := logging.For("proxy/roundtrip").WithField("clientip", remoteAddr[0])
+	remote := stringToClientIP(req.RemoteAddr)
+	log := logging.For("proxy/roundtrip").WithField("clientip", remote.IP)
 	log.WithField("scheme", req.URL).Debug("Roundtrip scheme")
 	starttime := time.Now()
 	originalScheme := req.URL.Scheme

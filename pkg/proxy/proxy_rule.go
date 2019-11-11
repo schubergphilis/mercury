@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/rdoorn/gorule"
 )
@@ -16,11 +18,16 @@ func (l *Listener) ProcessOutboundRules(rules []string, req *http.Request, res *
 	if len(rules) == 0 {
 		return nil
 	}
+
+	// extract remote ip from request
+	client := stringToClientIP(req.RemoteAddr)
+
 	// apply inbound rules if any
 	for _, rule := range rules {
 		err := gorule.Parse(map[string]interface{}{
 			"request":  req,
 			"response": res,
+			"client":   client,
 		}, []byte(rule))
 		if err != nil {
 			return err
@@ -55,11 +62,16 @@ func (l *Listener) ProcessInboundRules(rules []string, req *http.Request, res *h
 		}
 
 	}
+
+	// extract remote ip from request
+	client := stringToClientIP(req.RemoteAddr)
+
 	// apply inbound rules if any
 	for _, rule := range rules {
 		err := gorule.Parse(map[string]interface{}{
 			"request":  req,
 			"response": res,
+			"client":   client,
 		}, []byte(rule))
 		if err != nil {
 			return err
@@ -90,10 +102,15 @@ func (l *Listener) ProcessPreInboundRules(rules []string, req *http.Request) err
 	if len(rules) == 0 {
 		return nil
 	}
+
+	// extract remote ip from request
+	client := stringToClientIP(req.RemoteAddr)
+
 	// apply inbound rules if any
 	for _, rule := range rules {
 		err := gorule.Parse(map[string]interface{}{
 			"request": req,
+			"client":  client,
 		}, []byte(rule))
 		if err != nil {
 			return err
@@ -141,3 +158,20 @@ if len(l.Backends[backendname].InboundRule) > 0 {
 
 }
 */
+
+type clientIP struct {
+	IP   string
+	Port int
+}
+
+func stringToClientIP(addr string) *clientIP {
+	client := &clientIP{}
+	remoteAddr := strings.Split(addr, ":")
+	if len(remoteAddr) > 1 {
+		client.IP = strings.Join(remoteAddr[:len(remoteAddr)-1], ":")
+		if port, err := strconv.Atoi(remoteAddr[len(remoteAddr)-1]); err == nil {
+			client.Port = port
+		}
+	}
+	return client
+}
