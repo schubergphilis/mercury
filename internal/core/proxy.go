@@ -240,6 +240,52 @@ func (manager *Manager) InitializeProxies() {
 				backend.SetACL("out", outboundACLs)
 			}
 
+			// Use backend to attach rules
+			var preinboundrules []string
+			var inboundrules []string
+			var outboundrules []string
+
+			// Add pool rules
+			for _, acl := range pool.PreInboundRule {
+				preinboundrules = append(preinboundrules, acl)
+			}
+			for _, acl := range pool.InboundRule {
+				inboundrules = append(inboundrules, acl)
+			}
+			for _, acl := range pool.OutboundRule {
+				outboundrules = append(outboundrules, acl)
+			}
+			// Add backend rules
+			for _, acl := range backendpool.PreInboundRule {
+				preinboundrules = append(preinboundrules, acl)
+			}
+			for _, acl := range backendpool.InboundRule {
+				inboundrules = append(inboundrules, acl)
+			}
+			for _, acl := range backendpool.OutboundRule {
+				outboundrules = append(outboundrules, acl)
+			}
+
+			// Replace existing rules with new one
+			if !reflect.DeepEqual(backend.PreInboundRule, preinboundrules) {
+				for _, rule := range preinboundrules {
+					plog.WithField("backend", backendname).WithField("rule", fmt.Sprintf("%s", rule)).Debug("Setting pre-inbound Rule")
+				}
+				backend.SetRules("prein", inboundrules)
+			}
+			if !reflect.DeepEqual(backend.InboundRule, inboundrules) {
+				for _, rule := range inboundrules {
+					plog.WithField("backend", backendname).WithField("rule", fmt.Sprintf("%s", rule)).Debug("Setting inbound Rule")
+				}
+				backend.SetRules("in", inboundrules)
+			}
+			if !reflect.DeepEqual(backend.OutboundRule, outboundrules) {
+				for _, rule := range inboundrules {
+					plog.WithField("backend", backendname).WithField("rule", fmt.Sprintf("%s", rule)).Debug("Setting outbound Rule")
+				}
+				backend.SetRules("out", outboundrules)
+			}
+
 			// Check backend Nodes
 			// IF node is local check with local config
 			// IF node is remote update of removal should be sent at config loading

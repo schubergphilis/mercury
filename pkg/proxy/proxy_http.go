@@ -20,6 +20,7 @@ import (
 	"golang.org/x/net/http2"
 
 	uuid "github.com/nu7hatch/gouuid"
+	"github.com/rdoorn/gorule"
 
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
 	"github.com/schubergphilis/mercury/pkg/logging"
@@ -32,6 +33,7 @@ const (
 type customTransport struct {
 	*http.Transport
 	LocalAddr net.Addr
+	Listener  *Listener
 }
 
 var variableRegex = regexp.MustCompile("###([A-Z_a-z]+)###")
@@ -64,8 +66,8 @@ func customStatusPage(statusCode int, statusMessage string, req *http.Request) *
 
 // RoundTrip does the actual http sending and receiving for the proxy
 func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	remoteAddr := strings.Split(req.RemoteAddr, ":")
-	log := logging.For("proxy/roundtrip").WithField("clientip", remoteAddr[0])
+	remote := stringToClientIP(req.RemoteAddr)
+	log := logging.For("proxy/roundtrip").WithField("clientip", remote.IP)
 	log.WithField("scheme", req.URL).Debug("Roundtrip scheme")
 	starttime := time.Now()
 	originalScheme := req.URL.Scheme
@@ -73,7 +75,9 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 	// Errors are generated if no backend could be found
 	// Internal is done for ACL-only connections (such as redirect)
 	// Default is all other http connections to a remote host
+
 	scheme := strings.Split(req.URL.Scheme, "//")
+
 	switch scheme[0] {
 	case "error":
 		log.WithField("errorcode", scheme[1]).WithField("error", scheme[2]).Infof("Could not proxy client request")
@@ -100,15 +104,32 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 
 	default: // http/https
 		req.URL.Scheme = scheme[0]
-		res, err = t.Transport.RoundTrip(req)
+
+		// process inbound rules only on requests that are passed to the server
+		err = t.Listener.ProcessInboundRules(t.Listener.Backends[scheme[1]].InboundRule, req, res)
 		if err != nil {
-			// We have an error, generate a 500
-			res = customStatusPage(500, err.Error(), req)
+			log.WithError(err).WithField("backend", scheme[1]).Warnf("failed to process inbound rule")
+			return
+		}
+
+		if res == nil {
+			res, err = t.Transport.RoundTrip(req)
+			if err != nil {
+				// We have an error, generate a 500
+				res = customStatusPage(500, err.Error(), req)
+			}
 		}
 
 		log = log.WithField("scheme", req.URL.Scheme)
 	}
 	// At this point res can never by nil
+
+	// process outbound rules for all requests, you can modify all response aspects
+	err = t.Listener.ProcessOutboundRules(t.Listener.Backends[scheme[1]].InboundRule, req, res)
+	if err != nil {
+		log.WithError(err).WithField("backend", scheme[1]).Warnf("failed to process outbound rule")
+		return
+	}
 
 	// Add clientid (mercid) cookie to logging
 	if clientid, cerr := req.Cookie(sessionIDCookie); cerr == nil {
@@ -353,6 +374,13 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 		}
 		clog.WithField("backendip", backendnode.IP).WithField("backendport", backendnode.Port).Debug("Forwarding HTTP request to backend")
 
+		err = l.ProcessPreInboundRules(l.Backends[backendname].PreInboundRule, req)
+		if err != nil {
+			req.URL.Scheme = "error//" + backendname + "//500//Error processing pre-inbound rules"
+			clog.WithError(err).Warnf("failed to process pre-inbound rule")
+			return
+		}
+
 		acl := processACLVariables(l.Backends[backendname].InboundACL, l, *backendnode, req)
 		aclAllows := l.Backends[backendname].InboundACL.CountActions("allow")
 		aclDenies := l.Backends[backendname].InboundACL.CountActions("deny")
@@ -424,6 +452,18 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 				localerror = true
 			default:
 				if backendname != "localhost" && backendname != "" {
+
+					// apply outbound rules if any
+					for _, rule := range l.Backends[backendname].OutboundRule {
+						err := gorule.Parse(map[string]interface{}{
+							"request":  res.Request,
+							"response": res,
+						}, []byte(rule))
+						if err != nil {
+							log.WithError(err).Warnf("error outbound rule")
+						}
+					}
+
 					// Get ACL's
 					acls := l.Backends[backendname].OutboundACL
 					node, err := l.Backends[backendname].GetBackendNodeByID(nodeid)
@@ -533,6 +573,7 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 			MaxIdleConns:          100,
 			ExpectContinueTimeout: 1 * time.Second,
 		},
+		Listener: l,
 	}
 
 	// Websockets are not supported using HTTP/2, so if you use that, force HTTP/1.X

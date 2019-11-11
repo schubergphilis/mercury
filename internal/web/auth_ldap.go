@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
-	ldap "gopkg.in/ldap.v2"
+	// ldap "gopkg.in/ldap.v3"
+	ldap "github.com/go-ldap/ldap"
 )
 
 // AuthLDAP is the provider for LDAP based authentication for the web service
