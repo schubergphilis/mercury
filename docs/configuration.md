@@ -328,17 +328,16 @@ Rules can be applied in the form of scripts, the script can work with some basic
 
 Scripts support the following functions:
 
-Function | Parameters | example                                    | description
--------- | ---------- | ------------------------------------------ | -----------------------------------------------------------------------------------------------------
-if       | 3          | if $(variable) == "http" {...}             | - value1 ("string" or number e.g. 12345)<br>equator for strings: ==, !=, regex / for numbers: ==, <=, >=, !=<br>- value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"<br>if a value needs to be parsed, enclose it like: $(value1) or $(value2)<br>
-  the statement if followed by curly brackets {...} to form the block which is executed if true
-ifelse   | 3          | elseif $(response.statuscode) == 404 {...} | see if
-else     | 0          | else { .. }                                | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
-var      | 2          | var myvar = "hello"                        | create a new variable, followed by a value:<br>param (name of parameter)<br>value (can be "string" or number)
-log      | 1          | log "hello world"                          | log specified output to stdout<br>- value to log ("string" or $(parameter))
-variable | 2          | variable = "https"                         | equator (=)<br> new value ("string" or number or $(parameter))
-// #     | infinite   | # testing                                  | comments, everything in comments is ignored
-unset    | 1          | unset response.header.server               | removes a specific variable, or set it to empty
+Function | Parameters | example                        | description
+-------- | ---------- | ------------------------------ | -----------------------------------------------------------------------------------------------------
+if       | 3          | if $(variable) == "http" {...} | * value1 ("string" or number e.g. 12345)<br>equator for strings: ==, !=, regex / for numbers: ==, <=, >=, !=<br>* value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"<br>* value3 what to compare it with<br>if a value needs to be parsed, enclose it like: $(value1) or $(value2)<br>the statement if followed by curly brackets {...} to form the block which is executed if true
+ifelse   | 3          | elseif 1 == 1 {...}            | see if
+else     | 0          | else { .. }                    | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
+var      | 2          | var myvar = "hello"            | create a new variable, followed by a value:<br>param (name of parameter)<br>value (can be "string" or number)
+log      | 1          | log "hello world"              | log specified output to stdout<br>- value to log ("string" or $(parameter))
+variable | 2          | variable = "https"             | equator (=)<br> new value ("string" or number or $(parameter))
+// #     | infinite   | # testing                      | comments, everything in comments is ignored
+unset    | 1          | unset response.header.server   | removes a specific variable, or set it to empty
 
 note that when reading a variable you use `$(variable.name)` when you set a variable you use `variable.name`
 
