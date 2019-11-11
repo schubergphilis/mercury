@@ -1,3 +1,10 @@
+# 1.1.0
+
+misc: feature: add rule based scripting support (gorules) (#118)
+
+feature: add rule based scripting support (gorules) (#118)
+fix: update ldap auth to newer library due to dependency failures
+
 # 1.0.3
 
 misc: Replaced godep with the native version for go modules (#117) (ilijamt)
