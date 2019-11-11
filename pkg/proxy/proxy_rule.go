@@ -99,6 +99,7 @@ func (l *Listener) ProcessInboundRules(rules []string, req *http.Request, res *h
 // ProcessPreInboundRules runs the rules script, and modified the given request accordingly
 // PreInbound rules apply only on the initial request before selecting a backend
 func (l *Listener) ProcessPreInboundRules(rules []string, req *http.Request) error {
+
 	if len(rules) == 0 {
 		return nil
 	}

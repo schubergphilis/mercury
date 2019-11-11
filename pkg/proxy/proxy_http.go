@@ -112,7 +112,7 @@ func (t *customTransport) RoundTrip(req *http.Request) (res *http.Response, err 
 			return
 		}
 
-		if res != nil {
+		if res == nil {
 			res, err = t.Transport.RoundTrip(req)
 			if err != nil {
 				// We have an error, generate a 500
@@ -374,7 +374,7 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 		}
 		clog.WithField("backendip", backendnode.IP).WithField("backendport", backendnode.Port).Debug("Forwarding HTTP request to backend")
 
-		err = l.ProcessPreInboundRules(l.Backends[backendname].InboundRule, req)
+		err = l.ProcessPreInboundRules(l.Backends[backendname].PreInboundRule, req)
 		if err != nil {
 			req.URL.Scheme = "error//" + backendname + "//500//Error processing pre-inbound rules"
 			clog.WithError(err).Warnf("failed to process pre-inbound rule")
