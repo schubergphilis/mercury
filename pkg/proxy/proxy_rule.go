@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strconv"
-	"strings"
 
 	"github.com/rdoorn/gorule"
 )
@@ -159,20 +157,3 @@ if len(l.Backends[backendname].InboundRule) > 0 {
 
 }
 */
-
-type clientIP struct {
-	IP   string
-	Port int
-}
-
-func stringToClientIP(addr string) *clientIP {
-	client := &clientIP{}
-	remoteAddr := strings.Split(addr, ":")
-	if len(remoteAddr) > 1 {
-		client.IP = strings.Join(remoteAddr[:len(remoteAddr)-1], ":")
-		if port, err := strconv.Atoi(remoteAddr[len(remoteAddr)-1]); err == nil {
-			client.Port = port
-		}
-	}
-	return client
-}

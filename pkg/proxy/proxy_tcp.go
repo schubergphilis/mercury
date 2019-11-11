@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/schubergphilis/mercury/pkg/healthcheck"
@@ -50,8 +49,8 @@ func (l *Listener) TCPProxy(n net.Listener) {
 
 // Handler handles clients and connectors proxys
 func (l *Listener) Handler(client net.Conn) {
-	clientip := strings.Split(client.RemoteAddr().String(), ":")
-	log := logging.For("proxy/tcp/handler").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("clientip", clientip[0]).WithField("clientaddr", client.RemoteAddr())
+	clientAddr := stringToClientIP(client.RemoteAddr().String())
+	log := logging.For("proxy/tcp/handler").WithField("pool", l.Name).WithField("localip", l.IP).WithField("localport", l.Port).WithField("clientip", clientAddr.IP).WithField("clientaddr", client.RemoteAddr())
 	if l.SourceIP != "" {
 		log = log.WithField("sourceip", l.SourceIP)
 	}
@@ -77,7 +76,7 @@ func (l *Listener) Handler(client net.Conn) {
 	// Process all ACL's and count hit's if any
 	aclsHit := 0
 	for _, inacl := range backend.InboundACL {
-		if inacl.ProcessTCPRequest(clientip[0]) { // process request returns true if we match a allow/deny acl
+		if inacl.ProcessTCPRequest(clientAddr.IP) { // process request returns true if we match a allow/deny acl
 			aclsHit++
 		}
 	}
@@ -97,7 +96,7 @@ func (l *Listener) Handler(client net.Conn) {
 		return
 	}
 
-	node, status, err := backend.GetBackendNodeBalanced(l.Name, clientip[0], "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
+	node, status, err := backend.GetBackendNodeBalanced(l.Name, clientAddr.IP, "stickyness_not_supported_in_tcp_lb", backend.BalanceMode)
 	if err != nil {
 		if status == healthcheck.Maintenance {
 			log.WithError(err).Error("No backend available")

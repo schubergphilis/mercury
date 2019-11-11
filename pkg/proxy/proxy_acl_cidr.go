@@ -3,7 +3,6 @@ package proxy
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/schubergphilis/mercury/pkg/logging"
 )
@@ -11,7 +10,7 @@ import (
 // processHeader calls the correct handler when editing headers
 func (acl ACL) processCIDR(addr string) (match bool) {
 	log := logging.For("proxy/processcidr")
-	ip := strings.Split(addr, ":")[0]
+	clientAddr := stringToClientIP(addr)
 
 	for _, network := range acl.CIDRS {
 		_, ipnetA, err := net.ParseCIDR(network)
@@ -19,9 +18,9 @@ func (acl ACL) processCIDR(addr string) (match bool) {
 			log.Printf("Error parsing CIRD:%s error: %s\n", network, err)
 		}
 
-		ipB, _, err := net.ParseCIDR(fmt.Sprintf("%s/32", ip))
+		ipB, _, err := net.ParseCIDR(fmt.Sprintf("%s/32", clientAddr.IP))
 		if err != nil {
-			log.Printf("Error parsing CIRD:%s error: %s\n", fmt.Sprintf("%s/32", ip), err)
+			log.Printf("Error parsing CIRD:%s error: %s\n", fmt.Sprintf("%s/32", clientAddr.IP), err)
 		}
 
 		if ipnetA.Contains(ipB) {

@@ -224,8 +224,12 @@ func getVariableValue(name string, l *Listener, backendnode *BackendNode, req *h
 		return "http", nil
 
 	case "CLIENT_IP":
-		val := strings.Split(req.RemoteAddr, ":")
-		return val[0], nil
+		clientAddr := stringToClientIP(req.RemoteAddr)
+		return clientAddr.IP, nil
+
+	case "CLIENT_PORT":
+		clientAddr := stringToClientIP(req.RemoteAddr)
+		return strconv.Itoa(clientAddr.Port), nil
 
 	case "CLIENT_CERT":
 		return getClientCertValue(req)
@@ -307,8 +311,9 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 	// - applies inbound ACL's (to be sent to the backend server)
 	// - sets the url Scheme to be processed by the RoundTrip handler, and the ModifyResponse handler
 	director := func(req *http.Request) {
-		remoteAddr := strings.Split(req.RemoteAddr, ":")
-		clog := log.WithField("clientip", remoteAddr[0]).WithField("hostname", req.Host)
+		clientAddr := stringToClientIP(req.RemoteAddr)
+
+		clog := log.WithField("clientip", clientAddr.IP).WithField("hostname", req.Host)
 		// Update statistics of the Listener
 		l.Statistics.ClientsConnectsAdd(1)
 		l.updateClients()
@@ -361,8 +366,7 @@ func (l *Listener) NewHTTPProxy() *httputil.ReverseProxy {
 		}
 
 		// Get a Node to balance this request to
-		client := strings.Split(req.RemoteAddr, ":")
-		backendnode, status, err := backend.GetBackendNodeBalanced(backendname, client[0], stickyCookie, backend.BalanceMode)
+		backendnode, status, err := backend.GetBackendNodeBalanced(backendname, clientAddr.IP, stickyCookie, backend.BalanceMode)
 		if err != nil {
 			clog.WithField("error", err).Error("No backend node available")
 			if status == healthcheck.Maintenance {
