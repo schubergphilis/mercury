@@ -328,22 +328,22 @@ Rules can be applied in the form of scripts, the script can work with some basic
 
 Scripts support the following functions:
 
-Funcion   | Parameters | description
---------- | ---------- | -----------------------------------------------------------------------------------------------------------
-if        | 3          | * value1 ("string" or number e.g. 12345)
-          |            | * equator for strings: ==, !=, regex / for numbers: ==, <=, >=, !=
-          |            | * value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"
-          |            | if a value needs to be parsed, enclose it like: $(value1) or $(value2)
-          |            | the statement if followed by curly brackets {...} to form the block which is executed if true
+Function  | Parameters | description
+--------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if        | 3          | _value1 ("string" or number e.g. 12345)<br>_
+ equator for strings: ==, !=, regex / for numbers: ==, <=, >=, !=<br>
+* value2 ("string" or number to compare value 1 with) or regex "st[r]+.ng"<br>
+if a value needs to be parsed, enclose it like: $(value1) or $(value2)<br>
+the statement if followed by curly brackets {...} to form the block which is executed if true
 ifelse    | 3          | see if
 else      | 0          | no parameter, the statement if followed by curly brackets {...} to form the block which is executed if true
-var       | 2          | create a new variable, followed by a value:
-          |            | * param (name of parameter)
-          |            | * value (can be "string" or number)
-log       | 1          | log specified output to stdout
-          |            | * value to log ("string" or $(parameter))
-parameter | 2          | * equator (=)
-          |            | * new value (string or number or $(parameter))
+var       | 2          | create a new variable, followed by a value:<br>
+_param (name of parameter)<br>_
+ value (can be "string" or number)
+log       | 1          | log specified output to stdout<br>
+* value to log ("string" or $(parameter))
+parameter | 2          | _equator (=)<br>_
+ new value (string or number or $(parameter))
 // #      | 0          | comments
 unset     | 1          | removes a specific variable, or set it to empty
 

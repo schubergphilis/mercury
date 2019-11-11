@@ -58,6 +58,8 @@ This makes it easy to add GLB capabilities without changing any configuration in
 
 - Is a full load balancer using the supported balancing methods
 
+- Script based rules on pre-inbound, inbound and outbound connection states (gorules)
+
 - Supports automated Error / Maintenance pages
 
 - Includes checks for Nagios/Sensu to be used
