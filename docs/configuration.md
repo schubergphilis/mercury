@@ -357,6 +357,8 @@ The following rule types exist:
 - Inbound Rules - these are applied right before contacting the backend node of your pool, setting a response here will prevent the connection to the backend node
 - Outbound Rules - these are applied after getting a reply from the backend node, before sending the response back to the client
 
+This diagram describes when the specific rule script is applied ![](images/http_rules.png)
+
 ### Modifiable attributes
 
 You can change/read all fields as defined in the Golang
@@ -375,20 +377,17 @@ if $(request.host) == "example.com" {
   // setting this only has effect on inbound rule
   request.host = "another.host.com"
 } ifelse $(request.host) == "domain.org" {
-  // on an inbound rule, this gets send to the backend server
-  request.header.x-api-key = "abcdefghijklmnop"
+  // note that request will be treated as if it was for another.host.com by the loadbalance mechanism
+  request.host = "another.host.com"
 } else {
   // do something
 }
 ```
 
-#### Pre-Inbound Rule: force specific clients to use a specific backend(s)
+#### Inbound Rule: add api-key header to backend request for authentication on the backend server
 
 ```
-if $(client.ip) match_net "10.10.10.0/24" {
-  backend.node = "10.10.10.1,10.10.10.2"
-  backend.port = 12345
-}
+  request.header.x-api-key = "abcdefghijklmnop"
 ```
 
 #### Inbound Rule: deny clients based on Client certificate verification
@@ -399,11 +398,19 @@ if $(request.tls.peercertificates.0.Signature) != "11:22:33:44:55:66:77:88" {
 }
 ```
 
+#### Inbound Rule: deny clients based on IP
+
+```
+if $(client.ip) match_net "10.10.10.0/24" {
+  response.statuscode = 404
+}
+```
+
 #### Inbound Rule: Advanced Path rewrite before sending to backend
 
 ```
 if $(request.url.path) match_regex "/user/(.*)" {
-  request.url.path match "/user/(.*)/" replace "/client/\\1/"
+  request.url.path replace_regex "/user/(.*)/" "/client/$1/"
 }
 ```
 
