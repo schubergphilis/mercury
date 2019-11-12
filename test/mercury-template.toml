@@ -385,7 +385,7 @@ connectmode = "https"
 inboundrules = [
   '''
   if $(request.host) regex example.com {
-    request.host = "www.ghostbox.org"
+    request.host = "another-backend-host.example.com"
   }
   ''',
   '''
