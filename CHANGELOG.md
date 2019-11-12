@@ -1,3 +1,10 @@
+# 1.1.1
+
+misc: fix: improve ipv6 handling and logging
+
+fix: improve ipv6 handling and logging
+updating change log with latest commit
+
 # 1.1.0
 
 misc: feature: add rule based scripting support (gorules) (#118)
