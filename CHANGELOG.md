@@ -1,44 +1,28 @@
 # 1.1.1
 
-misc: fix: improve ipv6 handling and logging
-
 fix: improve ipv6 handling and logging
-updating change log with latest commit
 
 # 1.1.0
 
-misc: feature: add rule based scripting support (gorules) (#118)
-
 feature: add rule based scripting support (gorules) (#118)
 fix: update ldap auth to newer library due to dependency failures
+misc: feature: add rule based scripting support (gorules) (#118)
 
 # 1.0.3
 
 misc: Replaced godep with the native version for go modules (#117) (ilijamt)
 
-* Replaced godep with the native version for go modules
-* Update Makefile comment
-
-updating change log with latest commit
-
 # 1.0.2
 
-misc: fix: better cname handling with latest resolver update (#116)
-
-* update deps to get improved resolver, aswell as improvements in other dependencies
-
-* fix websocket test with new parameters
-
-updating change log with latest commit
+fix: better cname handling with latest resolver update (#116)
+misc: update deps to get improved resolver, aswell as improvements in other dependencies
+fix: websocket test with new parameters
 
 # 1.0.1
 
 misc: update readme for docker containers
-
-group docker files in dir, and fix version reporting of docker containers (#115)
-
-
-set git details even if we don't update change log
+misc: group docker files in dir, and fix version reporting of docker containers (#115)
+misc: set git details even if we don't update change log
 
 # 1.0.0
 

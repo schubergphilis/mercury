@@ -85,7 +85,7 @@ if [ $changelogaltered -eq 0 ]; then
         chmod 600 ~/.ssh/id_bender
         export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_bender -F /dev/null -o IdentitiesOnly=yes"
         git add CHANGELOG.md
-        git commit -m 'updating change log with latest commit'
+        git commit -m 'auto: updating change log with latest commit'
         git push
     fi
 fi
