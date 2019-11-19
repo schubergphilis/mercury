@@ -101,8 +101,13 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 						if pool.Listener.SourceIP != "" {
 							sourceip = pool.Listener.SourceIP
 						}
+
+						port := node.Port
+						if check.Port != 0 {
+							port = check.Port
+						}
 						// Create workers for node specific checks
-						worker := healthcheck.NewWorker(poolName, backendName, node.Name(), node.UUID, node.IP, node.Port, sourceip, check, h.Incoming)
+						worker := healthcheck.NewWorker(poolName, backendName, node.Name(), node.UUID, node.IP, port, sourceip, check, h.Incoming)
 						nodeWorkers = append(nodeWorkers, worker)
 					}
 				}
