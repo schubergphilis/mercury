@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -79,6 +81,12 @@ func httpRequest(method string, host string, port int, sourceIP string, healthCh
 
 	localTCPAddr := net.TCPAddr{
 		IP: localAddr.IP,
+	}
+
+	// if http request contains port, override the port defined in the check with this one
+	curl, err := url.Parse(healthCheck.HTTPRequest)
+	if curl.Port() != "" {
+		port, _ = strconv.Atoi(curl.Port())
 	}
 
 	// Custom dialer with timeouts
