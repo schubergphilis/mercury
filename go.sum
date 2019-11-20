@@ -78,6 +78,8 @@ github.com/rdoorn/gorule v0.0.0-20191028142911-03d8545710ac h1:zTaw7QuheXZblxw+R
 github.com/rdoorn/gorule v0.0.0-20191028142911-03d8545710ac/go.mod h1:owXaf99rseXLsWD1z35/+BuB5lgviqWbHBvqq2iu8Zw=
 github.com/rdoorn/gorule v0.0.0-20191111095408-9e3c1ea80fdf h1:FSLOC7rdaq0yB29bZihFhaWy8/sTjfJBSjEbePhIDnY=
 github.com/rdoorn/gorule v0.0.0-20191111095408-9e3c1ea80fdf/go.mod h1:owXaf99rseXLsWD1z35/+BuB5lgviqWbHBvqq2iu8Zw=
+github.com/rdoorn/hashstructure v0.0.0-20180705160145-6d677f823801 h1:jYdx94sLwqrSs8p5QE3lY9BimtDdt8C4f4DT2DMnkJQ=
+github.com/rdoorn/hashstructure v0.0.0-20180705160145-6d677f823801/go.mod h1:Y7tOAbJVyxLVjqfIqMeFXaKzktjnOfQmQpDQovKCx/A=
 github.com/rdoorn/tinyresolver v0.0.0-20191008124230-0320b16ed71e h1:SVUnFxi1fF4xDlxIKZfWkySl3c7msnZ12Ikt9F1Mues=
 github.com/rdoorn/tinyresolver v0.0.0-20191008124230-0320b16ed71e/go.mod h1:ZhcbeBaKiUfDkR2pj6uQBC2h71D+Hc5PEQKTWTU1sZQ=
 github.com/sirupsen/logrus v1.0.5/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=

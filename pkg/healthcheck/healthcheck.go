@@ -1,12 +1,11 @@
 package healthcheck
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"sync"
 
+	"github.com/rdoorn/hashstructure"
 	"github.com/schubergphilis/mercury/pkg/logging"
 	"github.com/schubergphilis/mercury/pkg/tlsconfig"
 )
@@ -60,7 +59,7 @@ type HealthCheck struct {
 	Port               int                 `json:"port" toml:"port"`                             // specific port
 	OnlineState        StatusType          `json:"online_state" toml:"online_state"`             // alternative online_state - default: online / optional: offline / maintenance
 	OfflineState       StatusType          `json:"offline_state" toml:"offline_state"`           // alternative offline_state - default: offline
-	uuidStr            string
+	uuidStr            string              `hash:"ignore"`
 }
 
 // UUID returns a uuid of a healthcheck
@@ -69,11 +68,17 @@ func (h HealthCheck) UUID() string {
 		return h.uuidStr
 	}
 
-	sort.Strings(h.HTTPHeaders)
+	hash, err := hashstructure.Hash(h, nil)
+	if err != nil {
+		panic(fmt.Sprintf("unable to hash structure in health check: %v", h))
+	}
+	h.uuidStr = fmt.Sprintf("%x", hash)
+
+	/*sort.Strings(h.HTTPHeaders)
 	s := fmt.Sprintf("%s%s%s%s%s%v%d%s%d%d%s%t%s%s", h.Type, h.TCPRequest, h.TCPReply, h.HTTPRequest, h.HTTPPostData, h.HTTPHeaders, h.HTTPStatus, h.HTTPReply, h.Interval, h.Timeout, h.ActivePassiveID, h.DisableAutoCheck, h.OfflineState, h.OnlineState)
 	t := sha256.New()
 	t.Write([]byte(s))
-	h.uuidStr = fmt.Sprintf("%x", t.Sum(nil))
+	h.uuidStr = fmt.Sprintf("%x", t.Sum(nil))*/
 	return h.uuidStr
 }
 
