@@ -1,3 +1,16 @@
+# 1.1.2
+
+misc: fix: improve healthcheck uuid generation (#123)
+
+
+misc: allow for port configuration through httprequest healthcheck
+
+fix: correct use of custom ports in health check
+fix: correct use of custom ports (#121)
+
+misc: allow for override of port in url request
+updating change log with latest commit
+
 # 1.1.1
 
 fix: improve ipv6 handling and logging
