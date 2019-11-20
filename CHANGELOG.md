@@ -26,8 +26,8 @@ misc: set git details even if we don't update change log
 
 # 1.0.0
 
-misc: After 2 years of running in production, its time to bump Mercury to a stable version number: 1.0.0 
-      this version is fully backwards compatible with the previous version, and is only a cosmetic version change.
+misc: After 2 years of running in production, its time to bump Mercury to a stable version number: 1.0.0
+      this version is fully backwards compatible with the previous version, and is only a cosmetic version change
 
 # 0.15.8
 
