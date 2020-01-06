@@ -296,6 +296,13 @@ certificatekey = "test/ssl/self_signed_certificate.key"
 certificatefile = "test/ssl/self_signed_certificate.crt"
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc.balance]
 method = "sticky,leastconnected"
+[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc.healthchecks]]
+# httpreply = "login"
+ httpstatus = 200
+ httprequest = "https://www.ghostbox.org"
+# httppostdata = "<bla>"
+ type = "httpget"
+# httpheaders = ["Content-Type: application/soap+xml; charset=utf-8"]
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc.dnsentry]
 domain = "glb.example.com"
 hostname = "leastconnected"
