@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -49,14 +50,11 @@ func TestApi(t *testing.T) {
 
 func startHTTPServer(addr string) *http.Server {
 	srv := &http.Server{Addr: addr}
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-
-			// cannot panic, because this probably is an intentional close
-		}
-	}()
-	// returning reference so caller can call Shutdown()
-	time.Sleep(2000 * time.Millisecond)
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+	go srv.Serve(listener)
 	return srv
 }
 

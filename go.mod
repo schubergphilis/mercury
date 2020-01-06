@@ -22,8 +22,8 @@ require (
 	golang.org/x/sys v0.0.0-20191110163157-d32e6e3b99c4 // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
-	gopkg.in/ldap.v2 v2.5.1
-	gopkg.in/ldap.v3 v3.1.0
+	gopkg.in/ldap.v2 v2.5.1 // indirect
+	gopkg.in/ldap.v3 v3.1.0 // indirect
 	gopkg.in/yaml.v2 v2.2.5-0.20191002202810-970885f01c8b
 	nhooyr.io/websocket v1.6.5
 )
