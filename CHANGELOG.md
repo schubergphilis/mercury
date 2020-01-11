@@ -1,3 +1,7 @@
+# 1.1.4
+
+misc: fix race condition in cluster test (#124)
+
 # 1.1.2
 
 misc: fix: improve healthcheck uuid generation (#123)
