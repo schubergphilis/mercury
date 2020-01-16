@@ -210,7 +210,8 @@ func (m *Manager) SetStatus(uuid string, status Status) error {
 func (m *Manager) sendWorkerUpdate(uuid string) {
 	for _, worker := range m.Workers {
 		if worker.UUIDStr == uuid {
-			worker.sendUpdate(worker.CheckResult) // send update with no change
+			// do update in the background, don't wait for it
+			go worker.sendUpdate(worker.CheckResult) // send update with no change
 		}
 	}
 }
