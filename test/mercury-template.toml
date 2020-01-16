@@ -299,7 +299,7 @@ method = "sticky,leastconnected"
 [[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_lc.healthchecks]]
 # httpreply = "login"
  httpstatus = 200
- httprequest = "https://www.ghostbox.org"
+ httprequest = "https://www.exmple.com"
 # httppostdata = "<bla>"
  type = "httpget"
 # httpheaders = ["Content-Type: application/soap+xml; charset=utf-8"]
@@ -606,10 +606,10 @@ domain = "dnsonly.nl"
 hostname = "test_lb_dns"
 ip = "%LOCALIP%"
 [[loadbalancer.pools.test_tcp.backends.test_lb_dns.nodes]]
-hostname = "server2.local"
+hostname = "server2"
 ip = "95.142.102.176"
 port = 80
 [[loadbalancer.pools.test_tcp.backends.test_lb_dns.nodes]]
-hostname = "server1.local"
+hostname = "server1"
 ip = "95.142.102.175"
 port = 79
