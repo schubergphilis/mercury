@@ -16,6 +16,7 @@ require (
 	github.com/rdoorn/hashstructure v0.0.0-20180705160145-6d677f823801
 	github.com/rdoorn/tinyresolver v0.0.0-20191008124230-0320b16ed71e
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stackimpact/stackimpact-go v2.3.10+incompatible
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20191108234033-bd318be0434a
 	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5
