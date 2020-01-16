@@ -1,3 +1,10 @@
+# 1.1.5
+
+misc: fix: correct api healthcheck concurrency which could get stale on concurrent request (#125)
+
+fix: correct api healthcheck concurrency which could get stale on concurrent request (#125)
+auto: updating change log with latest commit
+
 # 1.1.4
 
 misc: fix race condition in cluster test (#124)
