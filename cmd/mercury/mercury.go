@@ -17,6 +17,8 @@ import (
 	// Only enabled for profiling
 	"net/http"
 	"net/http/pprof"
+
+	"github.com/stackimpact/stackimpact-go"
 )
 
 // version is set during makefile
@@ -38,6 +40,17 @@ func main() {
 	param.Init()
 
 	log := logging.For("main")
+
+	stackimpactAPI, ok := os.LookupEnv("STACKIMPACT_API")
+	if ok {
+		log.Infof("Starting stackimpact profiler")
+		agent := stackimpact.Start(stackimpact.Options{
+			AgentKey: stackimpactAPI,
+			AppName:  "mercury",
+		})
+		span := agent.Profile()
+		defer span.Stop()
+	}
 
 	addr, ok := os.LookupEnv("PROFILER_ADDR")
 	if ok {
