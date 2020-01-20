@@ -1,3 +1,17 @@
+# 1.1.6
+
+misc: fix:  resolver memory leak (#127)
+
+* fix: resolver library
+
+* update resolver mod to fix memory leak
+
+fix: memory leak in dns resolver library resolved
+
+fix: memory leak in dns resolver library resolved
+misc: add optional stackimpact api (#126)
+auto: updating change log with latest commit
+
 # 1.1.5
 
 misc: fix: correct api healthcheck concurrency which could get stale on concurrent request (#125)
