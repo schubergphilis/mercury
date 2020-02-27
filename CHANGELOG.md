@@ -1,3 +1,7 @@
+# 1.1.8
+
+misc: 
+
 # 1.1.6
 
 misc: fix:  resolver memory leak (#127)
