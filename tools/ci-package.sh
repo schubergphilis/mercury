@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-git describe --tags --always > .version
-echo "path: ${PWD} version: $(cat .version)"
+git tag --sort=committerdate | tail -1 > .version
+echo "path: ${PWD}"
+echo "latest existing version: $(cat .version)"
 
 if [ "${CIRCLE_BRANCH}" != "master" ]; then
     echo "Branch is: [${CIRCLE_BRANCH}] skipping packaging"
