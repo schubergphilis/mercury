@@ -1,3 +1,12 @@
+# 1.1.9
+
+misc: fix for pipeline (#129)
+
+
+auto: updating change log with latest commit
+
+pipeline: ensure we check version against the last tag id, the old command could show a older one (#128)
+
 # 1.1.8
 
 misc: 
