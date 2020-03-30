@@ -27,6 +27,8 @@ func Sort(s []Statistics, ip string, sticky string, mode string) ([]Statistics, 
 		sort.Sort(LeastTraffic{s})
 	case "responsetime":
 		sort.Sort(ResponseTime{s})
+	case "weighted":
+		s = WeighCalculation(s)
 	case "topology":
 		s = Topology(s, ip)
 	case "sticky":

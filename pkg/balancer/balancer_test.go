@@ -3,15 +3,17 @@ package balancer
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var topology = []string{"127.0.0.1/8"}
 var testrecords = []Statistics{
-	{UUID: "ID1", ClientsConnected: 1, ClientsConnects: 10, TX: 10, RX: 1, Preference: 1, Topology: topology, ResponseTimeValue: []float64{1.12, 3.12, 41}},
-	{UUID: "ID2", ClientsConnected: 5, ClientsConnects: 1, TX: 50, RX: 1, Preference: 1, ResponseTimeValue: []float64{1.12, 3.62, 11}},
-	{UUID: "ID3", ClientsConnected: 10, ClientsConnects: 8, TX: 10, RX: 5, Preference: 0, ResponseTimeValue: []float64{10.12, 3.72, 11}},
-	{UUID: "ID4", ClientsConnected: 2, ClientsConnects: 2, TX: 20, RX: 30, Preference: 2, ResponseTimeValue: []float64{5.12, 3.12, 21}},
-	{UUID: "ID5", ClientsConnected: 10, ClientsConnects: 2, TX: 3, RX: 1, Preference: 3, ResponseTimeValue: []float64{2.12, 3.92, 31}},
+	{UUID: "ID1", ClientsConnected: 1, ClientsConnects: 10, TX: 10, RX: 1, Preference: 1, Topology: topology, ResponseTimeValue: []float64{1.12, 3.12, 41}, Weighted: 0},
+	{UUID: "ID2", ClientsConnected: 5, ClientsConnects: 1, TX: 50, RX: 1, Preference: 1, ResponseTimeValue: []float64{1.12, 3.62, 11}, Weighted: 5},
+	{UUID: "ID3", ClientsConnected: 10, ClientsConnects: 8, TX: 10, RX: 5, Preference: 0, ResponseTimeValue: []float64{10.12, 3.72, 11}, Weighted: 60},
+	{UUID: "ID4", ClientsConnected: 2, ClientsConnects: 2, TX: 20, RX: 30, Preference: 2, ResponseTimeValue: []float64{5.12, 3.12, 21}, Weighted: 10},
+	{UUID: "ID5", ClientsConnected: 10, ClientsConnects: 2, TX: 3, RX: 1, Preference: 3, ResponseTimeValue: []float64{2.12, 3.92, 31}, Weighted: 25},
 }
 
 func getBalanceTests() []Statistics {
@@ -23,6 +25,7 @@ func getBalanceTests() []Statistics {
 		//statistic.Selected = val.Selected
 		statistic.TXAdd(val.TX)
 		statistic.RXAdd(val.RX)
+		statistic.SetWeighted(val.Weighted)
 		statistic.Preference = val.Preference
 		statistic.Topology = val.Topology
 		for _, t := range val.ResponseTimeValue {
@@ -102,6 +105,31 @@ func TestBalancer(t *testing.T) {
 	time.Sleep(10 * time.Millisecond) // short delay due to go func
 	if records[0].TimeCounterGet() != 1 {
 		t.Errorf("TimeCounterAdd did not get added, got:%d expected:1", records[0].TimeCounterGet())
+	}
+}
+
+func TestWeighted(t *testing.T) {
+	records := getBalanceTests()
+
+	result := make(map[string]int)
+
+	count := 10000
+	for i := 1; i < count; i++ {
+		newrecords, _ := MultiSort(records, "127.0.0.1", "", "weighted")
+		result[newrecords[0].UUID]++
+	}
+
+	// since we're testing random here, assume a safe margin of 15% offset in our tests
+	offset := 0.15 // (percent)
+	diff := float64(count / 100)
+	for _, v := range records {
+		if x, ok := result[v.UUID]; ok {
+			// with the weighted percentages adding up to 100%
+			// we can simply match the weighted version with the number of times they matched
+			assert.GreaterOrEqual(t, float64(x)/diff, float64(v.Weighted)-(float64(v.Weighted)*offset))
+			assert.LessOrEqual(t, float64(x)/diff, float64(v.Weighted)+(float64(v.Weighted)*offset))
+
+		}
 	}
 }
 
