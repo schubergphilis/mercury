@@ -17,6 +17,7 @@ type BackendNode struct {
 	Uptime         time.Time
 	MaxConnections int
 	Preference     int
+	Weight         int
 	Status         healthcheck.Status
 	LocalTopology  string   `json:"local_topology" toml:"local_topology"` // overrides localnetwork
 	LocalNetwork   []string `json:"local_network" toml:"local_network"`   // used for topology based loadbalancing
@@ -24,7 +25,7 @@ type BackendNode struct {
 }
 
 // NewBackendNode creates a new node for a proxy backend
-func NewBackendNode(UUID string, IP string, hostname string, port int, maxconnections int, topology []string, preference int, status healthcheck.Status) *BackendNode {
+func NewBackendNode(UUID string, IP string, hostname string, port int, maxconnections int, topology []string, preference int, weight int, status healthcheck.Status) *BackendNode {
 	b := &BackendNode{
 		UUID:       UUID,
 		IP:         IP,
@@ -36,6 +37,7 @@ func NewBackendNode(UUID string, IP string, hostname string, port int, maxconnec
 	}
 	b.Statistics.Topology = topology
 	b.Statistics.Preference = preference
+	b.Statistics.Weighted = weight
 	b.LocalNetwork = topology
 	b.Preference = preference
 	return b

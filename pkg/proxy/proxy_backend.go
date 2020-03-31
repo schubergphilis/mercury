@@ -164,7 +164,7 @@ func (b *Backend) GetBackendNodeBalanced(backendpool, ip, sticky, balancemode st
 		}
 
 		for order, node := range nodes {
-			log.WithField("order", order).WithField("uuid", node.UUID).WithField("preference", node.Preference).Debug("Online node found")
+			log.WithField("order", order).WithField("uuid", node.UUID).WithField("preference", node.Preference).WithField("weight", node.Weighted).Debug("Online node found")
 		}
 
 		node, err := b.GetBackendNodeByID(nodes[0].UUID)

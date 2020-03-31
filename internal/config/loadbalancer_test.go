@@ -17,7 +17,7 @@ func (b *CloseableBuffer) Close() error {
 }
 
 func TestLoadbalancerConfig(t *testing.T) {
-	proxy := proxy.NewBackendNode("UUID1", "192.168.1.1", "server1", 22, 10, []string{}, 0, healthcheck.Online)
+	proxy := proxy.NewBackendNode("UUID1", "192.168.1.1", "server1", 22, 10, []string{}, 0, 0, healthcheck.Online)
 	addr := &BackendNode{
 		BackendNode: proxy,
 		Status:      healthcheck.Offline,

@@ -443,6 +443,32 @@ ip = "95.142.102.175"
 port = 80
 preference = 1
 
+# weighted
+[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we]
+hostnames = ["weighted.glb.example.com"]
+[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we.balance]
+method = "weighted"
+[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we.dnsentry]
+domain = "glb.example.com"
+hostname = "weighted"
+[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we.healthchecks]]
+# httpreply = "login"
+# httpstatus = 200
+# httprequest = "http://preference.glb.example.com"
+# httppostdata = "<bla>"
+# type = "httppost"
+# httpheaders = ["Content-Type: application/soap+xml; charset=utf-8"]
+
+[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we.nodes]]
+ip = "95.142.102.175"
+port = 80
+weight = 1
+
+[[loadbalancer.pools.INTERNAL_VIP_LB.backends.example_we.nodes]]
+ip = "13.227.198.25"
+port = 80
+weight = 3
+
 
 # random
 [loadbalancer.pools.INTERNAL_VIP_LB.backends.example_rnd]

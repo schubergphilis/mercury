@@ -14,20 +14,6 @@ func (s Weighted) Less(i, j int) bool {
 	return s.statistics[i].Weighted > s.statistics[j].Weighted
 }
 
-/*
-type numberSet struct {
-	values []float64
-	bounds []float64
-}
-
-func (s *numberSet) Len() int { return len(s.values) }
-func (s *numberSet) Swap(i, j int) {
-	s.values[i], s.values[j] = s.values[j], s.values[i]
-	s.bounds[i], s.bounds[j] = s.bounds[j], s.bounds[i]
-}
-func (s *numberSet) Less(i, j int) bool { return s.bounds[i] < s.bounds[j] }
-*/
-
 // WeighCalculation implements a weighted form of loadbalancing
 func WeighCalculation(s []Statistics) []Statistics {
 
@@ -43,10 +29,8 @@ func WeighCalculation(s []Statistics) []Statistics {
 	// first we take all weighted numbers, and make them 100%
 	sum := int(0)
 	for _, v := range s {
-		//log.Printf("id: %d weight: %d uuid: %s", id, v.Weighted, v.UUID)
 		sum += v.Weighted
 	}
-	//match := make(map[int]int)
 
 	// no weights, return data as is
 	if sum == 0 {
@@ -55,7 +39,7 @@ func WeighCalculation(s []Statistics) []Statistics {
 
 	// pick a random number in the sum
 	rand.Seed(time.Now().UTC().UnixNano())
-	j := rand.Intn(sum)
+	j := rand.Intn(sum) + 1
 
 	// found out which one matches
 	mark := int(0)
@@ -70,22 +54,6 @@ func WeighCalculation(s []Statistics) []Statistics {
 		}
 	}
 
-	// go over the weighted stuff again
-	//mark := 0
-	//for i := len(s) - 1; i > 0; i-- {
-
-	//}
-
-	//if s[i].Weighted
-	//mark += s[i].Weighted
-	//}
-
-	/*rand.Seed(time.Now().UTC().UnixNano())
-	for i := len(s) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
-		s[i], s[j] = s[j], s[i]
-	}
-	return s*/
 	return s
 
 }

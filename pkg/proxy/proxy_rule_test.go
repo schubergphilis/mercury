@@ -36,7 +36,7 @@ func TestRules(t *testing.T) {
 	proxy.AddBackend("backend-id-rules", "backend-rules", "leastconnected", "http", []string{"default"}, 998, errorPage, errorPage)
 	backend := proxy.Backends["backend-rules"]
 	//newProxy.UpdateBackend("backendpool.UUID", "backendname", "leastconnected", "http", []string{"default"}, 999, nil, nil)
-	backendNode := NewBackendNode("backend-id-rules", "127.0.0.1", "localhost", 40182, 10, []string{}, 0, healthcheck.Online)
+	backendNode := NewBackendNode("backend-id-rules", "127.0.0.1", "localhost", 40182, 10, []string{}, 0, 0, healthcheck.Online)
 	backend.AddBackendNode(backendNode)
 
 	time.Sleep(1 * time.Second)

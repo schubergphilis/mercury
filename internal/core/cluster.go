@@ -275,7 +275,7 @@ func (manager *Manager) updateProxyBackendNode(poolName string, backendName stri
 	proxyupdate := &config.ProxyBackendNodeUpdate{
 		PoolName:        poolName,
 		BackendName:     backendName,
-		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference, Status: node.Status},
+		BackendNode:     proxy.BackendNode{IP: node.IP, Port: node.Port, Hostname: node.Hostname, MaxConnections: node.MaxConnections, LocalNetwork: node.LocalNetwork, Preference: node.Preference, Weight: node.Weight, Status: node.Status},
 		BackendNodeUUID: node.UUID,
 	}
 	if config.Get().Settings.EnableProxy == YES {

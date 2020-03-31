@@ -104,6 +104,7 @@ type BalanceMode struct {
 	LocalTopology       string   `json:"local_topology" toml:"local_topology"`               // overrides localnetwork
 	ActivePassive       string   `json:"active_passive" toml:"active_passive"`               // active_passive only affects monitoring: when "yes" only alert if there are no nodes up
 	Preference          int      `json:"preference" toml:"preference"`                       // used for preference based loadbalancing
+	Weight              int      `json:"weight" toml:"weight"`                               // used for weight based loadbalancing
 	LocalNetwork        []string `json:"local_network" toml:"local_network"`                 // used for topology based loadbalancing
 	ClusterNodes        int      `json:"clusternodes" toml:"clusternodes"`                   // Depricated: affects monitoring only: how many cluster nodes serve this backend
 	ServingClusterNodes int      `json:"serving_cluster_nodes" toml:"serving_cluster_nodes"` // affects monitoring only: how many cluster nodes serve this backend

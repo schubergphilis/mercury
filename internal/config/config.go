@@ -321,7 +321,7 @@ func (c *Config) ParseConfig() error {
 				if node.UUID == "" {
 					// generate hash uniq to pool - backend - node + port (cluster pool removed for stickyness across clusters)
 					hash := sha256.New()
-					hash.Write([]byte(fmt.Sprintf("%s-%s-%s-%s", poolName, backendName, node.SafeName(), node.Hostname)))
+					hash.Write([]byte(fmt.Sprintf("%s-%s-%s-%s-%d-%d", poolName, backendName, node.SafeName(), node.Hostname, node.Preference, node.Weight)))
 
 					n := node
 					n.UUID = fmt.Sprintf("%x", hash.Sum(nil))

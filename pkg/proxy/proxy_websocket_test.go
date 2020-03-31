@@ -68,7 +68,7 @@ func TestWebSocketProxy(t *testing.T) {
 	proxy.AddBackend("backend-id", "backend", "leastconnected", "http", []string{"default"}, 999, errorPage, errorPage)
 	backend := proxy.Backends["backend"]
 	//newProxy.UpdateBackend("backendpool.UUID", "backendname", "leastconnected", "http", []string{"default"}, 999, nil, nil)
-	backendNode := NewBackendNode("backend-id", wsHost, "localhost", wsPort, 10, []string{}, 0, healthcheck.Online)
+	backendNode := NewBackendNode("backend-id", wsHost, "localhost", wsPort, 10, []string{}, 0, 0, healthcheck.Online)
 	backend.AddBackendNode(backendNode)
 
 	time.Sleep(1 * time.Second)

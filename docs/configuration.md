@@ -484,6 +484,7 @@ Key         | Option                | Default      | Values           | Descript
 [..balance] | method                | ""           | "leastconnected" | This determains the type of load-balancing to apply (See `Loadbalancing Methods` below)
 [..balance] | local_topology        | []           | ["ip/nm"]        | List of cidr's that defines the local network (e.g. [ "127.0.0.1/32" ])
 [..balance] | preference            |              | int              | value used for preference based load-balancing
+[..balance] | weight                |              | int              | value used for weighted based load-balancing
 [..balance] | active_passive        | "no"         | "yes"/"no"       | set to yes if this will only be up on 1 of the clusters - only affects monitoring
 [..balance] | clusternodes          | _calculated_ | int              | (depricated) use serving_cluster_nodes instead
 [..balance] | serving_cluster_nodes | _calculated_ | int              | the ammount of cluster nodes serving this backend - only affects monitoring (used for backend that are only available on 1 of multiple load-balancers)
@@ -501,6 +502,7 @@ Method         | Description
 leastconnected | balance based on current clients connected
 leasttraffic   | balance based on traffic generated
 preference     | balance based on preference set in node of backend (see preference attribute)
+weighted       | balance based on weight set in node of backend (see weight attribute)
 random         | up to the rng gods
 roundrobin     | try to switch them a bit
 sticky         | balance based on sticky cookie. Important!: to apply sticky based loadbalancing you Must apply the `Stickyness Loadbalancing ACL` mentioned in the ACL Attribute section
