@@ -369,7 +369,7 @@ func (manager *Manager) ProxyHandler() {
 			}
 
 			// New node, add
-			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference, update.BackendNode.Status) // max connections = 1 -> not used
+			backendNode := proxy.NewBackendNode(update.BackendNodeUUID, update.BackendNode.IP, update.BackendNode.Hostname, update.BackendNode.Port, update.BackendNode.MaxConnections, update.BackendNode.LocalNetwork, update.BackendNode.Preference, update.BackendNode.Weight, update.BackendNode.Status) // max connections = 1 -> not used
 			plog.WithField("node", backendNode.Name()).WithField("ip", backendNode.IP).WithField("port", backendNode.Port).Debug("Add proxy node")
 			backend.AddBackendNode(backendNode)
 

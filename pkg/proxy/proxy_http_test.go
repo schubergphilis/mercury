@@ -55,7 +55,7 @@ func TestGetVariableValue(t *testing.T) {
 	listener.IP = "192.168.0.2"
 	listener.Port = 8080
 
-	backendNode := NewBackendNode("backend-id", "192.168.1.1", "server1", 22, 10, []string{}, 0, healthcheck.Online)
+	backendNode := NewBackendNode("backend-id", "192.168.1.1", "server1", 22, 10, []string{}, 0, 0, healthcheck.Online)
 
 	httpRequest := createHTTPRequest()
 	httpsRequest := createHTTPSRequest()

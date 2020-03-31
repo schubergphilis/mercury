@@ -20,7 +20,7 @@ ACLs Out:<br>
 Backend: {{.BackendName}}<br>
 {{ with .Backend }}<br>
 DNS: {{.DNSEntry.HostName}} {{.DNSEntry.Domain}} -> {{.DNSEntry.IP}}<br>
-BalanceMode: Method: {{.BalanceMode.Method}} Preference: {{.BalanceMode.Preference}} Topology: {{.BalanceMode.LocalNetwork}}<br>
+BalanceMode: Method: {{.BalanceMode.Method}} Preference: {{.BalanceMode.Preference}} Topology: {{.BalanceMode.LocalNetwork}} Weight: {{.BalanceMode.Weight}}<br>
 ConnectMode: {{.ConnectMode}}<br>
 Hostnames: {{.HostNames}}<br>
 UUID: {{.UUID}}<br>
@@ -44,6 +44,7 @@ Status: {{$node.Status}}<br>
 UUID: {{$node.UUID}}<br>
 Statistics: {{$node.Statistics}}<br>
 Preference: {{$node.Preference}}<br>
+Weight: {{$node.Weight}}<br>
 <br>
 {{- end }}
 

@@ -21,6 +21,7 @@ func (manager *Manager) DNSHandler() {
 			stats := &balancer.Statistics{
 				UUID:       dnsupdate.BackendUUID,
 				Preference: dnsupdate.BalanceMode.Preference,
+				Weighted:   dnsupdate.BalanceMode.Weight,
 				Topology:   dnsupdate.BalanceMode.LocalNetwork,
 				RWMutex:    new(sync.RWMutex),
 			}

@@ -484,6 +484,7 @@ Key         | Option                | Default      | Values           | Descript
 [..balance] | method                | ""           | "leastconnected" | This determains the type of load-balancing to apply (See `Loadbalancing Methods` below)
 [..balance] | local_topology        | []           | ["ip/nm"]        | List of cidr's that defines the local network (e.g. [ "127.0.0.1/32" ])
 [..balance] | preference            |              | int              | value used for preference based load-balancing
+[..balance] | weight                |              | int              | value used for weighted based load-balancing
 [..balance] | active_passive        | "no"         | "yes"/"no"       | set to yes if this will only be up on 1 of the clusters - only affects monitoring
 [..balance] | clusternodes          | _calculated_ | int              | (depricated) use serving_cluster_nodes instead
 [..balance] | serving_cluster_nodes | _calculated_ | int              | the ammount of cluster nodes serving this backend - only affects monitoring (used for backend that are only available on 1 of multiple load-balancers)
@@ -501,6 +502,7 @@ Method         | Description
 leastconnected | balance based on current clients connected
 leasttraffic   | balance based on traffic generated
 preference     | balance based on preference set in node of backend (see preference attribute)
+weighted       | balance based on weight set in node of backend (see weight details below)
 random         | up to the rng gods
 roundrobin     | try to switch them a bit
 sticky         | balance based on sticky cookie. Important!: to apply sticky based loadbalancing you Must apply the `Stickyness Loadbalancing ACL` mentioned in the ACL Attribute section
@@ -511,6 +513,14 @@ firstavailable | This limits the DNS records returned to 1.
 By default when balancing the available DNS records, all are returned. They are however ordered based on the loadbalancing methods above.
 
 The following methods are an exception: `sticky`, `topology` and `firstavailable`. These methods will only return 1 record to ensure the client does not mistakenly connect to the second DNS record
+### Weighted loadbalancing
+
+Weighted loadbalancing works by the weight set on the combined nodes.
+
+For example if you have 2 nodes:
+- nodeA: 1 nodeB: 2 -> the sum is 3, so there is a 2/3rd chance of nodeB beeing selected
+- nodeA: 5 nodeB: 5 -> the sum is 10, so there is a 50% chance of either node beeing selected
+- nodeA: 9 nodeB: 1 -> the sum is 10, so there is a 90% chance of nodeA beeing selected
 
 ## HealthCheck attributes
 

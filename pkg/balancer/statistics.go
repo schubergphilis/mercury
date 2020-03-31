@@ -19,6 +19,7 @@ type Statistics struct {
 	TimeCounter       chan bool `json:"-"`         // counts the elements
 	TimeTimer         int       `json:"timetimer"` // time to keep elements
 	ResponseTimeValue []float64 `json:"responsetimevalue"`
+	Weighted          int       `json:"weighted"` // weighted value
 }
 
 // NewStatistics returns new statistics
@@ -98,6 +99,13 @@ func (s *Statistics) TXAdd(tx int64) {
 	s.Lock()
 	defer s.Unlock()
 	s.TX += tx
+}
+
+// SetWeighted adds a weight to the counter
+func (s *Statistics) SetWeighted(w int) {
+	s.Lock()
+	defer s.Unlock()
+	s.Weighted += w
 }
 
 // TimeCounterAdd counter for entriest per X seconds
