@@ -1,33 +1,23 @@
 # 1.1.9
 
 misc: fix for pipeline (#129)
-
-
-auto: updating change log with latest commit
-
 pipeline: ensure we check version against the last tag id, the old command could show a older one (#128)
 
 # 1.1.8
 
-misc: 
+misc: changes to the pipeline
+
+# 1.1.7
+
+misc: newer golang version
 
 # 1.1.6
 
-misc: fix:  resolver memory leak (#127)
-
-* fix: resolver library
-
-* update resolver mod to fix memory leak
-
-fix: memory leak in dns resolver library resolved
-
-fix: memory leak in dns resolver library resolved
+fix:  resolver memory leak (#127)
 misc: add optional stackimpact api (#126)
 auto: updating change log with latest commit
 
 # 1.1.5
-
-misc: fix: correct api healthcheck concurrency which could get stale on concurrent request (#125)
 
 fix: correct api healthcheck concurrency which could get stale on concurrent request (#125)
 auto: updating change log with latest commit
@@ -38,16 +28,11 @@ misc: fix race condition in cluster test (#124)
 
 # 1.1.2
 
-misc: fix: improve healthcheck uuid generation (#123)
-
-
+fix: improve healthcheck uuid generation (#123)
 misc: allow for port configuration through httprequest healthcheck
-
 fix: correct use of custom ports in health check
 fix: correct use of custom ports (#121)
-
 misc: allow for override of port in url request
-updating change log with latest commit
 
 # 1.1.1
 
