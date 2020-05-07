@@ -119,7 +119,7 @@ func (w *Worker) Start() {
 			select {
 			/* new check interval has reached */
 			case <-timer.C:
-				result, err := w.executeCheck()
+				result, err, _ := w.ExecuteCheck()
 
 				// Send update if check result or error changes
 				var checkerror string
@@ -183,39 +183,40 @@ func (w *Worker) Stop() {
 }
 
 // executeCheck directs the check to the executioner and returns the result
-func (w *Worker) executeCheck() (Status, error) {
+func (w *Worker) ExecuteCheck() (Status, error, string) {
 	var err error
 	var result = Offline
+	var description string
 
 	switch w.Check.Type {
 	case "tcpconnect":
-		result, err = tcpConnect(w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = tcpConnect(w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "tcpdata":
-		result, err = tcpData(w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = tcpData(w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "ssh":
-		result, err = sshAuth(w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = sshAuth(w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "httpget":
-		result, err = httpRequest("GET", w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = httpRequest("GET", w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "httppost":
-		result, err = httpRequest("POST", w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = httpRequest("POST", w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "icmpping":
-		result, err = ipPing("icmp", w.IP, 0, w.SourceIP, w.Check)
+		result, err, description = ipPing("icmp", w.IP, 0, w.SourceIP, w.Check)
 
 	case "udpping":
-		result, err = ipPing("udp", w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = ipPing("udp", w.IP, w.Port, w.SourceIP, w.Check)
 
 	case "tcpping":
-		result, err = ipPing("tcp", w.IP, w.Port, w.SourceIP, w.Check)
+		result, err, description = ipPing("tcp", w.IP, w.Port, w.SourceIP, w.Check)
 
 	default:
 		result = Online
 	}
-	return result, err
+	return result, err, description
 }
 
 func (w *Worker) filterWorker() (n Worker) {
