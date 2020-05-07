@@ -1,3 +1,7 @@
+# 1.3.0
+
+misc: feature: add endpoint test with detailed output (#131)
+
 # 1.1.9
 
 misc: fix for pipeline (#129)
