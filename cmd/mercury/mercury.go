@@ -91,6 +91,10 @@ func main() {
 		os.Exit(check.GLB())
 	case *param.Get().CheckBackend == true:
 		os.Exit(check.Backend())
+
+	case *param.Get().CheckEndpoints == true:
+		os.Exit(check.Endpoints())
+
 	}
 
 	logging.Configure(config.Get().Logging.Output, config.Get().Logging.Level)
