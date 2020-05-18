@@ -135,24 +135,36 @@ func (w *Worker) Start() {
 				if result != w.CheckResult || checkerror != previouserror {
 					log.WithField("checktype", w.Check.Type).WithField("online", result).WithField("error", err).Warn("Healtcheck state changed")
 					// Send the result to the cluster
-					checkresult := CheckResult{
-						PoolName:       w.Pool,
-						BackendName:    w.Backend,
-						ActualStatus:   result,
-						ReportedStatus: w.reportState(result),
-						NodeName:       w.NodeName,
-						WorkerUUID:     w.UUID(),
-						Description:    w.Description(),
-					}
+					/*
+						checkresult := CheckResult{
+							PoolName:       w.Pool,
+							BackendName:    w.Backend,
+							ActualStatus:   result,
+							ReportedStatus: w.reportState(result),
+							NodeName:       w.NodeName,
+							WorkerUUID:     w.UUID(),
+							Description:    w.Description(),
+						}
 
+						w.CheckResult = result
+						w.CheckError = ""
+						if err != nil {
+							w.CheckError = err.Error()
+							checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
+						}
+
+						w.update <- checkresult
+					*/
 					w.CheckResult = result
 					w.CheckError = ""
+
+					var errorMsg []string
 					if err != nil {
 						w.CheckError = err.Error()
-						checkresult.ErrorMsg = append(checkresult.ErrorMsg, w.ErrorMsg())
+						errorMsg = append(errorMsg, w.ErrorMsg())
 					}
 
-					w.update <- checkresult
+					w.SendUpdate(result, errorMsg)
 				}
 				timer = time.NewTimer(time.Duration(w.Check.Interval) * time.Second)
 
@@ -175,6 +187,32 @@ func (w *Worker) Start() {
 			}
 		}
 	}()
+}
+
+// Poll sends the updated status to the channel
+func (w *Worker) SendUpdate(result Status, errMsg []string) {
+	checkresult := CheckResult{
+		PoolName:       w.Pool,
+		BackendName:    w.Backend,
+		ActualStatus:   result,
+		ReportedStatus: w.reportState(result),
+		NodeName:       w.NodeName,
+		WorkerUUID:     w.UUID(),
+		Description:    w.Description(),
+		ErrorMsg:       errMsg,
+	}
+
+	w.update <- checkresult
+}
+
+// Poll sends the current status to the channel
+func (w *Worker) Poll() {
+	var errorMsg []string
+	if w.CheckError != "" {
+		errorMsg = append(errorMsg, w.CheckError)
+	}
+
+	w.SendUpdate(w.CheckResult, errorMsg)
 }
 
 // Stop the worker

@@ -67,6 +67,7 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	log := logging.For("core/healthcheck/init").WithField("func", "healthcheck")
 	var expectedWorkers []*healthcheck.Worker
+	var newUUIDForExistingWorkers []*healthcheck.Worker
 	for poolName, pool := range config.Get().Loadbalancer.Pools {
 		// Create workers for pool checks
 		var poolWorkers []*healthcheck.Worker
@@ -126,7 +127,10 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				}
 
 				// Register all checks applicable to the node UUID
-				h.SetCheckPool(node.UUID, poolName, backendName, node.Name(), backend.HealthCheckMode, nodeChecks)
+				new := h.SetCheckPool(node.UUID, poolName, backendName, node.Name(), backend.HealthCheckMode, nodeChecks)
+				if new {
+					newUUIDForExistingWorkers = append(newUUIDForExistingWorkers, nodeWorkers...)
+				}
 
 				// Register worker for node checks
 				expectedWorkers = append(expectedWorkers, nodeWorkers...)
@@ -153,12 +157,23 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 			expected = append(expected, worker)
 		}
 
+		// Compare UUID of existing workers with collected workers
 		for eid, eworker := range expected {
+			// if UUID matches, we don't need to recreate the check
 			if cworker.UUID() == eworker.UUID() {
 				log.Debugf("Existing worker check: current:%s new:%s", cworker.UUID(), eworker.UUID())
 				// we have a matching current with expected check, no need to add it again
 				expectedWorkers = append(expectedWorkers[:eid], expectedWorkers[eid+1:]...)
 				found = true
+
+				// also check if this is part of the list with new NodeUUID's
+				for _, nworker := range newUUIDForExistingWorkers {
+					if cworker.UUID() == nworker.UUID() {
+						log.Debugf("Refresh worker check: current:%s new:%s", cworker.UUID(), eworker.UUID())
+
+						cworker.Poll()
+					}
+				}
 			}
 		}
 
@@ -178,6 +193,7 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	// expectedChecks no longer contains the active workers, so these need to be started regardless
 	log.WithField("count", len(expectedWorkers)).Debug("Workers to be started")
 	for _, worker := range expectedWorkers {
+		log.WithField("id", worker.UUID()).Debug("Starting worker")
 		h.RegisterWorker(worker)
 		worker.Start()
 	}

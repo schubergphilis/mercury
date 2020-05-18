@@ -40,11 +40,13 @@ func (m *Manager) SetCheckStatus(workerUUID string, status Status, errorMsg []st
 }
 
 // SetCheckPool sets which checks for a specified backend are applicable
-func (m *Manager) SetCheckPool(nodeUUID string, poolName string, backendName string, nodeName string, match string, checks []string) {
+func (m *Manager) SetCheckPool(nodeUUID string, poolName string, backendName string, nodeName string, match string, checks []string) bool {
 	m.Worker.Lock()
 	defer m.Worker.Unlock()
+	new := false
 	if _, ok := m.HealthPoolMap[nodeUUID]; !ok {
 		m.HealthPoolMap[nodeUUID] = HealthPool{}
+		new = true
 	}
 	s := m.HealthPoolMap[nodeUUID]
 	s.Checks = checks
@@ -53,6 +55,7 @@ func (m *Manager) SetCheckPool(nodeUUID string, poolName string, backendName str
 	s.NodeName = nodeName
 	s.Match = match
 	m.HealthPoolMap[nodeUUID] = s
+	return new
 }
 
 // GetNodeStatus returns the combined status of all checks applicable to a specific backend
