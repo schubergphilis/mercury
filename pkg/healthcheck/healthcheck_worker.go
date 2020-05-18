@@ -189,7 +189,7 @@ func (w *Worker) Start() {
 	}()
 }
 
-// Poll sends the updated status to the channel
+// SendUpdate sends the updated status to the channel
 func (w *Worker) SendUpdate(result Status, errMsg []string) {
 	checkresult := CheckResult{
 		PoolName:       w.Pool,

@@ -67,6 +67,7 @@ func (manager *Manager) HealthHandler(healthCheck *healthcheck.Manager) {
 func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	log := logging.For("core/healthcheck/init").WithField("func", "healthcheck")
 	var expectedWorkers []*healthcheck.Worker
+	var expectedNodes []string
 	var newUUIDForExistingWorkers []*healthcheck.Worker
 	for poolName, pool := range config.Get().Loadbalancer.Pools {
 		// Create workers for pool checks
@@ -131,6 +132,9 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 				if new {
 					newUUIDForExistingWorkers = append(newUUIDForExistingWorkers, nodeWorkers...)
 				}
+
+				// keep track of all existing nodes
+				expectedNodes = append(expectedNodes, node.UUID)
 
 				// Register worker for node checks
 				expectedWorkers = append(expectedWorkers, nodeWorkers...)
@@ -199,6 +203,9 @@ func (manager *Manager) InitializeHealthChecks(h *healthcheck.Manager) {
 	}
 
 	log.WithField("count", len(expectedWorkers)).Debug("Workers running")
+
+	// clean up node data
+	h.CleanNodeTracker(expectedNodes)
 }
 
 // reverse an array of strings
