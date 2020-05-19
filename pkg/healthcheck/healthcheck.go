@@ -215,3 +215,26 @@ func (m *Manager) sendWorkerUpdate(uuid string) {
 		}
 	}
 }
+
+// CleanNodeTracker cleans up nodes beeing tracked, but do not exist anymore
+func (m *Manager) CleanNodeTracker(expectedNodes []string) {
+	m.Worker.Lock()
+	defer m.Worker.Unlock()
+	var existing []string
+	for uuid := range m.HealthPoolMap {
+		existing = append(existing, uuid)
+	}
+
+	for _, exists := range existing {
+		found := false
+		for _, expected := range expectedNodes {
+			if expected == exists {
+				found = true
+			}
+		}
+
+		if found == false {
+			delete(m.HealthPoolMap, exists)
+		}
+	}
+}
