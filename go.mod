@@ -10,12 +10,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.3.1 // indirect
 	github.com/go-ldap/ldap v3.0.3+incompatible
 	github.com/miekg/dns v1.1.29
-	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443
+	github.com/nightlyone/lockfile v1.0.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
-	github.com/rdoorn/gorule v0.0.0-20191111095408-9e3c1ea80fdf
+	github.com/rdoorn/gorule v0.0.0-20191111122559-695f3843704c
 	github.com/rdoorn/hashstructure v0.0.0-20180705160145-6d677f823801
-	github.com/rdoorn/tinyresolver v0.0.0-20200519121613-c602cf43001d
-	github.com/sirupsen/logrus v1.4.2
+	github.com/rdoorn/tinyresolver v0.0.0-20200519122612-63f81f0f7f0d
+	github.com/sirupsen/logrus v1.6.0
 	github.com/stackimpact/stackimpact-go v2.3.10+incompatible
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
@@ -26,6 +26,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
 	gopkg.in/ldap.v2 v2.5.1 // indirect
 	gopkg.in/ldap.v3 v3.1.0 // indirect
-	gopkg.in/yaml.v2 v2.2.5-0.20191002202810-970885f01c8b
+	gopkg.in/yaml.v2 v2.3.0
 	nhooyr.io/websocket v1.6.5
 )
