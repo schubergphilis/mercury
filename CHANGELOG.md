@@ -1,3 +1,11 @@
+# 1.3.2
+
+misc: fix: reload issues with weighted nodes (#132)
+
+* Fix unknown status when reloading a node with weight change
+* clean up stale nodetracking data
+* update deps, and remove a resolver test
+
 # 1.3.0
 
 misc: feature: add endpoint test with detailed output (#131)
