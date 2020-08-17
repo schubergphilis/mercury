@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -42,8 +43,11 @@ func TestApi(t *testing.T) {
 		t.Run("ClusterPublic", testAPIClusterPublic)
 		t.Run("ClusterAdmin", testAPIClusterAdmin)
 	})
+	// create a 10 second context for shutdown, whichever comes first
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	if err := srv.Shutdown(nil); err != nil {
+	if err := srv.Shutdown(ctx); err != nil {
 		panic(err) // failure/timeout shutting down the server gracefully
 	}
 }
