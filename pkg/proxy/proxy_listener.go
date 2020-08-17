@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -182,7 +183,10 @@ func (l *Listener) Start() {
 
 			case HTTPS:
 				log.Debug("Stopping HTTP(s) Proxy on request")
-				err := httpsrv.Shutdown(nil)
+				// create a 10 second context for shutdown, whichever comes first
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				err := httpsrv.Shutdown(ctx)
 				if err != http.ErrServerClosed {
 					log.Debugf("Gracefull stop of Proxy failed: %s", err)
 					listener.Close()
