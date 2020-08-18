@@ -1,3 +1,9 @@
+# 1.3.7
+
+misc: add fixes for go 1.5 (#133)
+
+we nore required a context on shutdown, and a string change in the error checking
+
 # 1.3.2
 
 misc: fix: reload issues with weighted nodes (#132)
