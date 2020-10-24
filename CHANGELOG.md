@@ -1,3 +1,7 @@
+# 1.3.10
+
+misc: 
+
 # 1.3.7
 
 misc: add fixes for go 1.5 (#133)
