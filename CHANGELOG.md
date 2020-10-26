@@ -1,6 +1,6 @@
-# 1.3.10
+# 1.3.9
 
-misc: 
+misc: golang version updates
 
 # 1.3.7
 
