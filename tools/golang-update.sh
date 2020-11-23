@@ -7,7 +7,7 @@ git tag --sort=committerdate | sort --version-sort
 
 PREVIOUS_VERSION=$(git tag --sort=committerdate | sort --version-sort | tail -1)
 echo "latest git tag: ${PREVIOUS_VERSION}"
-echo "getting latest golang.version @ https://github.com/schubergphilis/mercury/releases/download/${PREVIOUS_VERSION}/golang.version""
+echo "getting latest golang.version @ https://github.com/schubergphilis/mercury/releases/download/${PREVIOUS_VERSION}/golang.version"
 RESULT=$(curl -L https://github.com/schubergphilis/mercury/releases/download/${PREVIOUS_VERSION}/golang.version -o golang.version -w "%{http_code}")
 PREVIOUS_GOLANG_VERSION=$(cat golang.version)
 echo "latest golang version: ${PREVIOUS_GOLANG_VERSION}"
