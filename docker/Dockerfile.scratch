@@ -10,7 +10,8 @@ RUN git clone https://github.com/schubergphilis/mercury.git
 WORKDIR /go/src/github.com/schubergphilis/mercury/internal/core
 RUN rice embed-go
 WORKDIR /go/src/github.com/schubergphilis/mercury/
-RUN dep ensure
+RUN go mod download
+RUN go mod vendor
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.version=$(git describe --tags --always --abbrev=0) -X main.versionBuild=1 -X main.versionSha=$(git rev-parse --verify HEAD) -extldflags '-static'" -o build/linux/mercury cmd/mercury/mercury.go
 RUN openssl req -nodes -x509 -new -keyout /tmp/self_signed_certificate.key -out /tmp/self_signed_certificate.crt -days 30 -subj "/C=NL/ST=NH/L=Amsterdam/O=Example Ltd/OU=DevOps/CN=www.example.com/emailAddress=dev@www.example.com"
 FROM scratch
