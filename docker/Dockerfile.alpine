@@ -1,5 +1,5 @@
 FROM golang:alpine as builder
-RUN apk add --no-cache git
+RUN apk add --no-cache git openssl
 ENV GOPATH /go/
 ENV GOBIN /go/bin
 RUN go get -u github.com/golang/dep/cmd/dep
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.ve
 FROM golang:alpine
 COPY --from=builder /go/src/github.com/schubergphilis/mercury/build/linux/mercury /app/
 RUN mkdir -p /etc/mercury/ssl
-RUN openssl req -x509 -newkey rsa:4096 -keyout /etc/mercury/ssl/self_signed_certificate.key -out /etc/mercury/ssl/self_signed_certificate.crt -days
+RUN openssl req -nodes -x509 -new -keyout /etc/mercury/ssl/self_signed_certificate.key -out /etc/mercury/ssl/self_signed_certificate.crt -days 30 -subj "/C=NL/ST=NH/L=Amsterdam/O=Example Ltd/OU=DevOps/CN=www.example.com/emailAddress=dev@www.example.com"
 COPY mercury.toml.docker /etc/mercury/mercury.toml
 WORKDIR /app
 EXPOSE 9000 9001 80 443
