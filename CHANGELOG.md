@@ -1,3 +1,7 @@
+# 1.4.1
+
+misc: fix quotation (#138)
+
 # 1.3.9
 
 misc: golang version updates
