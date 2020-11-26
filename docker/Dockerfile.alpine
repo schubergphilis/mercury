@@ -15,9 +15,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.ve
 FROM golang:alpine
 COPY --from=builder /go/src/github.com/schubergphilis/mercury/build/linux/mercury /app/
 RUN mkdir -p /etc/mercury/ssl
+RUN openssl req -x509 -newkey rsa:4096 -keyout /etc/mercury/ssl/self_signed_certificate.key -out /etc/mercury/ssl/self_signed_certificate.crt -days
 COPY mercury.toml.docker /etc/mercury/mercury.toml
-COPY self_signed_certificate.key /etc/mercury/ssl
-COPY self_signed_certificate.crt /etc/mercury/ssl
 WORKDIR /app
 EXPOSE 9000 9001 80 443
 ENTRYPOINT ["/app/mercury", "--config-file", "/etc/mercury/mercury.toml"]
