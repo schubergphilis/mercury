@@ -39,6 +39,9 @@ builddir:
 	@mkdir -p ./build/linux/
 	@mkdir -p ./build/packages/$(NAME)/
 
+createselfsignedcert:
+	test -f test/ssl/self_signed_certificate.key || openssl req -nodes -x509 -new -keyout test/ssl/self_signed_certificate.key -out test/ssl/self_signed_certificate.crt -days 1 -subj "/C=NL/ST=NH/L=Amsterdam/O=Example Ltd/OU=DevOps/CN=www.example.com/emailAddress=dev@www.example.com"
+
 osx: builddir rice
 	@echo Building OSX...
 	GOOS=darwin GOARCH=amd64 go build -v -o ./build/osx/$(NAME) -ldflags $(LDFLAGS) ./cmd/mercury
@@ -92,12 +95,12 @@ run-secondary-noconfig:
 sudo-run: osx
 	sudo ./build/osx/$(NAME) --config-file ./test/$(NAME).toml --pid-file /tmp/mercury.pid
 
-test:
+test: createselfsignedcert
 	go test -v ./...
 	go test -v ./... --race --short
 	go vet ./...
 
-coverage: ## Shows coverage
+coverage: createselfsignedcert ## Shows coverage
 	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		go get -u golang.org/x/tools/cmd/cover; \
 	fi

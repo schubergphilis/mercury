@@ -381,7 +381,7 @@ func TestTreeNodeCluster(t *testing.T) {
 func TestTWOClusterNodeTLS(t *testing.T) {
 	t.Parallel()
 
-	cer, err := tls.LoadX509KeyPair("self-signed.crt", "self-signed.key")
+	cer, err := tls.LoadX509KeyPair("../../test/ssl/self_signed_certificate.crt", "../..//test/ssl/self_signed_certificate.key")
 	if err != nil {
 		t.Errorf("Error reading key pair: %s", err)
 	}

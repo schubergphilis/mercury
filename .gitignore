@@ -10,3 +10,6 @@ test/mercury-secondary.toml
 internal/core/rice-box.go
 vendor
 .version
+*.swp
+*.crt
+*.key
