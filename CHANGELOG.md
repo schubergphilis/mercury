@@ -1,3 +1,12 @@
+# 1.4.2
+
+misc: Clean testcert setup (#139)
+
+* clean up certs, and point to the generic test cert and generate that on tests only
+* no-password for self-signed cert for automation
+* fix broken docker build - vendoring was changed some time ago
+auto: updating change log with latest commit
+
 # 1.4.1
 
 misc: fix quotation (#138)
