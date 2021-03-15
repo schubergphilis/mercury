@@ -251,7 +251,10 @@ func TestTCPProxy(t *testing.T) {
 	time.Sleep(100 * time.Millisecond) // give server time to start
 
 	// Test self, see if we can do TCP connections
-	received := tcpDummyClient(serverIP, serverPort, send, t)
+	received, err := tcpDummyClient(serverIP, serverPort, send, t)
+	if err != nil {
+		t.Errorf("Failed tcp dummy: %s", err)
+	}
 	if received != send {
 		t.Errorf("Failed to receive data from tcpDummyServer, send:[%+v] recieved:[%+v]", []byte(send), []byte(received))
 	}
@@ -267,7 +270,10 @@ func TestTCPProxy(t *testing.T) {
 	time.Sleep(100 * time.Millisecond) // give server time to start
 
 	// Test self, see if we can do TCP connections
-	received = tcpDummyClient(proxyIP, proxyPort, send, t)
+	received, err = tcpDummyClient(proxyIP, proxyPort, send, t)
+	if err != nil {
+		t.Errorf("Failed tcp dummy: %s", err)
+	}
 	if received != send {
 		t.Errorf("Failed to receive data from tcpProxy, send:[%+v] recieved:[%+v]", []byte(send), []byte(received))
 	}
@@ -283,11 +289,11 @@ func getKey(m map[string]string) string {
 	return ""
 }
 
-func tcpDummyClient(ip string, port int, send string, t *testing.T) string {
+func tcpDummyClient(ip string, port int, send string, t *testing.T) (string, error) {
 	// connect to server
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
 	defer conn.Close()
@@ -296,18 +302,18 @@ func tcpDummyClient(ip string, port int, send string, t *testing.T) string {
 	buf := make([]byte, 256)
 	_, err = conn.Read(buf)
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
 
 	buf = bytes.Trim(buf, "\x00") // remove nul
-	return string(buf)
+	return string(buf), nil
 }
 
-func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
+func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) error {
 	// start listener
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
 	buf := make([]byte, 256)
@@ -320,7 +326,7 @@ func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
 
 			_, err = conn.Read(buf)
 			if err != nil {
-				t.Fatal(err)
+				return
 			}
 
 			fmt.Fprintf(conn, string(buf))
@@ -333,7 +339,7 @@ func tcpDummyServer(ip string, port int, exit chan bool, t *testing.T) {
 		select {
 		case _ = <-exit:
 			l.Close()
-			return
+			return err
 		}
 	}
 }
