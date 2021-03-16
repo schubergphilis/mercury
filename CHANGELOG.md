@@ -1,3 +1,7 @@
+# 1.4.5
+
+misc: fix fatal's outside of test routines for golang16 (#140)
+
 # 1.4.2
 
 misc: Clean testcert setup (#139)
