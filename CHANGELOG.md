@@ -1,3 +1,7 @@
+# 1.4.9
+
+misc: add stale bot for closing old issues
+
 # 1.4.5
 
 misc: fix fatal's outside of test routines for golang16 (#140)
