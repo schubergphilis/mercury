@@ -47,7 +47,7 @@ echo "new version to be created: old: ${oldversion} new: ${newversion}"
 echo "${newversion}" > .version
 
 sudo apt-get --no-install-recommends install ruby ruby-dev rubygems build-essential rpm
-sudo gem install --no-ri --no-rdoc fpm
+sudo gem install --no-document --no-rdoc fpm
 
 make linux-package
 

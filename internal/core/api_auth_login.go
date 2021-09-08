@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt"
 )
 
 // apiLoginHandler handles a login of a user, and gives back a cookie if successfull

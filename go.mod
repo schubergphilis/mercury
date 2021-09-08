@@ -4,11 +4,11 @@ go 1.13
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/GeertJohan/go.rice v1.0.1-0.20190902143914-48f549fe0543
+	github.com/GeertJohan/go.rice v1.0.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-asn1-ber/asn1-ber v1.3.1 // indirect
 	github.com/go-ldap/ldap v3.0.3+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/miekg/dns v1.1.29
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
