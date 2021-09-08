@@ -6,7 +6,6 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-asn1-ber/asn1-ber v1.3.1 // indirect
 	github.com/go-ldap/ldap v3.0.3+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
