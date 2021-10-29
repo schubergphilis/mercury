@@ -1,3 +1,15 @@
+# 1.4.11
+
+misc: fix ci
+
+fix: replace vulnerable jwt token library (#142)
+
+* update ci script
+
+* update jwt token library
+
+* remove old mod
+
 # 1.4.9
 
 misc: add stale bot for closing old issues
