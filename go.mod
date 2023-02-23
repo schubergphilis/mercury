@@ -6,9 +6,8 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
-	github.com/go-asn1-ber/asn1-ber v1.3.1 // indirect
 	github.com/go-ldap/ldap v3.0.3+incompatible
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/miekg/dns v1.1.29
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
@@ -18,14 +17,12 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stackimpact/stackimpact-go v2.3.10+incompatible
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
-	golang.org/x/net v0.0.0-20200519113804-d87ec0cfa476
-	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/text v0.3.8 // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
-	gopkg.in/ldap.v2 v2.5.1 // indirect
-	gopkg.in/ldap.v3 v3.1.0 // indirect
+	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	nhooyr.io/websocket v1.6.5
 )
